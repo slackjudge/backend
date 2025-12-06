@@ -1,0 +1,31 @@
+oauth:
+  slack:
+    cliend-id: ${SLACK_CLIENT_ID}
+    client-secret: ${SLACK_CLIENT_SECRET}
+    redirect-uri: ${SLACK_REDIRECT_URI}
+    token-uri: https://slack.com/api/openid.connect.token
+    user-info-uri: https://slack.com/api/openid.connect.userInfo
+
+---
+spring.config.activate.on-profile: local
+
+jwt:
+  secret:
+    access-token:
+      value: ${LOCAL_ACCESS_SECRET}
+      expiration-time: 43200000      # 12시간
+    refresh-token:
+      value: ${LOCAL_REFRESH_SECRET}
+      expiration-time: 1209600000    # 14일
+
+---
+spring.config.activate.on-profile: dev
+
+jwt:
+  secret:
+    access-token:
+      value: ${DEV_ACCESS_SECRET}
+      expiration-time: 3600000       # 1시간
+    refresh-token:
+      value: ${DEV_REFRESH_SECRET}
+      expiration-time: 1209600000    # 14일
