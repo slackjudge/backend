@@ -16,6 +16,8 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import static com.project.common.util.WebSecurityUrl.*;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
