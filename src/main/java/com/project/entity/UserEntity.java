@@ -18,29 +18,29 @@ public class UserEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
-    @Column
+    @Column(nullable = false)
     private String slackId;
 
-    @Column
+    @Column(nullable = false)
     private String baekJoonId;
 
     @Column(nullable = false)
     private String username;
 
-    @Column(nullable = false)
+    @Column
     @Enumerated(EnumType.STRING)
     private EurekaTeamName teamName;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private UserRole userRole = UserRole.USER;
+    private UserRole userRole;
 
     @Column(nullable = false)
-    private Integer solvedCount = 0;
+    private Integer solvedCount;
 
     @Column(nullable = false)
-    private boolean isAlertAgreed = false;
+    private boolean isAlertAgreed;
 
     @Column(nullable = false)
-    private boolean isDeleted = false;
+    private boolean isDeleted;
 }
