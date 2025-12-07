@@ -1,4 +1,4 @@
-package com.project.security;
+package com.project.common.util;
 
 public class WebSecurityUrl {
 

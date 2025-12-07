@@ -1,6 +1,6 @@
-package com.project.security.jwt.refresh;
+package com.project.common.security.jwt.refresh;
 
-import com.project.security.jwt.JwtClaims;
+import com.project.common.security.jwt.JwtClaims;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 

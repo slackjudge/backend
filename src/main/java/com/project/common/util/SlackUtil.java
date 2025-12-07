@@ -13,8 +13,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 
-import static com.project.security.AuthConstants.AUTHORIZATION;
-import static com.project.security.AuthConstants.TOKEN_PREFIX;
+import static com.project.common.util.AuthConstants.AUTHORIZATION;
+import static com.project.common.util.AuthConstants.TOKEN_PREFIX;
 
 @Component
 public class SlackUtil {

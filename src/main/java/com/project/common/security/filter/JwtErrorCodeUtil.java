@@ -1,4 +1,4 @@
-package com.project.security.filter;
+package com.project.common.security.filter;
 
 import com.project.common.exception.ErrorCode;
 import com.project.common.exception.JwtException;

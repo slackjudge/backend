@@ -1,6 +1,6 @@
-package com.project.security.jwt;
+package com.project.common.security.jwt;
 
-import com.project.security.AuthConstants;
+import com.project.common.util.AuthConstants;
 import io.jsonwebtoken.Claims;
 import org.springframework.util.StringUtils;
 

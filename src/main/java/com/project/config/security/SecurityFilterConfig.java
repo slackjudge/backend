@@ -1,9 +1,8 @@
 package com.project.config.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.security.filter.JwtAuthenticationFilter;
-import com.project.security.filter.JwtExceptionFilter;
-import com.project.security.jwt.JwtProvider;
+import com.project.common.security.filter.JwtAuthenticationFilter;
+import com.project.common.security.filter.JwtExceptionFilter;
+import com.project.common.security.jwt.JwtProvider;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

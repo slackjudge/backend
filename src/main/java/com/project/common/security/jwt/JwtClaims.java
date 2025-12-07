@@ -1,4 +1,4 @@
-package com.project.security.jwt;
+package com.project.common.security.jwt;
 
 import java.util.Map;
 

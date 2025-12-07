@@ -1,10 +1,10 @@
-package com.project.security.jwt.refresh;
+package com.project.common.security.jwt.access;
 
-import com.project.common.annotation.RefreshTokenStrategy;
+import com.project.common.annotation.AccessTokenStrategy;
 import com.project.common.exception.ErrorCode;
 import com.project.common.exception.JwtException;
-import com.project.security.jwt.JwtClaims;
-import com.project.security.jwt.JwtProvider;
+import com.project.common.security.jwt.JwtClaims;
+import com.project.common.security.jwt.JwtProvider;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -20,24 +21,23 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
 
-import static com.project.security.jwt.refresh.RefreshTokenClaimKeys.USER_ID;
+import static com.project.common.security.jwt.access.AccessTokenClaimKeys.USER_ID;
 
 @Slf4j
 @Component
-@RefreshTokenStrategy
-public class RefreshTokenProvider implements JwtProvider {
+@AccessTokenStrategy
+public class AccessTokenProvider implements JwtProvider {
     private final SecretKey secretKey;
-    private final Long tokenExpiration;
+    private final Duration tokenExpiration;
 
-    public RefreshTokenProvider(
-            @Value("${jwt.secret.refresh-token.value}") String jwtSecretKey,
-            @Value("${jwt.secret.refresh-token.expiration-time}") Long tokenExpiration
+    public AccessTokenProvider(
+            @Value("${jwt.secret.access-token.value}") String jwtSecretKey,
+            @Value("${jwt.secret.access-token.expiration-time}") Duration tokenExpiration
     ) {
-        final byte[] secretKeyBytes = Base64.getDecoder().decode(jwtSecretKey);
-        this.secretKey = Keys.hmacShaKeyFor(secretKeyBytes);
+        byte[] keyBytes = Base64.getDecoder().decode(jwtSecretKey);
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
         this.tokenExpiration = tokenExpiration;
     }
-
 
     @Override
     public String createToken(JwtClaims claims) {
@@ -47,14 +47,14 @@ public class RefreshTokenProvider implements JwtProvider {
                 .setHeader(createHeader())
                 .setClaims(claims.getClaims())
                 .signWith(secretKey)
-                .setExpiration(createExpireDate(now, tokenExpiration))
+                .setExpiration(createExpirationDate(now, tokenExpiration.toMillis()))
                 .compact();
     }
 
     @Override
     public JwtClaims parseJwtClaimsFromToken(String token) {
         Claims claims = getClaimsFromToken(token);
-        return RefreshTokenClaim.of(
+        return AccessTokenClaim.of(
                 Long.parseLong(claims.get(USER_ID.getValue(), String.class))
         );
     }
@@ -63,7 +63,8 @@ public class RefreshTokenProvider implements JwtProvider {
     public LocalDateTime getExpiredDate(String token) {
         Claims claims = getClaimsFromToken(token);
         return Instant.ofEpochMilli(claims.getExpiration().getTime())
-                .atZone(ZoneId.systemDefault()).toLocalDateTime();
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
     }
 
     @Override
@@ -72,8 +73,8 @@ public class RefreshTokenProvider implements JwtProvider {
             Claims claims = getClaimsFromToken(token);
             return claims.getExpiration().before(new Date());
         } catch (Exception e) {
-            log.error("Token is Expired: {}", e.getMessage());
-            throw new JwtException(ErrorCode.EXPIRED_REFRESH_TOKEN);
+            log.error("Token is expired: {}", e.getMessage());
+            throw new JwtException(ErrorCode.EXPIRED_ACCESS_TOKEN);
         }
     }
 
@@ -86,7 +87,7 @@ public class RefreshTokenProvider implements JwtProvider {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (Exception e) {
-            log.error("Token parsing error: {}", e.getMessage());
+            log.error("Token is invalid: {}", e.getMessage());
             throw new JwtException(ErrorCode.INVALID_TOKEN);
         }
     }
@@ -99,7 +100,7 @@ public class RefreshTokenProvider implements JwtProvider {
         );
     }
 
-    private Date createExpireDate(final Date now, long expirationTime) {
+    private Date createExpirationDate(Date now, long expirationTime) {
         return new Date(now.getTime() + expirationTime);
     }
 }

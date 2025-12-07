@@ -1,10 +1,10 @@
 package com.project.service;
 
 import com.project.dto.response.LoginResponse;
-import com.project.security.jwt.JwtClaims;
-import com.project.security.jwt.JwtProvider;
-import com.project.security.jwt.access.AccessTokenClaim;
-import com.project.security.jwt.refresh.RefreshTokenClaim;
+import com.project.common.security.jwt.JwtClaims;
+import com.project.common.security.jwt.JwtProvider;
+import com.project.common.security.jwt.access.AccessTokenClaim;
+import com.project.common.security.jwt.refresh.RefreshTokenClaim;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,11 +1,10 @@
-package com.project.security.filter;
+package com.project.common.security.filter;
 
-import com.project.common.exception.BusinessException;
 import com.project.common.exception.ErrorCode;
 import com.project.common.exception.JwtException;
-import com.project.security.jwt.JwtProvider;
-import com.project.security.jwt.JwtClaims;
-import com.project.security.jwt.access.AccessTokenClaimKeys;
+import com.project.common.security.jwt.JwtProvider;
+import com.project.common.security.jwt.JwtClaims;
+import com.project.common.security.jwt.access.AccessTokenClaimKeys;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,7 +28,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-import static com.project.security.WebSecurityUrl.*;
+import static com.project.common.util.WebSecurityUrl.*;
 
 @Slf4j
 @RequiredArgsConstructor

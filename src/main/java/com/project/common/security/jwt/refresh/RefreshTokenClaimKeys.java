@@ -1,4 +1,4 @@
-package com.project.security.jwt.refresh;
+package com.project.common.security.jwt.refresh;
 
 import lombok.Getter;
 

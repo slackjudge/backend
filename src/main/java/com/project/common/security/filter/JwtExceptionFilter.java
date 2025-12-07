@@ -1,4 +1,4 @@
-package com.project.security.filter;
+package com.project.common.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.common.dto.ApiResponse;
