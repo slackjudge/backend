@@ -2,7 +2,9 @@ package com.project.service;
 
 import com.project.common.exception.BusinessException;
 import com.project.common.exception.ErrorCode;
+import com.project.dto.response.SlackUserInfoResponse;
 import com.project.entity.UserEntity;
+import com.project.entity.UserRole;
 import com.project.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,5 +20,26 @@ public class UserService {
     public UserEntity findUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    @Transactional
+    public UserEntity findUserBySlackId(String slackId) {
+        return userRepository.findBySlackId(slackId)
+                .orElseGet(() -> createUser(slackId));
+    }
+
+    @Transactional
+    public UserEntity createUser(String slackId) {
+        UserEntity user = UserEntity.builder()
+                .slackId(slackId)
+                .baekJoonId("initial")
+                .username("initial")
+                .userRole(UserRole.USER)
+                .solvedCount(0)
+                .isAlertAgreed(true)
+                .isDeleted(false)
+                .build();
+
+        return userRepository.save(user);
     }
 }
