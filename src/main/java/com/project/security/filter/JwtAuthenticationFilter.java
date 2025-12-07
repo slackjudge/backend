@@ -21,7 +21,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -39,6 +38,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsService securityUserDetailsService;
     private final JwtProvider accessTokenProvider;
     private final AccessDeniedHandler accessDeniedHandler;
+
+    private static final AntPathMatcher matcher = new AntPathMatcher();
 
     public static final String[] PUBLIC_ENDPOINTS = Stream.of(
             HEALTH_CHECK_ENDPOINT,
@@ -68,20 +69,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        return Arrays.stream(PUBLIC_ENDPOINTS)
-                .anyMatch(endPoint -> new AntPathMatcher().match(endPoint, request.getRequestURI()));
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+
+        return matches(uri, PUBLIC_ENDPOINTS)   // 완전 공개 API
+                || matches(uri, ANONYMOUS_ENDPOINTS); // 토큰 없어도 허용되는 API
     }
 
     private boolean isAnonymousRequest(HttpServletRequest request) {
-        String requestUri = request.getRequestURI();
+        String uri = request.getRequestURI();
+        boolean headerMissing = request.getHeader(HttpHeaders.AUTHORIZATION) == null;
 
-        boolean isAnonymousURI = Arrays.stream(ANONYMOUS_ENDPOINTS)
-                .anyMatch(endPoint -> new AntPathMatcher().match(endPoint, requestUri));
-
-        boolean isAnonymous = request.getHeader(HttpHeaders.AUTHORIZATION) == null;
-
-        return (isAnonymousURI && isAnonymous) || requestUri.equals(REISSUE_ENDPOINT);
+        return headerMissing && matches(uri, ANONYMOUS_ENDPOINTS);
     }
 
     private String resolveAccessToken(
@@ -92,7 +91,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (!StringUtils.hasText(accessToken)) {
             log.error("EMPTY_ACCESS_TOKEN");
-            throw new BusinessException(ErrorCode.EMPTY_ACCESS_TOKEN);
+            throw new JwtException(ErrorCode.EMPTY_ACCESS_TOKEN);
         }
 
         if (accessTokenProvider.isTokenExpired(accessToken)) {
@@ -116,5 +115,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+    }
+
+    private boolean matches(String uri, String[] patterns) {
+        for (String pattern : patterns) {
+            if (matcher.match(pattern, uri)) return true;
+        }
+        return false;
     }
 }
