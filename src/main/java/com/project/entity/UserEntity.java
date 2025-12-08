@@ -3,6 +3,7 @@ package com.project.entity;
 import com.project.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -18,29 +19,37 @@ public class UserEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
+    @Builder.Default
     @Column(nullable = false)
-    private String slackId;
+    private String slackId = "initial";
 
+    @Builder.Default
     @Column(nullable = false)
-    private String baekJoonId;
+    private String baekJoonId = "initial";
 
+    @Builder.Default
     @Column(nullable = false)
-    private String username;
+    private String username = "initial";
 
+    @Builder.Default
     @Column
     @Enumerated(EnumType.STRING)
-    private EurekaTeamName teamName;
+    private EurekaTeamName teamName = EurekaTeamName.DEFAULT;
 
+    @Builder.Default
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private UserRole userRole;
+    private UserRole userRole = UserRole.USER;
 
+    @Builder.Default
     @Column(nullable = false)
-    private Integer solvedCount;
+    private Integer solvedCount = 0;
 
+    @Builder.Default
     @Column(nullable = false)
-    private boolean isAlertAgreed;
+    private boolean isAlertAgreed = false;
 
+    @Builder.Default
     @Column(nullable = false)
-    private boolean isDeleted;
+    private boolean isDeleted = false;
 }

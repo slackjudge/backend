@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum EurekaTeamName {
+    DEFAULT("초기값"),
     FRONTEND_OFFLINE("프론트엔드 대면반"),
     FRONTEND_ONLINE("프론트엔드 비대면반"),
     BACKEND_OFFLINE("백엔드 대면반"),

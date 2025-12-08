@@ -32,12 +32,6 @@ public class UserService {
     public UserEntity createUser(String slackId) {
         UserEntity user = UserEntity.builder()
                 .slackId(slackId)
-                .baekJoonId("initial")
-                .username("initial")
-                .userRole(UserRole.USER)
-                .solvedCount(0)
-                .isAlertAgreed(true)
-                .isDeleted(false)
                 .build();
 
         return userRepository.save(user);
