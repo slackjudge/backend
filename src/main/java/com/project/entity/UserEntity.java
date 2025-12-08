@@ -15,21 +15,23 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity extends BaseTimeEntity {
 
+    private static final String DEFAULT_STRING = "initial";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
     @Builder.Default
     @Column(nullable = false)
-    private String slackId = "initial";
+    private String slackId = DEFAULT_STRING;
 
     @Builder.Default
     @Column(nullable = false)
-    private String baekJoonId = "initial";
+    private String baekJoonId = DEFAULT_STRING;
 
     @Builder.Default
     @Column(nullable = false)
-    private String username = "initial";
+    private String username = DEFAULT_STRING;
 
     @Builder.Default
     @Column
@@ -52,4 +54,10 @@ public class UserEntity extends BaseTimeEntity {
     @Builder.Default
     @Column(nullable = false)
     private boolean isDeleted = false;
+
+    public static UserEntity createUser(String slackId) {
+        return UserEntity.builder()
+                .slackId(slackId)
+                .build();
+    }
 }

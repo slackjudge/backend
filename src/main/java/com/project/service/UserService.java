@@ -25,15 +25,6 @@ public class UserService {
     @Transactional
     public UserEntity findUserBySlackId(String slackId) {
         return userRepository.findBySlackId(slackId)
-                .orElseGet(() -> createUser(slackId));
-    }
-
-    @Transactional
-    public UserEntity createUser(String slackId) {
-        UserEntity user = UserEntity.builder()
-                .slackId(slackId)
-                .build();
-
-        return userRepository.save(user);
+                .orElseGet(() -> userRepository.save(UserEntity.createUser(slackId)));
     }
 }
