@@ -1,6 +1,7 @@
 package com.project.entity;
 
 import com.project.common.BaseTimeEntity;
+import com.project.dto.request.SignUpRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -35,7 +36,7 @@ public class UserEntity extends BaseTimeEntity {
 
     @Builder.Default
     @Column(nullable = false)
-    private String bojTier = DEFAULT_STRING;
+    private int bojTier = 0;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -62,5 +63,13 @@ public class UserEntity extends BaseTimeEntity {
         return UserEntity.builder()
                 .slackId(slackId)
                 .build();
+    }
+
+    public void signUp(SignUpRequest signUpRequest, int bojTier) {
+        this.username = signUpRequest.username();
+        this.baekjoonId = signUpRequest.baekjoonId();
+        this.teamName = signUpRequest.teamName();
+        this.isAlertAgreed = signUpRequest.isAlertAgreed();
+        this.bojTier = bojTier;
     }
 }
