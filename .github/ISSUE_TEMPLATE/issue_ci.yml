@@ -1,0 +1,44 @@
+name: "👷 CI"
+description: "CI/CD 설정 추가, 수정 및 개선 작업"
+labels: ["ci"]
+body:
+  - type: textarea
+    attributes:
+      label: 🚀 목적
+      description: 이번 CI 작업의 목적과 개선하고자 하는 점을 설명해주세요.
+      placeholder: |
+        예)
+        - GitHub Actions에서 Testcontainers 실행 오류 해결
+        - 빌드 속도 최적화
+        - Lint / Test 자동화 추가
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: 🛠 작업 항목
+      description: 해야 할 작업을 체크박스 형태로 작성해주세요.
+      placeholder: |
+        예)
+        - [ ] CI 환경 변수 추가
+
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: 📦 관련 파일
+      description: 수정될 가능성이 있는 CI 설정 파일 목록을 작성해주세요.
+      placeholder: |
+        - .github/workflows/test.yml
+        - Dockerfile
+        - gradle.yml
+    validations:
+      required: false
+
+  - type: textarea
+    attributes:
+      label: 🔗 참고 자료
+      description: 참고한 문서, 링크가 있다면 적어주세요.
+    validations:
+      required: false
