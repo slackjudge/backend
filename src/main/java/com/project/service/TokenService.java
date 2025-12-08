@@ -19,19 +19,19 @@ public class TokenService {
     private final RefreshTokenService refreshTokenService;
 
 
-    public LoginResponse issueTokens(Long userId) {
+    public LoginResponse issueTokens(Long userId, boolean registeredUser) {
         String accessToken = accessTokenProvider.createToken(AccessTokenClaim.of(userId));
         String refreshToken = refreshTokenProvider.createToken(RefreshTokenClaim.of(userId));
 
         refreshTokenService.saveRefreshToken(userId, refreshToken);
-        return new LoginResponse(accessToken, refreshToken);
+        return new LoginResponse(accessToken, refreshToken, registeredUser);
     }
 
 
     public LoginResponse reissueToken(String oldRefreshToken) {
         Long userId = resolveRefreshToken(oldRefreshToken);
         refreshTokenService.validateRefreshToken(userId, oldRefreshToken);
-        return issueTokens(userId);
+        return issueTokens(userId, true);
     }
 
 

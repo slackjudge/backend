@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -26,6 +28,8 @@ public class OAuthService {
         SlackUserInfoResponse slackUserInfoResponse = slackUtil.getSlackUserInfo(slackTokenResponse.accessToken());
         UserEntity user = userService.findUserBySlackId(slackUserInfoResponse.userId());
 
-        return tokenService.issueTokens(user.getUserId());
+        boolean registeredUser = !Objects.equals(user.getBaekjoonId(), "initial");
+
+        return tokenService.issueTokens(user.getUserId(), registeredUser);
     }
 }
