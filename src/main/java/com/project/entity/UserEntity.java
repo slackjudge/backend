@@ -45,7 +45,7 @@ public class UserEntity extends BaseTimeEntity {
 
     @Builder.Default
     @Column(nullable = false)
-    private Integer solvedCount = 0;
+    private Integer totalSolvedCount = 0;
 
     @Builder.Default
     @Column(nullable = false)
