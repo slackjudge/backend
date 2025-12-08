@@ -5,8 +5,8 @@ project:
 server:
   port: 8080
   domain:
-    local: ${LOCAL_SERVER_URL:http://localhost:8080}
-    dev: ${DEV_SERVER_URL}
+    local: ${LOCAL_SERVER_URL:http://localhost:3000}
+    dev: ${DEV_SERVER_URL:https://slackJudge.store}
 
 spring:
   profiles:
