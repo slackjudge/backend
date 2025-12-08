@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
         return ResponseEntity
-                .ok(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
+                .ok(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR, e.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
