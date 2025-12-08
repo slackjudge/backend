@@ -27,16 +27,19 @@ public class UserEntity extends BaseTimeEntity {
 
     @Builder.Default
     @Column(nullable = false)
-    private String baekJoonId = DEFAULT_STRING;
+    private String baekjoonId = DEFAULT_STRING;
 
     @Builder.Default
     @Column(nullable = false)
     private String username = DEFAULT_STRING;
 
     @Builder.Default
+    @Column(nullable = false)
+    private String bojTier = DEFAULT_STRING;
+
     @Column
     @Enumerated(EnumType.STRING)
-    private EurekaTeamName teamName = EurekaTeamName.DEFAULT;
+    private EurekaTeamName teamName;
 
     @Builder.Default
     @Column(nullable = false)
@@ -49,7 +52,7 @@ public class UserEntity extends BaseTimeEntity {
 
     @Builder.Default
     @Column(nullable = false)
-    private boolean isAlertAgreed = false;
+    private boolean isAlertAgreed = true;
 
     @Builder.Default
     @Column(nullable = false)
