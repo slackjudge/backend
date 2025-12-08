@@ -62,6 +62,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             UserDetails userDetails = getUserDetails(accessToken);
             authenticateUser(userDetails, request);
+            filterChain.doFilter(request, response);
         } catch (AccessDeniedException e) {
             accessDeniedHandler.handle(request, response, e);
         }
