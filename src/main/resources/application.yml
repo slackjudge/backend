@@ -4,8 +4,13 @@ project:
 
 server:
   port: 8080
+  domain:
+    local: ${LOCAL_SERVER_URL:http://localhost:3000}
+    dev: ${DEV_SERVER_URL:https://slackJudge.store}
 
 spring:
+  profiles:
+    default: local
   config:
     import:
       - postgres.yml
@@ -27,9 +32,6 @@ management:
   endpoint:
     health:
       show-details: always
-
-cors:
-  allowed-origins: ${FRONTEND_URL:http://localhost:3000}
 
 ---
 spring.config.activate.on-profile: local
