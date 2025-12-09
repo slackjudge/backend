@@ -19,7 +19,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,7 +37,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("존재하는 유저 조회 성공")
-    void 존재하는_유저_조회_성공() {
+    void findUserSuccess() {
 
         // given
         Long userId = 1L;
@@ -55,7 +54,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("유저가 존재하지 않으면 USER_NOT_FOUND 예외 발생")
-    void 유저가_존재하지_않으면_USER_NOT_FOUND_예외_발생() {
+    void findUserError() {
 
         // given
         Long userId = 1L;
@@ -69,7 +68,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("소셜 로그인 후 해당 유저가 존재하지 않으면 새로 생성해서 저장 후 반환")
-    void 소셜_로그인_후_유저가_존재하지_않으면_새로_생성() {
+    void findBySlackIdSuccess() {
 
         // given
         String slackId = "SLACK12345";
@@ -88,7 +87,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("회원가입시 BOJ 티어 조회 후 유저 정보 업데이트")
-    void 회원가입시_BOJ_티어_조회_후_유저_정보_업데이트() {
+    void signUpSuccess() {
         // given
         Long userId = 1L;
         UserEntity user = UserEntity.createUser("SLACK123");
@@ -118,7 +117,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("사용자 백준 아이디 검증 성공")
-    void 사용자_백준_아이디_검증_성공_후_응답_생성() {
+    void checkBojSuccess() {
         // given
         Long userId = 1L;
         String bojId = "dlrbehd120";
@@ -137,7 +136,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("사용자 백준 아이디 검증 성공")
-    void 사용자_백준_아이디_검증_실패_후_응답_생성() {
+    void checkBojError() {
         // given
         Long userId = 1L;
         String bojId = "abcdefghi";

@@ -26,7 +26,6 @@ import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -74,7 +73,7 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("checkUser - 실제 DB에서 사용자 조회 테스트")
+    @DisplayName("BOJ ID 검증 테스트")
     void checkUser() throws Exception {
 
         // BOJ MOCK
@@ -90,7 +89,7 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/user/signUp — 회원가입 성공 테스트")
+    @DisplayName("회원가입 성공 테스트")
     void signUp() throws Exception {
 
         // BOJ 티어 Mock
