@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+  main:
+    allow-bean-definition-overriding: true
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+
+
+jwt:
+  secret:
+    access-token:
+      value: dGVzdHRlc3R0dGVzdHRlc3R0dGVzdHRlc3Q=   # base64 32바이트
+      expiration-time: 3600000
+    refresh-token:
+      value: dGVzdHRlc3R0dGVzdHRlc3R0dGVzdHRlc3Q=
+      expiration-time: 604800000
