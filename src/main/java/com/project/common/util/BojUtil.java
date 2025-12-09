@@ -50,6 +50,9 @@ public class BojUtil {
         try {
             response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             throw new BusinessException(ErrorCode.BAEKJOON_AUTH_INVALID);
         }
 

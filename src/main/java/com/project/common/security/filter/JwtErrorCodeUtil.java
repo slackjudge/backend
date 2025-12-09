@@ -43,10 +43,10 @@ public class JwtErrorCodeUtil {
     }
 
     private static Optional<JwtException> findAuthErrorException(Exception exception) {
-        if (exception instanceof JwtException) {
-            return Optional.of((JwtException) exception);
-        } else if (exception.getCause() instanceof JwtException) {
-            return Optional.of((JwtException) exception.getCause());
+        if (exception instanceof JwtException jwtException) {
+            return Optional.of(jwtException);
+        } else if (exception.getCause() instanceof JwtException jwtException) {
+            return Optional.of(jwtException);
         }
         return Optional.empty();
     }
