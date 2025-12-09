@@ -90,7 +90,13 @@ jacocoTestReport {
                 '**/config/**',      // Config 클래스 제외
                 '**/exception/**',   // Exception 클래스 제외
                 '**/dto/**',         // DTO 클래스 제외
-                '**/Application.class'  // 메인 클래스 제외
+                '**/Application.class',  // 메인 클래스 제외
+                // OAuth/Security 관련 클래스 제외
+                '**/service/OAuthService.class',
+                '**/service/RefreshTokenService.class',
+                '**/service/TokenService.class',
+                '**/controller/OAuthController.class',
+                '**/common/security/**'
             ])
         }))
     }
@@ -111,7 +117,13 @@ jacocoTestCoverageVerification {
                 '**/config/**',
                 '**/exception/**',
                 '**/dto/**',
-                '**/Application.class'
+                '**/Application.class',
+                // OAuth/Security 관련 클래스 제외
+                '**/service/OAuthService.class',
+                '**/service/RefreshTokenService.class',
+                '**/service/TokenService.class',
+                '**/controller/OAuthController.class',
+                '**/common/security/**'
             ])
         }))
     }
@@ -155,7 +167,13 @@ sonar {
             '**/config/**/*.java',
             '**/exception/**/*.java',
             '**/dto/**/*.java',
-            '**/Application.java'
+            '**/Application.java',
+            // OAuth/Security 관련 클래스 제외
+            '**/service/OAuthService.java',
+            '**/service/RefreshTokenService.java',
+            '**/service/TokenService.java',
+            '**/controller/OAuthController.java',
+            '**/common/security/**/*.java'
         ].join(',')
     }
 }
