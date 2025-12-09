@@ -13,7 +13,7 @@ import java.math.BigInteger;
 @Table(name ="problem_type")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class ProblemTypeEntity extends BaseTimeEntity {
+public class ProblemTypeEntity {
 
 
     @Id

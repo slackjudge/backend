@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Table(name="problem")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ProblemEntity  extends BaseTimeEntity {
+public class ProblemEntity {
 
     @Id
     @Column(name="problem_id", nullable = false)

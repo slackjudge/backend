@@ -8,11 +8,11 @@ import lombok.ToString;
 
 import java.time.LocalDateTime;
 
-@Table(name="user_problem")
+@Table(name="users_problem")
 @Getter
 @ToString
 @Entity
-public class UsersProblemEntity extends BaseTimeEntity {
+public class UsersProblemEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
