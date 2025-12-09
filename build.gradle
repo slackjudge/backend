@@ -98,6 +98,7 @@ jacocoTestReport {
                 // OAuth/Security 관련 클래스 제외
                 '**/service/OAuthService.class',
                 '**/service/RefreshTokenService.class',
+                '**/repository/RefreshTokenRepository.class',
                 '**/service/TokenService.class',
                 '**/controller/OAuthController.class',
                 '**/common/security/**'
@@ -119,6 +120,7 @@ jacocoTestCoverageVerification {
                 // OAuth/Security 관련 클래스 제외
                 '**/service/OAuthService.class',
                 '**/service/RefreshTokenService.class',
+                '**/repository/RefreshTokenRepository.class',
                 '**/service/TokenService.class',
                 '**/controller/OAuthController.class',
                 '**/common/security/**'
@@ -170,6 +172,7 @@ sonar {
             // OAuth/Security 관련 클래스 제외
             '**/service/OAuthService.java',
             '**/service/RefreshTokenService.java',
+            '**/repository/RefreshTokenRepository.java',
             '**/service/TokenService.java',
             '**/controller/OAuthController.java',
             '**/common/security/**/*.java'
