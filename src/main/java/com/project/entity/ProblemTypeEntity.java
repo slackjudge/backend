@@ -6,6 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigInteger;
+
 
 @Entity
 @Table(name ="problem_type")
@@ -14,7 +16,8 @@ import lombok.NoArgsConstructor;
 public class ProblemTypeEntity extends BaseTimeEntity {
 
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="problem_type_id")
     private Long problemTypeId;
 
@@ -23,13 +26,5 @@ public class ProblemTypeEntity extends BaseTimeEntity {
      */
     @Column(name="problem_type_name", nullable = false, length = 100)
     private String problemTypeName;
-
-
-    public static ProblemTypeEntity create(String name) {
-        ProblemTypeEntity entity = new ProblemTypeEntity();
-        entity.problemTypeName = name;
-        return entity;
-    }
-
 
 }

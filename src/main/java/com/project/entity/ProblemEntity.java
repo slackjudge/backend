@@ -14,15 +14,13 @@ import lombok.NoArgsConstructor;
 public class ProblemEntity  extends BaseTimeEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="problem_id", nullable = false )
-    @JoinColumn
+    @Column(name="problem_id", nullable = false)
     private Integer problemId;
 
     @Column(name="problem_level", nullable = false)
     private Integer problemLevel;
 
-    @Column(name="problem_id", nullable = false)
+    @Column(name="problem_url", nullable = false)
     private String problemUrl;
 
     @Column(name="problem_title", nullable = false)
