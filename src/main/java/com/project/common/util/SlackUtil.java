@@ -5,7 +5,11 @@ import com.project.common.exception.ErrorCode;
 import com.project.dto.response.SlackTokenResponse;
 import com.project.dto.response.SlackUserInfoResponse;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -76,10 +80,10 @@ public class SlackUtil {
 
     private MultiValueMap<String, String> getParameters(String code) {
         MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-        parameters.add("client_id",slackClientId);
-        parameters.add("client_secret",slackClientSecret);
-        parameters.add("redirect_uri",slackRedirectUri);
-        parameters.add("code",code);
+        parameters.add("client_id", slackClientId);
+        parameters.add("client_secret", slackClientSecret);
+        parameters.add("redirect_uri", slackRedirectUri);
+        parameters.add("code", code);
 
         return parameters;
     }
