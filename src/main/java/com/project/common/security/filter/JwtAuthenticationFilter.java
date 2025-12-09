@@ -40,9 +40,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtProvider accessTokenProvider;
     private final AccessDeniedHandler accessDeniedHandler;
 
-    private static final AntPathMatcher MATCHER = new AntPathMatcher();
+    protected static final AntPathMatcher MATCHER = new AntPathMatcher();
 
-    public static final String[] PUBLIC_ENDPOINTS = Stream.of(
+    protected static final String[] PUBLIC_ENDPOINTS = Stream.of(
             HEALTH_CHECK_ENDPOINT,
             READ_ONLY_PUBLIC_ENDPOINTS
     ).flatMap(Arrays::stream).toArray(String[]::new);
