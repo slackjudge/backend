@@ -26,6 +26,6 @@ public class RefreshTokenService {
         String refreshToken = refreshTokenRepository.find(String.valueOf(userId));
         if (!refreshToken.equals(expectedRefreshToken)) {
             throw new JwtException(ErrorCode.REFRESH_TOKEN_MISMATCH);
-        };
+        }
     }
 }

@@ -14,6 +14,7 @@ public enum ErrorCode {
 
     // Users
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USERS_001", "User not found"),
+    BAEKJOON_AUTH_INVALID(HttpStatus.BAD_REQUEST, "USERS_002", "Baekjoon auth invalid"),
 
     // Auth
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH_001", "Unauthorized"),
@@ -33,8 +34,7 @@ public enum ErrorCode {
 
 
     // Slack
-    SLACK_MESSAGE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SLACK_001", "Failed to send Slack Message")
-    ;
+    SLACK_MESSAGE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SLACK_001", "Failed to send Slack Message");
 
     private final HttpStatus status;
     private final String code;

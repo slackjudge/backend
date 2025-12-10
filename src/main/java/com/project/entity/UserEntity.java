@@ -1,7 +1,16 @@
 package com.project.entity;
 
 import com.project.common.BaseTimeEntity;
-import jakarta.persistence.*;
+import com.project.dto.request.SignUpRequest;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,7 +44,7 @@ public class UserEntity extends BaseTimeEntity {
 
     @Builder.Default
     @Column(nullable = false)
-    private String bojTier = DEFAULT_STRING;
+    private int bojTier = 0;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -62,5 +71,13 @@ public class UserEntity extends BaseTimeEntity {
         return UserEntity.builder()
                 .slackId(slackId)
                 .build();
+    }
+
+    public void signUp(SignUpRequest signUpRequest, int bojTier) {
+        this.username = signUpRequest.username();
+        this.baekjoonId = signUpRequest.baekjoonId();
+        this.teamName = signUpRequest.teamName();
+        this.isAlertAgreed = signUpRequest.isAlertAgreed();
+        this.bojTier = bojTier;
     }
 }

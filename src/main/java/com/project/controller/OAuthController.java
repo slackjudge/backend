@@ -1,6 +1,5 @@
 package com.project.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.project.common.dto.ApiResponse;
 import com.project.dto.response.LoginResponse;
 import com.project.service.OAuthService;
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/oauth")
@@ -20,6 +20,6 @@ public class OAuthController {
 
     @GetMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestParam String code) {
-        return ResponseEntity.ok(ApiResponse.success(oAuthService.slackLogin(code)));
+        return ResponseEntity.ok(ApiResponse.success("Slack 소셜 로그인 성공", oAuthService.slackLogin(code)));
     }
 }
