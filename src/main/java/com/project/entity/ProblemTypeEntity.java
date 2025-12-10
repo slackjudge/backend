@@ -1,12 +1,9 @@
 package com.project.entity;
 
-import com.project.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.math.BigInteger;
 
 
 @Entity

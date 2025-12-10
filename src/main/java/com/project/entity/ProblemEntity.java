@@ -1,7 +1,11 @@
 package com.project.entity;
 
-import com.project.common.BaseTimeEntity;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Id;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

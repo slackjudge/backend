@@ -1,16 +1,12 @@
 package com.project.entity;
 
-import com.project.common.BaseTimeEntity;
+import jakarta.persistence.Id;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-
 import java.time.LocalDateTime;
 
 @Table(name="users_problem")
 @Getter
-@ToString
 @Entity
 public class UsersProblemEntity {
 
