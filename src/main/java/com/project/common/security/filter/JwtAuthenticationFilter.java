@@ -28,9 +28,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-import static com.project.common.util.WebSecurityUrl.READ_ONLY_PUBLIC_ENDPOINTS;
-import static com.project.common.util.WebSecurityUrl.HEALTH_CHECK_ENDPOINT;
-import static com.project.common.util.WebSecurityUrl.ANONYMOUS_ENDPOINTS;
+import static com.project.common.util.WebSecurityUrl.getHealthCheckEndpoints;
+import static com.project.common.util.WebSecurityUrl.getReadOnlyPublicEndpoints;
+import static com.project.common.util.WebSecurityUrl.getAnonymousEndpoints;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -43,8 +43,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected static final AntPathMatcher MATCHER = new AntPathMatcher();
 
     protected static final String[] PUBLIC_ENDPOINTS = Stream.of(
-            HEALTH_CHECK_ENDPOINT,
-            READ_ONLY_PUBLIC_ENDPOINTS
+            getHealthCheckEndpoints(),
+            getReadOnlyPublicEndpoints()
     ).flatMap(Arrays::stream).toArray(String[]::new);
 
 
@@ -75,14 +75,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
 
         return matches(uri, PUBLIC_ENDPOINTS)   // 완전 공개 API
-                || matches(uri, ANONYMOUS_ENDPOINTS); // 토큰 없어도 허용되는 API
+                || matches(uri, getAnonymousEndpoints()); // 토큰 없어도 허용되는 API
     }
 
     private boolean isAnonymousRequest(HttpServletRequest request) {
         String uri = request.getRequestURI();
         boolean headerMissing = request.getHeader(HttpHeaders.AUTHORIZATION) == null;
 
-        return headerMissing && matches(uri, ANONYMOUS_ENDPOINTS);
+        return headerMissing && matches(uri, getAnonymousEndpoints());
     }
 
     private String resolveAccessToken(
