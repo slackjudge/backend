@@ -81,7 +81,7 @@ class UserControllerTest {
         when(bojUtil.checkBojId("dlrbehd120")).thenReturn(true);
 
         // when & then
-        mockMvc.perform(get("/api/user/check")
+        mockMvc.perform(get("/user/check")
                         .param("baekjoonId", "dlrbehd120"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("백준 회원 체크 성공"))
@@ -104,7 +104,7 @@ class UserControllerTest {
         );
 
         // WHEN & THEN
-        mockMvc.perform(post("/api/user/signUp")
+        mockMvc.perform(post("/user/signUp")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
