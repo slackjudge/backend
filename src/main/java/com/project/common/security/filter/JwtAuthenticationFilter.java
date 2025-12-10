@@ -28,7 +28,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-import static com.project.common.util.WebSecurityUrl.*;
+import static com.project.common.util.WebSecurityUrl.READ_ONLY_PUBLIC_ENDPOINTS;
+import static com.project.common.util.WebSecurityUrl.HEALTH_CHECK_ENDPOINT;
+import static com.project.common.util.WebSecurityUrl.ANONYMOUS_ENDPOINTS;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -38,9 +40,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtProvider accessTokenProvider;
     private final AccessDeniedHandler accessDeniedHandler;
 
-    private static final AntPathMatcher matcher = new AntPathMatcher();
+    protected static final AntPathMatcher MATCHER = new AntPathMatcher();
 
-    public static final String[] PUBLIC_ENDPOINTS = Stream.of(
+    protected static final String[] PUBLIC_ENDPOINTS = Stream.of(
             HEALTH_CHECK_ENDPOINT,
             READ_ONLY_PUBLIC_ENDPOINTS
     ).flatMap(Arrays::stream).toArray(String[]::new);
@@ -62,6 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             UserDetails userDetails = getUserDetails(accessToken);
             authenticateUser(userDetails, request);
+            filterChain.doFilter(request, response);
         } catch (AccessDeniedException e) {
             accessDeniedHandler.handle(request, response, e);
         }
@@ -118,7 +121,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private boolean matches(String uri, String[] patterns) {
         for (String pattern : patterns) {
-            if (matcher.match(pattern, uri)) return true;
+            if (MATCHER.match(pattern, uri)) return true;
         }
         return false;
     }

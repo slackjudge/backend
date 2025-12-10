@@ -16,7 +16,11 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import static com.project.common.util.WebSecurityUrl.*;
+import static com.project.common.util.WebSecurityUrl.LOGIN_ENDPOINT;
+import static com.project.common.util.WebSecurityUrl.READ_ONLY_PUBLIC_ENDPOINTS;
+import static com.project.common.util.WebSecurityUrl.REISSUE_ENDPOINT;
+import static com.project.common.util.WebSecurityUrl.HEALTH_CHECK_ENDPOINT;
+
 
 @Configuration
 @EnableWebSecurity
@@ -46,7 +50,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "*").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, READ_ONLY_PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers(LOGIN_ENDPOINT).permitAll()
