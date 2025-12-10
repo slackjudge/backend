@@ -26,6 +26,7 @@ import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -102,18 +103,19 @@ class UserControllerTest {
                 true
         );
 
-        // WHEN & THEN — 요청 검증
+        // WHEN & THEN
         mockMvc.perform(post("/api/user/signUp")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("회원가입 성공"));
 
-        UserEntity updated = userRepository.findById(1L).get();
+        UserEntity updatedUser = userRepository.findById(1L).get();
 
-        assert updated.getUserId().equals(1L);
-        assert updated.getBaekjoonId().equals("dlrbehd120");
-        assert updated.getUsername().equals("이규동");
-        assert updated.getTeamName().equals(EurekaTeamName.BACKEND_FACE);
+        assertThat(updatedUser.getUserId()).isEqualTo(1L);
+        assertThat(updatedUser.getBaekjoonId()).isEqualTo("dlrbehd120");
+        assertThat(updatedUser.getUsername()).isEqualTo("이규동");
+        assertThat(updatedUser.getTeamName()).isEqualTo(EurekaTeamName.BACKEND_FACE);
+        assertThat(updatedUser.getBojTier()).isEqualTo(14);
     }
 }

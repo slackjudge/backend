@@ -11,6 +11,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +19,18 @@ import java.util.Map;
 @Component
 public class BojUtil {
 
-    private final Gson gson = new Gson();
+    private final Gson gson;
+    private final HttpClient httpClient;
+
+    public BojUtil(Gson gson) {
+        this.gson = gson;
+
+        this.httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_2)
+                .connectTimeout(Duration.ofSeconds(3)) // 연결 지연 대비 (3초 추천)
+                .build();
+
+    }
 
     public boolean checkBojId(String baekjoonId) {
         Map<String, Object> map = getBojMap(baekjoonId);
@@ -43,12 +55,13 @@ public class BojUtil {
                 .uri(URI.create("https://solved.ac/api/v3/search/user?query=" + baekjoonId))
                 .header("x-solvedac-language", "ko")
                 .header("Accept", "application/json")
+                .timeout(Duration.ofSeconds(10)) // solved api는 응답이 매우 빠르므로 10초로 두었습니다
                 .GET()
                 .build();
 
         HttpResponse<String> response;
         try {
-            response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+            response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new BusinessException(ErrorCode.BAEKJOON_AUTH_INVALID);

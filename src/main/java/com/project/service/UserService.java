@@ -45,7 +45,9 @@ public class UserService {
     @Transactional
     public BojCheckResponse checkBaekjoonId(Long userId, String baekjoonId) {
 
-        userRepository.findById(userId);
+        // User Not Found 예외처리
+        userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         boolean isBaekjoonId = bojUtil.checkBojId(baekjoonId);
 

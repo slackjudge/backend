@@ -135,7 +135,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("사용자 백준 아이디 검증 성공")
+    @DisplayName("사용자 백준 아이디 검증 실패")
     void checkBojError() {
         // given
         Long userId = 1L;
