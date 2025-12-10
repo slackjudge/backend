@@ -32,4 +32,9 @@ public class OAuthService {
 
         return tokenService.issueTokens(user.getUserId(), registeredUser);
     }
+
+    @Transactional
+    public LoginResponse reissueToken(String refreshToken) {
+        return tokenService.reissueToken(refreshToken);
+    }
 }
