@@ -19,5 +19,9 @@ public class SlackNotificationController {
         return ResponseEntity.ok(ApiResponse.success("ok", null));
     }
 
-
+    @PostMapping("/rank-change")
+    public ResponseEntity<ApiResponse<Void>> sendRankChange() {
+        slackNotificationService.sendRankChangeMessage();
+        return ResponseEntity.ok(ApiResponse.success("ok", null));
+    }
 }
