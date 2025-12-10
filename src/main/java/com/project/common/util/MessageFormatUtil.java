@@ -1,20 +1,21 @@
 package com.project.common.util;
 
+import com.project.dto.DailyRankInfo;
 import org.springframework.stereotype.Component;
 
 @Component
 public class MessageFormatUtil {
 
-    public String formatDailyRank(String rank1, int solved1, int score1,
-                                     String rank2, int solved2, int score2,
-                                     String rank3, int solved3, int score3) {
+    public String formatDailyRank(DailyRankInfo rank1, DailyRankInfo rank2, DailyRankInfo rank3) {
         return String.format("""
                         🏆 오늘 TOP 3
 
                         🥇 1위 %s — %d solved (+%d)
                         🥈 2위 %s — %d solved (+%d)
                         🥉 3위 %s — %d solved (+%d)""",
-                rank1, solved1, score1, rank2, solved2, score2, rank3, solved3, score3);
+                rank1.getName(), rank1.getSolved(), rank1.getScore(),
+                rank2.getName(), rank2.getSolved(), rank2.getScore(),
+                rank3.getName(), rank3.getSolved(), rank3.getScore());
     }
 
     public String formatRankChange(String userName, int oldRank, int newRank, int score) {

@@ -4,6 +4,7 @@ import com.project.common.exception.BusinessException;
 import com.project.common.exception.ErrorCode;
 import com.project.common.util.MessageFormatUtil;
 import com.project.common.util.SlackMessageSender;
+import com.project.dto.DailyRankInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,19 +17,11 @@ public class SlackNotificationService {
 
     public void sendDailyRankMessage() {
         try {
-            String rank1 = "유재석";
-            int solved1 = 7;
-            int score1 = 48;
+            DailyRankInfo rank1 = new DailyRankInfo("유재석", 7, 48);
+            DailyRankInfo rank2 = new DailyRankInfo("정형돈", 5, 32);
+            DailyRankInfo rank3 = new DailyRankInfo("노홍철", 4, 30);
 
-            String rank2 = "정형돈";
-            int solved2 = 5;
-            int score2 = 32;
-
-            String rank3 = "노홍철";
-            int solved3 = 4;
-            int score3 = 30;
-
-            String message = messageFormatUtil.formatDailyRank(rank1, solved1, score1, rank2, solved2, score2, rank3, solved3, score3);
+            String message = messageFormatUtil.formatDailyRank(rank1, rank2, rank3);
             slackMessageSender.sendMessage("C0A0M8HUQDT", message);
         } catch (BusinessException e) {
             throw e;
