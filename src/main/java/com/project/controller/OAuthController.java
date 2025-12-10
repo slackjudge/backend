@@ -1,11 +1,20 @@
 package com.project.controller;
 
 import com.project.common.dto.ApiResponse;
+import com.project.common.security.SecurityUserDetails;
+import com.project.dto.request.LogoutRequest;
 import com.project.dto.response.LoginResponse;
 import com.project.service.OAuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 
 @RestController
@@ -23,5 +32,12 @@ public class OAuthController {
     @GetMapping("/reissue")
     public ResponseEntity<ApiResponse<LoginResponse>> reissue(@RequestHeader(value = "refreshToken") String refreshToken) {
         return ResponseEntity.ok(ApiResponse.success("토큰 재발급 성공", oAuthService.reissueToken(refreshToken)));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(@AuthenticationPrincipal SecurityUserDetails userInfo,
+                                       @RequestBody LogoutRequest logoutRequest) {
+        oAuthService.logout(userInfo.getId(), logoutRequest);
+        return ResponseEntity.ok(ApiResponse.success("로그아웃 성공", null));
     }
 }

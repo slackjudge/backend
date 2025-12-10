@@ -2,6 +2,7 @@ package com.project.service;
 
 import com.project.common.util.TokenUtils;
 import com.project.common.util.SlackUtil;
+import com.project.dto.request.LogoutRequest;
 import com.project.dto.response.LoginResponse;
 import com.project.dto.response.SlackTokenResponse;
 import com.project.dto.response.SlackUserInfoResponse;
@@ -21,7 +22,7 @@ public class OAuthService {
     private final UserService userService;
     private final TokenUtils tokenUtils;
     private final SlackUtil slackUtil;
-
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     public LoginResponse slackLogin(String code) {
@@ -37,5 +38,11 @@ public class OAuthService {
     @Transactional
     public LoginResponse reissueToken(String refreshToken) {
         return tokenUtils.reissueToken(refreshToken);
+    }
+
+    @Transactional
+    public void logout(Long userId, LogoutRequest logoutRequest) {
+        refreshTokenService.validateRefreshToken(userId, logoutRequest.refreshToken());
+        refreshTokenService.removeRefreshToken(userId);
     }
 }
