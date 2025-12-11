@@ -1,6 +1,7 @@
 package com.project.entity;
 
 import com.project.common.BaseTimeEntity;
+import com.project.dto.request.LocalSignRequest;
 import com.project.dto.request.SignUpRequest;
 
 import jakarta.persistence.Entity;
@@ -71,6 +72,15 @@ public class UserEntity extends BaseTimeEntity {
         return UserEntity.builder()
                 .slackId(slackId)
                 .build();
+    }
+
+    public void localSignUp(LocalSignRequest localSignRequest, int bojTier) {
+        this.slackId = "local";
+        this.username = localSignRequest.username();
+        this.baekjoonId = localSignRequest.baekjoonId();
+        this.teamName = localSignRequest.teamName();
+        this.isAlertAgreed = localSignRequest.isAlertAgreed();
+        this.bojTier = bojTier;
     }
 
     public void signUp(SignUpRequest signUpRequest, int bojTier) {
