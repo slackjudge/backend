@@ -1,10 +1,11 @@
-package com.project.service;
+package com.project.common.util;
 
 import com.project.dto.response.LoginResponse;
 import com.project.common.security.jwt.JwtClaims;
 import com.project.common.security.jwt.JwtProvider;
 import com.project.common.security.jwt.access.AccessTokenClaim;
 import com.project.common.security.jwt.refresh.RefreshTokenClaim;
+import com.project.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,7 @@ import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
-public class TokenService {
+public class TokenUtils {
 
     private final JwtProvider accessTokenProvider;
     private final JwtProvider refreshTokenProvider;
@@ -31,14 +32,9 @@ public class TokenService {
     public LoginResponse reissueToken(String oldRefreshToken) {
         Long userId = resolveRefreshToken(oldRefreshToken);
         refreshTokenService.validateRefreshToken(userId, oldRefreshToken);
-        return issueTokens(userId, true);
-    }
-
-
-    public void logout(Long userId, String refreshToken) {
-
-        refreshTokenService.validateRefreshToken(userId, refreshToken);
         refreshTokenService.removeRefreshToken(userId);
+
+        return issueTokens(userId, true);
     }
 
     private Long resolveRefreshToken(String refreshToken) {

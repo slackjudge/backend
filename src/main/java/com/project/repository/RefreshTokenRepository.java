@@ -13,6 +13,9 @@ public class RefreshTokenRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
 
+    @Value("${jwt.secret.refresh-token.key-prefix}")
+    private String keyPrefix;
+
     @Value("${jwt.secret.refresh-token.expiration-time}")
     private Duration refreshTokenExpiration;
 
@@ -33,6 +36,6 @@ public class RefreshTokenRepository {
     }
 
     private String getKey(String userId) {
-        return "refresh_token:" + userId;
+        return keyPrefix + userId;
     }
 }
