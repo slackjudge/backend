@@ -1,16 +1,17 @@
 package com.project.controller;
 
-import com.project.config.security.JpaAuditingConfig;
 import com.project.service.SlackNotificationService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
+
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -18,14 +19,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(SlackNotificationController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@ImportAutoConfiguration(exclude = JpaAuditingConfig.class)
+@Import(SlackNotificationControllerTest.TestConfig.class)
 class SlackNotificationControllerTest {
 
     @Autowired
     MockMvc mvc;
 
-    @MockBean
+    @Autowired
     SlackNotificationService slackNotificationService;
+
+    static class TestConfig {
+        @Bean
+        public SlackNotificationService slackNotificationService() {
+            return mock(SlackNotificationService.class);
+        }
+    }
+
 
     @Test
     @DisplayName("일일 랭킹 알림 API 호출 성공")
