@@ -76,21 +76,21 @@ dependencies {
 // ============================================================================
 // Q파일 생성
 // ============================================================================
-def generated = layout.buildDirectory.dir("generated/sources/annotationProcessor/java/main")
-
-sourceSets {
-    main {
-        java {
-            srcDir generated
-        }
-    }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.compilerArgs += [
-            '-Aquerydsl.generatedAnnotationClass=jakarta.annotation.Generated'
-    ]
-}
+//def generated = layout.buildDirectory.dir("generated/sources/annotationProcessor/java/main")
+//
+//sourceSets {
+//    main {
+//        java {
+//            srcDir generated
+//        }
+//    }
+//}
+//
+//tasks.withType(JavaCompile).configureEach {
+//    options.compilerArgs += [
+//            '-Aquerydsl.generatedAnnotationClass=jakarta.annotation.Generated'
+//    ]
+//}
 
 
 // ============================================================================
