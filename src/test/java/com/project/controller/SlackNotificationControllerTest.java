@@ -45,4 +45,14 @@ class SlackNotificationControllerTest {
 
         verify(slackNotificationService, times(1)).sendDailyRankMessage();
     }
+
+    @Test
+    @DisplayName("개인 순위 변동 알림 API 호출 성공")
+    void rankChangeApiTest() throws Exception {
+
+        mvc.perform(post("/slack/rank-change"))
+                .andExpect(status().isOk());
+
+        verify(slackNotificationService, times(1)).sendRankChangeMessage();
+    }
 }
