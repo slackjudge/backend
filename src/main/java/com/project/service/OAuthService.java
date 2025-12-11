@@ -2,11 +2,11 @@ package com.project.service;
 
 import com.project.common.util.TokenUtils;
 import com.project.common.util.SlackUtil;
-import com.project.dto.request.LogoutRequest;
 import com.project.dto.response.LoginResponse;
 import com.project.dto.response.SlackTokenResponse;
 import com.project.dto.response.SlackUserInfoResponse;
 import com.project.entity.UserEntity;
+import com.project.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -41,8 +41,7 @@ public class OAuthService {
     }
 
     @Transactional
-    public void logout(Long userId, LogoutRequest logoutRequest) {
-        refreshTokenService.validateRefreshToken(userId, logoutRequest.refreshToken());
+    public void logout(Long userId) {
         refreshTokenService.removeRefreshToken(userId);
     }
 }
