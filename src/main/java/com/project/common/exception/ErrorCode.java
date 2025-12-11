@@ -30,7 +30,11 @@ public enum ErrorCode {
     MALFORMED_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_009", "Token is abnormal"),
     SIGNATURE_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_010", "Token is manipulated"),
     UNSUPPORTED_JWT_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_011", "Token is unsupported"),
-    SLACK_AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "AUTH_020", "Slack authentication failed");
+    SLACK_AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "AUTH_020", "Slack authentication failed"),
+
+
+    // Slack
+    SLACK_MESSAGE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SLACK_001", "Failed to send Slack Message");
 
     private final HttpStatus status;
     private final String code;
