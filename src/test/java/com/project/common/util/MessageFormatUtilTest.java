@@ -11,7 +11,7 @@ class MessageFormatUtilTest {
     MessageFormatUtil util = new MessageFormatUtil();
 
     @Test
-    @DisplayName("일일 랭킹 메시지 포맷팅 성공")
+    @DisplayName("일일 랭킹 메시지 포맷팅 검증")
     void dailyRankFormatTest() {
         DailyRankInfo r1 = new DailyRankInfo("유재석", 7, 48);
         DailyRankInfo r2 = new DailyRankInfo("정형돈", 5, 32);
@@ -30,7 +30,7 @@ class MessageFormatUtilTest {
     }
 
     @Test
-    @DisplayName("랭킹 변동 메시지 포맷팅 성공")
+    @DisplayName("랭킹 변동 메시지 포맷팅 검증")
     void rankChangeFormatTest() {
         String result = util.formatRankChange("박명수", 5, 3, 26);
 
