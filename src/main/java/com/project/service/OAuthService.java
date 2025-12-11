@@ -6,7 +6,6 @@ import com.project.dto.response.LoginResponse;
 import com.project.dto.response.SlackTokenResponse;
 import com.project.dto.response.SlackUserInfoResponse;
 import com.project.entity.UserEntity;
-import com.project.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
