@@ -14,6 +14,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 class SlackMessageSenderTest {
     @Test
@@ -37,6 +39,8 @@ class SlackMessageSenderTest {
 
         // then
         assertThat(result.isOk()).isTrue();
+        verify(slack, times(1)).methods("TEST_TOKEN");
+        verify(methods, times(1)).chatPostMessage(any(ChatPostMessageRequest.class));
     }
 
     @Test
@@ -60,5 +64,6 @@ class SlackMessageSenderTest {
         assertThatThrownBy(() -> sender.sendMessage("C01", "hello"))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.SLACK_MESSAGE_FAILED);
+        verify(methods, times(1)).chatPostMessage(any(ChatPostMessageRequest.class));
     }
 }
