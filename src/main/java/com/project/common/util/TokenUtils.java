@@ -32,14 +32,9 @@ public class TokenUtils {
     public LoginResponse reissueToken(String oldRefreshToken) {
         Long userId = resolveRefreshToken(oldRefreshToken);
         refreshTokenService.validateRefreshToken(userId, oldRefreshToken);
-        return issueTokens(userId, true);
-    }
-
-
-    public void logout(Long userId, String refreshToken) {
-
-        refreshTokenService.validateRefreshToken(userId, refreshToken);
         refreshTokenService.removeRefreshToken(userId);
+
+        return issueTokens(userId, true);
     }
 
     private Long resolveRefreshToken(String refreshToken) {
