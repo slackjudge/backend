@@ -36,7 +36,7 @@ class MessageFormatUtilTest {
 
         String expected = """
                 🔥 박명수님이 5위 → 3위로 상승! 🔥
-                
+
                 현재 점수: 26점""";
 
         assertThat(result).isEqualTo(expected);
