@@ -76,7 +76,10 @@ class SlackNotificationServiceTest {
                 .thenThrow(new BusinessException(ErrorCode.SLACK_MESSAGE_FAILED));
 
         assertThatThrownBy(() -> service.sendDailyRankMessage())
-                .isInstanceOf(BusinessException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(ErrorCode.SLACK_MESSAGE_FAILED.getMessage())
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.SLACK_MESSAGE_FAILED);
     }
 
     @Test
