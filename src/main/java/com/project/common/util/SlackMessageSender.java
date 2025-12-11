@@ -14,7 +14,7 @@ import java.io.IOException;
 @Component
 public class SlackMessageSender {
 
-    @Value("${slack.bot.token}")
+    @Value("${slack.bot.token:slack-bot-token}")
     private String slackBotToken;
 
     public ChatPostMessageResponse sendMessage(String id, String message) throws IOException, SlackApiException {
