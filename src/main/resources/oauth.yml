@@ -18,6 +18,7 @@ jwt:
       expiration-time: 43200000      # 12시간
     refresh-token:
       value: ${LOCAL_REFRESH_SECRET:E9v2cYq1Zr4Wm8FsP2Lk0Nt9S3dJ4hQ8Wm3Z9Bt6PwD1Fs8Qx2Nw5Lr3Kj6Vb2Mx}
+      key-prefix: "local:refresh_token:"
       expiration-time: 1209600000    # 14일
 
 ---
@@ -30,4 +31,5 @@ jwt:
       expiration-time: 3600000       # 1시간
     refresh-token:
       value: ${DEV_REFRESH_SECRET}
+      key-prefix: "dev:refresh_token:"
       expiration-time: 1209600000    # 14일

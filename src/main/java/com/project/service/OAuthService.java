@@ -1,5 +1,6 @@
 package com.project.service;
 
+import com.project.common.util.TokenUtils;
 import com.project.common.util.SlackUtil;
 import com.project.dto.response.LoginResponse;
 import com.project.dto.response.SlackTokenResponse;
@@ -18,9 +19,9 @@ import java.util.Objects;
 public class OAuthService {
 
     private final UserService userService;
-    private final TokenService tokenService;
+    private final TokenUtils tokenUtils;
     private final SlackUtil slackUtil;
-
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     public LoginResponse slackLogin(String code) {
@@ -30,6 +31,16 @@ public class OAuthService {
 
         boolean registeredUser = !Objects.equals(user.getBaekjoonId(), "initial");
 
-        return tokenService.issueTokens(user.getUserId(), registeredUser);
+        return tokenUtils.issueTokens(user.getUserId(), registeredUser);
+    }
+
+    @Transactional
+    public LoginResponse reissueToken(String refreshToken) {
+        return tokenUtils.reissueToken(refreshToken);
+    }
+
+    @Transactional
+    public void logout(Long userId) {
+        refreshTokenService.removeRefreshToken(userId);
     }
 }

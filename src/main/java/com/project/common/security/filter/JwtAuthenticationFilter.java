@@ -55,11 +55,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NotNull FilterChain filterChain
     ) throws ServletException, IOException {
         try {
-            if (isAnonymousRequest(request)) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-
             String accessToken = resolveAccessToken(request);
 
             UserDetails userDetails = getUserDetails(accessToken);
@@ -76,13 +71,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         return matches(uri, PUBLIC_ENDPOINTS)   // 완전 공개 API
                 || matches(uri, getAnonymousEndpoints()); // 토큰 없어도 허용되는 API
-    }
-
-    private boolean isAnonymousRequest(HttpServletRequest request) {
-        String uri = request.getRequestURI();
-        boolean headerMissing = request.getHeader(HttpHeaders.AUTHORIZATION) == null;
-
-        return headerMissing && matches(uri, getAnonymousEndpoints());
     }
 
     private String resolveAccessToken(
