@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
@@ -43,7 +42,7 @@ class SlackNotificationServiceTest {
 
         service.sendDailyRankMessage();
 
-        verify(sender, times(1)).sendMessage(eq("C0A0M8HUQDT"), eq("TEST_FORMATTED_MESSAGE"));
+        verify(sender, times(1)).sendMessage("C0A0M8HUQDT", "TEST_FORMATTED_MESSAGE");
     }
 
     @Test
@@ -60,6 +59,6 @@ class SlackNotificationServiceTest {
 
         service.sendRankChangeMessage();
 
-        verify(sender).sendMessage(eq("U0A1NG7GEA2"), eq("RANK_CHANGED"));
+        verify(sender).sendMessage("U0A1NG7GEA2", "RANK_CHANGED");
     }
 }
