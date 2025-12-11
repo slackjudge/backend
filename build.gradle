@@ -64,7 +64,34 @@ dependencies {
     testImplementation 'com.h2database:h2'
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+
+    // QueryDSL
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 }
+
+
+// ============================================================================
+// Q파일 생성
+// ============================================================================
+def generated = layout.buildDirectory.dir("generated/sources/annotationProcessor/java/main")
+
+sourceSets {
+    main {
+        java {
+            srcDir generated
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += [
+            '-Aquerydsl.generatedAnnotationClass=jakarta.annotation.Generated'
+    ]
+}
+
 
 // ============================================================================
 // Test
@@ -179,3 +206,4 @@ sonar {
         ].join(',')
     }
 }
+
