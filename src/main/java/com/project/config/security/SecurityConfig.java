@@ -20,6 +20,8 @@ import static com.project.common.util.WebSecurityUrl.getReadOnlyPublicEndpoints;
 import static com.project.common.util.WebSecurityUrl.getHealthCheckEndpoints;
 import static com.project.common.util.WebSecurityUrl.LOGIN_ENDPOINT;
 import static com.project.common.util.WebSecurityUrl.REISSUE_ENDPOINT;
+import static com.project.common.util.WebSecurityUrl.LOCAL_LOGIN_ENDPOINT;
+import static com.project.common.util.WebSecurityUrl.LOCAL_SIGN_ENDPOINT;
 
 @Configuration
 @EnableWebSecurity
@@ -52,6 +54,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, getReadOnlyPublicEndpoints()).permitAll()
                         .requestMatchers(getHealthCheckEndpoints()).permitAll()
+                        .requestMatchers(LOCAL_LOGIN_ENDPOINT).permitAll()
+                        .requestMatchers(LOCAL_SIGN_ENDPOINT).permitAll()
                         .requestMatchers(LOGIN_ENDPOINT).permitAll()
                         .requestMatchers(REISSUE_ENDPOINT).permitAll()
                         .anyRequest().authenticated()
