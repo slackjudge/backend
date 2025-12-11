@@ -1,5 +1,7 @@
 package com.project.service;
 
+import com.project.common.exception.BusinessException;
+import com.project.common.exception.ErrorCode;
 import com.project.common.util.MessageFormatUtil;
 import com.project.common.util.SlackMessageSender;
 import com.slack.api.methods.response.chat.ChatPostMessageResponse;
@@ -10,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -60,5 +63,34 @@ class SlackNotificationServiceTest {
         service.sendRankChangeMessage();
 
         verify(sender).sendMessage("U0A1NG7GEA2", "RANK_CHANGED");
+    }
+
+    @Test
+    @DisplayName("DailyRankMessage - BusinessException 발생 시 그대로 throw")
+    void dailyRankMessage_businessException() throws Exception {
+
+        when(formatUtil.formatDailyRank(any(), any(), any()))
+                .thenReturn("TEXT");
+
+        when(sender.sendMessage(anyString(), anyString()))
+                .thenThrow(new BusinessException(ErrorCode.SLACK_MESSAGE_FAILED));
+
+        assertThatThrownBy(() -> service.sendDailyRankMessage())
+                .isInstanceOf(BusinessException.class);
+    }
+
+    @Test
+    @DisplayName("DailyRankMessage - 일반 Exception 발생 시 BusinessException으로 변환")
+    void dailyRankMessage_generalException() throws Exception {
+
+        when(formatUtil.formatDailyRank(any(), any(), any()))
+                .thenReturn("TEXT");
+
+        when(sender.sendMessage(anyString(), anyString()))
+                .thenThrow(new RuntimeException("unknown error"));
+
+        assertThatThrownBy(() -> service.sendDailyRankMessage())
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.SLACK_MESSAGE_FAILED);
     }
 }
