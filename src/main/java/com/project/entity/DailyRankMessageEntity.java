@@ -28,8 +28,7 @@ public class DailyRankMessageEntity extends BaseTimeEntity {
     private DailyRankMessageEntity(String messageContent) {
         this.messageContent = messageContent;
     }
-
-    public static DailyRankMessageEntity of (String messageContent) {
+    public static DailyRankMessageEntity of(String messageContent) {
         return new DailyRankMessageEntity(messageContent);
     }
 }
