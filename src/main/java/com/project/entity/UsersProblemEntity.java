@@ -9,14 +9,16 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Builder
 @Table(name = "users_problem")
 @Getter
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UsersProblemEntity {
 
     /**
@@ -57,4 +59,6 @@ public class UsersProblemEntity {
      */
     @Column(name = "solved_time")
     private LocalDateTime solvedTime;
+
+
 }
