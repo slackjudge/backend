@@ -31,7 +31,7 @@ public class MessageFormatUtil {
     private String medal(int rank) {
         return switch (rank) {
             case 1 -> "🥇";
-            case 2 -> "🥈🥈";
+            case 2 -> "🥈";
             case 3 -> "🥉";
             default -> "";
         };
