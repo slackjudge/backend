@@ -80,7 +80,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String accessToken = accessTokenProvider.resolveToken(authHeader);
 
         if (!StringUtils.hasText(accessToken)) {
-            log.error("EMPTY_ACCESS_TOKEN");
+            log.error("EMPTY_ACCESS_TOKEN - URI: {}", request.getRequestURI());  // 추가
             throw new JwtException(ErrorCode.EMPTY_ACCESS_TOKEN);
         }
 
