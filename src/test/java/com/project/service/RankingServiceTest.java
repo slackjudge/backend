@@ -15,11 +15,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class RankingServiceTest {
@@ -42,11 +39,11 @@ class RankingServiceTest {
          */
         List<RankingRowResponse> currentRows = List.of(
                 new RankingRowResponse(1L, "userA", 2, 100, 2, "gr2146", "BACKEND_FACE"),
-                new RankingRowResponse(2L, "userB", 9, 80, 2,"q1w2e3r4", "BACKEND_NON_FACE")
+                new RankingRowResponse(2L, "userB", 9, 80, 2, "q1w2e3r4", "BACKEND_NON_FACE")
         );
         List<RankingRowResponse> prevRows = List.of(
                 new RankingRowResponse(1L, "userA", 2, 120, 3, "gr2146", "BACKEND_FACE"),
-                new RankingRowResponse(2L, "userB", 9, 80, 2,"q1w2e3r4", "BACKEND_NON_FACE")
+                new RankingRowResponse(2L, "userB", 9, 80, 2, "q1w2e3r4", "BACKEND_NON_FACE")
         );
 
         when(rankingQueryRepository.getRankingRows(
@@ -80,12 +77,12 @@ class RankingServiceTest {
         // 현재: userA  1등, userB 2등
         List<RankingRowResponse> currentRows = List.of(
                 new RankingRowResponse(1L, "userA", 2, 140, 3, "gr2146", "BACKEND_FACE"),
-                new RankingRowResponse(2L, "userB", 9, 120, 3,"q1w2e3r4", "BACKEND_NON_FACE")
+                new RankingRowResponse(2L, "userB", 9, 120, 3, "q1w2e3r4", "BACKEND_NON_FACE")
         );
 
         // 직전 : userB 1등, userA 2등
         List<RankingRowResponse> prevRows = List.of(
-                new RankingRowResponse(2L, "userB", 9, 100, 2,"q1w2e3r4", "BACKEND_NON_FACE"),
+                new RankingRowResponse(2L, "userB", 9, 100, 2, "q1w2e3r4", "BACKEND_NON_FACE"),
                 new RankingRowResponse(1L, "userA", 2, 80, 2, "gr2146", "BACKEND_FACE")
         );
 

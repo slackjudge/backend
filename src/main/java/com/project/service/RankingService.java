@@ -109,7 +109,7 @@ public class RankingService {
       RankingRowResponse prev = rows.get(i - 1);
       RankingRowResponse curr = rows.get(i);
 
-      if (prev.getTotalScore() == curr.getTotalScore()){
+      if (prev.getTotalScore() == curr.getTotalScore()) {
         curr.setRank(prev.getRank());
       } else {
         curr.setRank(i + 1);

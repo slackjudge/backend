@@ -38,8 +38,7 @@ public class RankingController {
           LocalDateTime dateTime,
           @RequestParam(defaultValue = "ALL") String group,
           @RequestParam(defaultValue = "1") int page,
-          @RequestParam(defaultValue = "20") int size){
-
+          @RequestParam(defaultValue = "20") int size) {
     RankingPageResponse response = rankingService.getRanking(period, dateTime, group, page, size);
     return ResponseEntity.ok(ApiResponse.success(response));
   }

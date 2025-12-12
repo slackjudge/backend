@@ -25,7 +25,7 @@ public class RankUtil {
      *  - week  : 해당 주 월요일 00:00
      *  - month : 해당 달 1일 00:00
      */
-    public static LocalDateTime getPeriodStart(String period, LocalDateTime baseTime){
+    public static LocalDateTime getPeriodStart(String period, LocalDateTime baseTime) {
         // 정각으로 설정
         LocalDateTime t = resolveBaseTime(baseTime);
 
@@ -38,7 +38,7 @@ public class RankUtil {
                     .withDayOfMonth(1)
                     .toLocalDate()
                     .atStartOfDay(); // 해당 달 1일의 00:00
-            default ->  t.toLocalDate().atStartOfDay(); // 해당 날짜 00:00
+            default -> t.toLocalDate().atStartOfDay(); // 해당 날짜 00:00
         };
     }
 
