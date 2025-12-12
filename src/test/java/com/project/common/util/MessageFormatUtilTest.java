@@ -24,9 +24,10 @@ class MessageFormatUtilTest {
         String expected = """
             🏆 오늘의 랭킹
 
-            🥇 1위 유재석 — 7 solved (+48)
-            🥈 2위 정형돈 — 5 solved (+32)
-            🥉 3위 노홍철 — 4 solved (+30)""";
+            🥇 1위 유재석 - 7 solved (+48)
+            🥈 2위 정형돈 - 5 solved (+32)
+            🥉 3위 노홍철 - 4 solved (+30)
+            """;
 
         String result = util.formatDailyRank(ranks);
 
