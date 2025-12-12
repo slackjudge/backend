@@ -48,13 +48,13 @@ class SlackNotificationServiceTest {
     void sendDailyRankMessage() throws Exception {
         List<DailyRankRawData> raw = List.of(new DailyRankRawData(1L, "유재석", 7L, 48L));
 
-        when (usersProblemRepository.findDailyRank(any(), any())).thenReturn(raw);
-        when (messageFormatUtil.formatDailyRank(any())).thenReturn("TEST_FORMATTED_MESSAGE");
+        when(usersProblemRepository.findDailyRank(any(), any())).thenReturn(raw);
+        when(messageFormatUtil.formatDailyRank(any())).thenReturn("TEST_FORMATTED_MESSAGE");
 
         ChatPostMessageResponse mockResponse = new ChatPostMessageResponse();
         mockResponse.setOk(true);
 
-        when (slackMessageSender.sendMessage(anyString(), anyString())).thenReturn(mockResponse);
+        when(slackMessageSender.sendMessage(anyString(), anyString())).thenReturn(mockResponse);
 
         slackNotificationService.sendDailyRankMessage();
 
@@ -74,7 +74,7 @@ class SlackNotificationServiceTest {
 
         slackNotificationService.sendDailyRankMessage();
 
-        verify(slackMessageSender, times(1)).sendMessage("C0A0M8HUQDT","오늘은 새로운 문제 풀이가 없습니다.😊");
+        verify(slackMessageSender, times(1)).sendMessage("C0A0M8HUQDT", "오늘은 새로운 문제 풀이가 없습니다.😊");
     }
 
     @Test
@@ -112,6 +112,8 @@ class SlackNotificationServiceTest {
         assertThatThrownBy(() -> slackNotificationService.sendDailyRankMessage())
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.SLACK_MESSAGE_FAILED);
+
+        verify(dailyRankMessageRepository, times(0)).save(any());
     }
 
     @Test
@@ -132,5 +134,7 @@ class SlackNotificationServiceTest {
         assertThatThrownBy(() -> slackNotificationService.sendDailyRankMessage())
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.SLACK_MESSAGE_FAILED);
+
+        verify(dailyRankMessageRepository, times(0)).save(any());
     }
 }
