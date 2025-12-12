@@ -11,4 +11,6 @@ public record SlackUserInfoResponse(
     String name,
     String picture,
     String locale,
-    @JsonProperty("https://slack.com/team_name") String teamName) {}
+    @JsonProperty("https://slack.com/team_name") String teamName
+) {
+}

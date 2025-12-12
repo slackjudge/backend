@@ -18,4 +18,5 @@ import org.springframework.beans.factory.annotation.Qualifier;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Qualifier("refreshTokenStrategy")
-public @interface RefreshTokenStrategy {}
+public @interface RefreshTokenStrategy {
+}

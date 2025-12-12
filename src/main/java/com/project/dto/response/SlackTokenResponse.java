@@ -7,4 +7,6 @@ public record SlackTokenResponse(
     @JsonProperty("access_token") String accessToken,
     @JsonProperty("id_token") String idToken,
     @JsonProperty("token_type") String tokenType,
-    String error) {}
+    String error
+) {
+}

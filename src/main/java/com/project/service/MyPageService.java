@@ -91,7 +91,8 @@ public class MyPageService {
       int dailyRank,
       int solvedCount,
       int maxDifficulty,
-      List<MyPageResponse.Problem> problems) {}
+      List<MyPageResponse.Problem> problems) {
+  }
 
   private MyPageResponse buildResponse(
       UserEntity user,
