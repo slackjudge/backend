@@ -54,6 +54,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NotNull HttpServletResponse response,
             @NotNull FilterChain filterChain
     ) throws ServletException, IOException {
+
+        log.info("[JWT FILTER ENTER] method={}, uri={}",
+        request.getMethod(), request.getRequestURI());
         try {
             String accessToken = resolveAccessToken(request);
 
