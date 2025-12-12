@@ -26,6 +26,8 @@ public class SlackNotificationService {
     private final MessageFormatUtil messageFormatUtil;
     private final DailyRankMessageRepository dailyRankMessageRepository;
 
+    private static final int RANKING_LIMIT = 3;
+
     public void sendDailyRankMessage() {
 
         LocalDateTime start = LocalDate.now().atStartOfDay();
@@ -84,7 +86,7 @@ public class SlackNotificationService {
                 currentRank = i + 1;
             }
 
-            if (currentRank > 3) break;
+            if (currentRank > RANKING_LIMIT) break;
 
             ranked.add(new DailyRankInfo(r.getUsername(), r.getSolvedCount().intValue(), r.getScore().intValue(), currentRank));
         }
