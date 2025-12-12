@@ -3,19 +3,21 @@ package com.project.common.util;
 import com.project.dto.DailyRankInfo;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class MessageFormatUtil {
 
-    public String formatDailyRank(DailyRankInfo rank1, DailyRankInfo rank2, DailyRankInfo rank3) {
-        return String.format("""
-                        🏆 오늘 TOP 3
+    public String formatDailyRank(List<DailyRankInfo> ranks) {
+        StringBuilder sb = new StringBuilder("🏆 오늘의 랭킹\n\n");
 
-                        🥇 1위 %s — %d solved (+%d)
-                        🥈 2위 %s — %d solved (+%d)
-                        🥉 3위 %s — %d solved (+%d)""",
-                rank1.getName(), rank1.getSolved(), rank1.getScore(),
-                rank2.getName(), rank2.getSolved(), rank2.getScore(),
-                rank3.getName(), rank3.getSolved(), rank3.getScore());
+        for (DailyRankInfo r : ranks) {
+            sb.append(String.format(
+               "%s %d위 %s - %d solved (+%d)\n",
+                medal(r.getRank()), r.getRank(), r.getName(), r.getSolved(), r.getScore()
+            ));
+        }
+        return sb.toString();
     }
 
     public String formatRankChange(String userName, int oldRank, int newRank, int score) {
@@ -24,5 +26,14 @@ public class MessageFormatUtil {
 
                         현재 점수: %d점""",
                                 userName, oldRank, newRank, score);
+    }
+
+    private String medal(int rank) {
+        return switch (rank) {
+            case 1 -> "🥇";
+            case 2 -> "🥈🥈";
+            case 3 -> "🥉";
+            default -> "";
+        };
     }
 }
