@@ -16,7 +16,7 @@ class RankUtilTest {
     void resolveBaseTime_null_throws() {
         assertThatThrownBy(() -> RankUtil.resolveBaseTime(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("초기 시간 값은 Null이 될 수 없습니다.");
+                .hasMessageContaining("baseTime must not be null");
     }
 
 
