@@ -12,10 +12,10 @@ public class MessageFormatUtil {
         StringBuilder sb = new StringBuilder("🏆 오늘의 랭킹\n\n");
 
         for (DailyRankInfo r : ranks) {
-            sb.append(String.format(
-               "%s %d위 %s - %d solved (+%d)\n",
-                medal(r.getRank()), r.getRank(), r.getName(), r.getSolved(), r.getScore()
-            ));
+            sb.append(medal(r.getRank()))
+                    .append(" ").append(r.getRank()).append("위 ")
+                    .append(r.getName()).append(" - ").append(r.getSolved())
+                    .append(" solved (+").append(r.getScore()).append(")\n");
         }
         return sb.toString();
     }
