@@ -30,33 +30,39 @@ public class RankingService {
     // 집계 시작 시각 (주의 월요일, 달의 첫째 날..) 2025-12-01T00:00:00
     LocalDateTime periodStart = RankUtil.getPeriodStart(period, baseTime);
 
-    // 현재/이전 구간 종료 시각 yyyy-MM-ddT14:00:00 ~ yyyy-MM-ddT13:00:00
-    LocalDateTime currentEnd = RankUtil.getCurrentEnd(baseTime);
-    LocalDateTime prevEnd = RankUtil.getPrevEnd(baseTime);
+    // [start, endExclusive) 구간 설정
+    LocalDateTime currentEndExclusive = RankUtil.getPeriodEndExclusive(baseTime);              // ex) 15:00
+    LocalDateTime prevEndExclusive    = RankUtil.getPeriodEndExclusive(baseTime.minusHours(1)); // ex) 14:00
 
-    // hasNext 판단용
-    int limit = size + 1;
+//    // 현재/이전 구간 종료 시각 yyyy-MM-ddT14:00:00 ~ yyyy-MM-ddT13:00:00
+//    LocalDateTime currentEnd = RankUtil.getCurrentEnd(baseTime);
+//    LocalDateTime prevEnd = RankUtil.getPrevEnd(baseTime);
+
 
     // 현재 구간 랭킹 조회
-    List<RankingRowResponse> currentRows = rankingQueryRepository.getRankingRows(periodStart, currentEnd, group, page, limit);
+    List<RankingRowResponse> currentAll = rankingQueryRepository.getRankingRows(periodStart, currentEndExclusive, group);
 
     // 이전 구간 랭킹 조회 (직전 한 시간 전까지)
-    List<RankingRowResponse> prevRows = rankingQueryRepository.getRankingRows(periodStart, prevEnd, group, page, limit);
+    List<RankingRowResponse> prevAll = rankingQueryRepository.getRankingRows(periodStart, prevEndExclusive, group);
 
-    // 순위 계산
-    calculateRanks(currentRows);
-    calculateRanks(prevRows);
+    // 전체 순위 계산
+    calculateRanks(currentAll);
+    calculateRanks(prevAll);
 
-    // diff 계산
-    calculateDiff(currentRows, prevRows);
+    // 전체 diff 계산
+    calculateDiff(currentAll, prevAll);
 
-    // hasNext -> 프론트에서 다음 데이터 로딩 // size : 20행
-    boolean hasNext = currentRows.size() > size;
-    if (hasNext) {
-      currentRows.remove(currentRows.size() - 1);
+    //page, size 슬라이싱 작업
+    int fromIndex = Math.max(0, (page - 1) * size);
+    if (fromIndex >= currentAll.size()) {
+      return new RankingPageResponse(false, List.of());
     }
 
-    return new RankingPageResponse(hasNext, currentRows);
+    int toIndex = Math.min(fromIndex + size, currentAll.size());
+    List<RankingRowResponse> pageRows = currentAll.subList(fromIndex, toIndex);
+    boolean hasNext = toIndex < currentAll.size();
+
+    return new RankingPageResponse(hasNext, pageRows);
   }
 
 

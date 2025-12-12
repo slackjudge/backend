@@ -23,7 +23,7 @@ public class RankingQueryRepository {
     /**
      * 기간, 그룹, 페이징 조건으로 랭킹 조회
      */
-  public List<RankingRowResponse> getRankingRows(LocalDateTime start, LocalDateTime endExclusive, String group, int page, int size) {
+  public List<RankingRowResponse> getRankingRows(LocalDateTime start, LocalDateTime endExclusive, String group) {
     QUsersProblemEntity usersProblemEntity = QUsersProblemEntity.usersProblemEntity;
     QUserEntity userEntity = QUserEntity.userEntity;
     QProblemEntity problemEntity = QProblemEntity.problemEntity;
@@ -51,8 +51,6 @@ public class RankingQueryRepository {
                     problemEntity.problemLevel.sum().desc(),
                     userEntity.username.asc()
             )
-            .offset((long) (page - 1) * size)
-            .limit(size)
             .fetch();
   }
 

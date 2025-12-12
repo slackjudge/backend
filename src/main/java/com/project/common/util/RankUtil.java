@@ -44,6 +44,19 @@ public class RankUtil {
 
 
     /**
+     * 랭킹 조회용 기간 끝 시각 (exclusive)
+     * baseTime = 2025-12-11T14:37 ->
+     *   resolveBaseTime(baseTime) = 2025-12-11T14:00
+     *   리턴 = 2025-12-11T15:00
+     * 즉 [start, endExclusive) 에서 endExclusive로 사용
+     */
+    public static LocalDateTime getPeriodEndExclusive(LocalDateTime baseTime) {
+        return resolveBaseTime(baseTime).plusHours(1);
+    }
+
+
+
+    /**
      * 현재 구간 끝 시각 (inclusive)
      *  - baseTime이 2025-12-08T14:30이면 → 2025-12-08T14:00
      */
