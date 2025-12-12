@@ -12,16 +12,16 @@ COPY build.gradle settings.gradle ./
 RUN ./gradlew dependencies --no-daemon || true
 
 # 소스 복사 및 빌드
-# COPY src src
-# RUN ./gradlew bootJar --no-daemon
-COPY . .
-RUN ./gradlew clean build \
-  -x test \
-  -x check \
-  -x checkstyleMain \
-  -x checkstyleTest \
-  -x spotlessCheck \
-  --no-daemon
+COPY src src
+RUN ./gradlew bootJar --no-daemon
+# COPY . .
+# RUN ./gradlew clean build \
+#   -x test \
+#   -x check \
+#   -x checkstyleMain \
+#   -x checkstyleTest \
+#   -x spotlessCheck \
+#   --no-daemon
 
 FROM eclipse-temurin:17-jre
 
