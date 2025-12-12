@@ -31,17 +31,17 @@ public class RankingService {
     LocalDateTime periodStart = RankUtil.getPeriodStart(period, baseTime);
 
     // 현재/이전 구간 종료 시각 yyyy-MM-ddT14:00:00 ~ yyyy-MM-ddT13:00:00
-    LocalDateTime currentEndExclusive = RankUtil.getCurrentEnd(baseTime);
-    LocalDateTime prevEndExclusive = RankUtil.getPrevEnd(baseTime);
+    LocalDateTime currentEnd = RankUtil.getCurrentEnd(baseTime);
+    LocalDateTime prevEnd = RankUtil.getPrevEnd(baseTime);
 
     // hasNext 판단용
     int limit = size + 1;
 
     // 현재 구간 랭킹 조회
-    List<RankingRowResponse> currentRows = rankingQueryRepository.getRankingRows(periodStart, currentEndExclusive, group, page, limit);
+    List<RankingRowResponse> currentRows = rankingQueryRepository.getRankingRows(periodStart, currentEnd, group, page, limit);
 
     // 이전 구간 랭킹 조회 (직전 한 시간 전까지)
-    List<RankingRowResponse> prevRows = rankingQueryRepository.getRankingRows(periodStart, prevEndExclusive, group, page, limit);
+    List<RankingRowResponse> prevRows = rankingQueryRepository.getRankingRows(periodStart, prevEnd, group, page, limit);
 
     // 순위 계산
     calculateRanks(currentRows);

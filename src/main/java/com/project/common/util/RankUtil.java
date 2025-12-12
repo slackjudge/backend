@@ -20,23 +20,25 @@ public class RankUtil {
 
     /**
      * period에 따른 집계 시작 일자 계산
+     *  return 값
      *  - day   : 해당 날짜의 00:00
      *  - week  : 해당 주 월요일 00:00
      *  - month : 해당 달 1일 00:00
      */
     public static LocalDateTime getPeriodStart(String period, LocalDateTime baseTime){
+        // 정각으로 설정
         LocalDateTime t = resolveBaseTime(baseTime);
 
         return switch (period) {
             case "week" -> t
                     .with(DayOfWeek.MONDAY)
                     .toLocalDate()
-                    .atStartOfDay();
+                    .atStartOfDay(); // 해당 주의 월요일 00:00
             case "month" -> t
                     .withDayOfMonth(1)
                     .toLocalDate()
-                    .atStartOfDay();
-            default ->  t.toLocalDate().atStartOfDay();
+                    .atStartOfDay(); // 해당 달 1일의 00:00
+            default ->  t.toLocalDate().atStartOfDay(); // 해당 날짜 00:00
         };
     }
 
