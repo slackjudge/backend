@@ -3,6 +3,7 @@ package com.project.repository;
 import com.project.config.QuerydslConfig;
 import com.project.config.security.JpaAuditingConfig;
 import com.project.dto.response.RankingRowResponse;
+import com.project.entity.EurekaTeamName;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ class RankingQueryRepositoryTest {
 
         // when
         List<RankingRowResponse> rows =
-                rankingQueryRepository.getRankingRows(start, endExclusive, "ALL");
+                rankingQueryRepository.getRankingRows(start, endExclusive, null);
 
         // then
         assertThat(rows).hasSize(3);
@@ -84,7 +85,7 @@ class RankingQueryRepositoryTest {
 
         // when
         List<RankingRowResponse> rows =
-                rankingQueryRepository.getRankingRows(start, endExclusive, group);
+                rankingQueryRepository.getRankingRows(start, endExclusive, EurekaTeamName.BACKEND_FACE);
 
         // then
         // SQL 기준: BACKEND_FACE 팀은 '백엔드유저' 한 명만 존재
@@ -107,7 +108,7 @@ class RankingQueryRepositoryTest {
 
         // when
         List<RankingRowResponse> rows =
-                rankingQueryRepository.getRankingRows(start, endExclusive, "ALL");
+                rankingQueryRepository.getRankingRows(start, endExclusive, null);
 
         // then
         // 14:10 에 푼 1004(20점)는 endExclusive=14:00 때문에 집계에서 제외되어야 함.

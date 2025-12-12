@@ -1,8 +1,11 @@
 package com.project.service;
 
+import com.project.common.exception.BusinessException;
+import com.project.common.exception.ErrorCode;
 import com.project.common.util.RankUtil;
 import com.project.dto.response.RankingPageResponse;
 import com.project.dto.response.RankingRowResponse;
+import com.project.entity.EurekaTeamName;
 import com.project.repository.RankingQueryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,10 +16,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.Set;
+
 
 @Service
 @RequiredArgsConstructor
 public class RankingService {
+
+  private static final Set<String> ALLOWED_PERIOD = Set.of("day", "week", "month");
 
   private final RankingQueryRepository rankingQueryRepository;
   private final Clock clock;
@@ -26,6 +33,10 @@ public class RankingService {
    */
   public RankingPageResponse getRanking(String period, LocalDateTime dateTime, String group, int page, int size) {
 
+    String normalizedPeriod = normalizeAndValidatePeriod(period);
+    EurekaTeamName team = parseAndValidateGroup(group);
+    validatePagination(page, size);
+
     // 도커 컨테이너 타임존 한국 시간으로 변경
     LocalDateTime effective = (dateTime != null) ? dateTime : LocalDateTime.now(clock);
 
@@ -33,7 +44,7 @@ public class RankingService {
     LocalDateTime baseTime = RankUtil.resolveBaseTime(effective);
 
     // 집계 시작 시각 (주의 월요일, 달의 첫째 날..) 2025-12-01T00:00:00
-    LocalDateTime periodStart = RankUtil.getPeriodStart(period, baseTime);
+    LocalDateTime periodStart = RankUtil.getPeriodStart(normalizedPeriod, baseTime);
 
     // [start, endExclusive) 구간 설정
     LocalDateTime currentEndExclusive = RankUtil.getPeriodEndExclusive(baseTime);              // ex) 15:00
@@ -41,10 +52,14 @@ public class RankingService {
 
 
     // 현재 구간 랭킹 조회
-    List<RankingRowResponse> currentAll = rankingQueryRepository.getRankingRows(periodStart, currentEndExclusive, group);
+    List<RankingRowResponse> currentAll = rankingQueryRepository.getRankingRows(periodStart, currentEndExclusive, team);
+
+    if (currentAll.isEmpty()) {
+      throw new BusinessException(ErrorCode.RANKING_NOT_FOUND, "선택한 기간/그룹에 대한 데이터가 존재하지 않습니다.");
+    }
 
     // 이전 구간 랭킹 조회 (직전 한 시간 전까지)
-    List<RankingRowResponse> prevAll = rankingQueryRepository.getRankingRows(periodStart, prevEndExclusive, group);
+    List<RankingRowResponse> prevAll = rankingQueryRepository.getRankingRows(periodStart, prevEndExclusive, team);
 
     // 전체 순위 계산
     calculateRanks(currentAll);
@@ -56,7 +71,8 @@ public class RankingService {
     //page, size 슬라이싱 작업
     int fromIndex = Math.max(0, (page - 1) * size);
     if (fromIndex >= currentAll.size()) {
-      return new RankingPageResponse(false, List.of());
+      throw new BusinessException(ErrorCode.RANKING_NOT_FOUND,
+              "요청한 페이지에 데이터가 없습니다.");
     }
 
     int toIndex = Math.min(fromIndex + size, currentAll.size());
@@ -64,6 +80,33 @@ public class RankingService {
     boolean hasNext = toIndex < currentAll.size();
 
     return new RankingPageResponse(hasNext, pageRows);
+  }
+
+
+  private String normalizeAndValidatePeriod(String period) {
+    String p = (period == null) ? "day" : period.toLowerCase();
+    if (!ALLOWED_PERIOD.contains(p)) {
+      throw new BusinessException(ErrorCode.INVALID_RANKING_PERIOD);
+    }
+    return p;
+  }
+
+  private EurekaTeamName parseAndValidateGroup(String group) {
+    String g = (group == null) ? "ALL" : group.toUpperCase();
+    if ("ALL".equals(g)) return null;
+
+    try {
+      return EurekaTeamName.valueOf(g);
+    } catch (IllegalArgumentException e) {
+      throw new BusinessException(ErrorCode.INVALID_RANKING_GROUP);
+    }
+  }
+
+
+  private void validatePagination(int page, int size) {
+    if (page < 1 || size < 1) {
+      throw new BusinessException(ErrorCode.INVALID_RANKING_PAGINATION);
+    }
   }
 
 

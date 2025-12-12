@@ -23,7 +23,7 @@ public class RankingQueryRepository {
     /**
      * 기간, 그룹, 페이징 조건으로 랭킹 조회
      */
-  public List<RankingRowResponse> getRankingRows(LocalDateTime start, LocalDateTime endExclusive, String group) {
+  public List<RankingRowResponse> getRankingRows(LocalDateTime start, LocalDateTime endExclusive, EurekaTeamName team) {
     QUsersProblemEntity usersProblemEntity = QUsersProblemEntity.usersProblemEntity;
     QUserEntity userEntity = QUserEntity.userEntity;
     QProblemEntity problemEntity = QProblemEntity.problemEntity;
@@ -44,7 +44,7 @@ public class RankingQueryRepository {
             .where(
                     usersProblemEntity.solvedTime.goe(start),
                     usersProblemEntity.solvedTime.lt(endExclusive),
-                    groupFilter(group, userEntity)
+                    teamFilter(team, userEntity)
             )
             .groupBy(userEntity.userId)
             .orderBy(
@@ -54,10 +54,10 @@ public class RankingQueryRepository {
             .fetch();
   }
 
-  private Predicate groupFilter(String group, QUserEntity userEntity) {
-    if (group.equals("ALL")) {
+  private Predicate teamFilter(EurekaTeamName team, QUserEntity userEntity) {
+    if (team == null) {
         return null;
     }
-    return userEntity.teamName.eq(EurekaTeamName.valueOf(group));
+    return userEntity.teamName.eq(team);
   }
 }
