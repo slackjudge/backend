@@ -12,9 +12,11 @@ public class RankUtil {
      * - 분/초/나노초를 0으로 맞춰서 정각으로 남김(ex: 14:30 -> 14:00)
      * 2025-12-11T14:37:00 => 2025-12-11T14:00:00
      */
-    public static LocalDateTime resolveBaseTime(LocalDateTime dateTime) {
-        LocalDateTime base = (dateTime != null) ? dateTime : LocalDateTime.now();
-        return base.withMinute(0).withSecond(0).withNano(0);
+    public static LocalDateTime resolveBaseTime(LocalDateTime baseTime) {
+        if (baseTime == null) {
+            throw new IllegalArgumentException("baseTime must not be null");
+        }
+        return baseTime.withMinute(0).withSecond(0).withNano(0);
     }
 
 
@@ -53,24 +55,4 @@ public class RankUtil {
     public static LocalDateTime getPeriodEndExclusive(LocalDateTime baseTime) {
         return resolveBaseTime(baseTime).plusHours(1);
     }
-
-
-
-    /**
-     * 현재 구간 끝 시각 (inclusive)
-     *  - baseTime이 2025-12-08T14:30이면 → 2025-12-08T14:00
-     */
-    public static LocalDateTime getCurrentEnd(LocalDateTime baseTime) {
-        return resolveBaseTime(baseTime);
-    }
-
-
-    /**
-     * 이전 구간 끝 시각 (inclusive)
-     *  - baseTime이 2025-12-08T14:30이면 → 2025-12-08T13:00
-     */
-    public static LocalDateTime getPrevEnd(LocalDateTime baseTime) {
-        return getCurrentEnd(baseTime).minusHours(1);
-    }
-
 }

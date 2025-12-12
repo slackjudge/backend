@@ -4,28 +4,19 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class RankUtilTest {
 
     @Test
-    @DisplayName("resolveBaseTime - null값 테스트")
-    void resolvedTime_null() {
-        //given
-        LocalDate today = LocalDate.now();
-
-        //when
-        LocalDateTime base = RankUtil.resolveBaseTime(null);
-
-        //then
-        assertThat(base.getMonth()).isEqualTo(today.getMonth());
-        assertThat(base.getDayOfMonth()).isEqualTo(today.getDayOfMonth());
-        assertThat(base.getMinute()).isZero();
-        assertThat(base.getSecond()).isZero();
-        assertThat(base.getNano()).isZero();
+    @DisplayName("resolveBaseTime - null이면 예외")
+    void resolveBaseTime_null_throws() {
+        assertThatThrownBy(() -> RankUtil.resolveBaseTime(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("초기 시간 값은 Null이 될 수 없습니다.");
     }
 
 
@@ -43,7 +34,7 @@ class RankUtilTest {
     }
 
     @Test
-    @DisplayName("getPeriodStart - day일 때는 해당 날짜 00시")
+    @DisplayName("getPeriodStart - day일 때는 해당 날짜 00:00")
     void getPeriodStart_day() {
         //given
         LocalDateTime base = LocalDateTime.of(2025, 12, 11, 14, 30);
@@ -56,7 +47,7 @@ class RankUtilTest {
     }
 
     @Test
-    @DisplayName("getPeriodStart - week일 때는 해당 주 월요일 00시")
+    @DisplayName("getPeriodStart - week일 때는 해당 주 월요일 00:00")
     void getPeriodStart_week() {
         //given 2025-12-11 : 목요일이라고 가정
         LocalDateTime base = LocalDateTime.of(2025, 12, 11, 14, 30);
@@ -71,7 +62,7 @@ class RankUtilTest {
     }
 
     @Test
-    @DisplayName("getPeriodStart - month일 때는 해당 달 1일 00시")
+    @DisplayName("getPeriodStart - month일 때는 해당 달 1일 00:00")
     void getPeriodStart_month() {
         //given
         LocalDateTime base = LocalDateTime.of(2025, 12, 11, 14, 30);
@@ -84,31 +75,15 @@ class RankUtilTest {
     }
 
     @Test
-    @DisplayName("getCurrentEnd - 기준 시각의 정각(시)까지를 현재 구간 끝으로 사용")
-    void getCurrentEnd() {
-        //given
+    @DisplayName("getPeriodEndExclusive - 기준 시각을 정각으로 절삭 후 +1시간 (endExclusive)")
+    void getPeriodEndExclusive_returnsNextHourExclusive() {
+        // given
         LocalDateTime input = LocalDateTime.of(2025, 12, 11, 14, 30, 10);
 
-        //when
-        LocalDateTime currentEnd = RankUtil.getCurrentEnd(input);
+        // when
+        LocalDateTime endExclusive = RankUtil.getPeriodEndExclusive(input);
 
-        //then
-        assertThat(currentEnd).isEqualTo(LocalDateTime.of(2025, 12, 11, 14, 0));
+        // then: 14:30 -> (정각 절삭 14:00) + 1h = 15:00
+        assertThat(endExclusive).isEqualTo(LocalDateTime.of(2025, 12, 11, 15, 0));
     }
-
-    @Test
-    @DisplayName("getPrevEnd - 이전 구간 끝은 현재 구간 끝에서 1시간 전")
-    void getPrevEnd() {
-        //given
-        LocalDateTime input = LocalDateTime.of(2025, 12, 11, 14, 30);
-
-        //when
-        LocalDateTime prevEnd = RankUtil.getPrevEnd(input);
-
-        //then
-        assertThat(prevEnd).isEqualTo(LocalDateTime.of(2025, 12, 11, 13, 0));
-    }
-
-
-
 }

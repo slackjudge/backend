@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -18,14 +19,18 @@ import java.util.stream.Collectors;
 public class RankingService {
 
   private final RankingQueryRepository rankingQueryRepository;
+  private final Clock clock;
 
   /**
    * 해당 시간대의 랭킹과 직전 시간대 랭킹을 비교하여 반환
    */
   public RankingPageResponse getRanking(String period, LocalDateTime dateTime, String group, int page, int size) {
 
+    // 도커 컨테이너 타임존 한국 시간으로 변경
+    LocalDateTime effective = (dateTime != null) ? dateTime : LocalDateTime.now(clock);
+
     // 기준 시각 정규화 (null -> now, 분/초/나노 0)
-    LocalDateTime baseTime = RankUtil.resolveBaseTime(dateTime);
+    LocalDateTime baseTime = RankUtil.resolveBaseTime(effective);
 
     // 집계 시작 시각 (주의 월요일, 달의 첫째 날..) 2025-12-01T00:00:00
     LocalDateTime periodStart = RankUtil.getPeriodStart(period, baseTime);
@@ -33,10 +38,6 @@ public class RankingService {
     // [start, endExclusive) 구간 설정
     LocalDateTime currentEndExclusive = RankUtil.getPeriodEndExclusive(baseTime);              // ex) 15:00
     LocalDateTime prevEndExclusive    = RankUtil.getPeriodEndExclusive(baseTime.minusHours(1)); // ex) 14:00
-
-//    // 현재/이전 구간 종료 시각 yyyy-MM-ddT14:00:00 ~ yyyy-MM-ddT13:00:00
-//    LocalDateTime currentEnd = RankUtil.getCurrentEnd(baseTime);
-//    LocalDateTime prevEnd = RankUtil.getPrevEnd(baseTime);
 
 
     // 현재 구간 랭킹 조회
