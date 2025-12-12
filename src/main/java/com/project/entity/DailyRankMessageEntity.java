@@ -1,7 +1,12 @@
 package com.project.entity;
 
 import com.project.common.BaseTimeEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,9 +25,11 @@ public class DailyRankMessageEntity extends BaseTimeEntity {
     @Column(name = "message_content", columnDefinition = "TEXT", nullable = false)
     private String messageContent;
 
+    private DailyRankMessageEntity(String messageContent) {
+        this.messageContent = messageContent;
+    }
+
     public static DailyRankMessageEntity of (String messageContent) {
-        DailyRankMessageEntity entity = new DailyRankMessageEntity();
-        entity.messageContent = messageContent;
-        return entity;
+        return new DailyRankMessageEntity(messageContent);
     }
 }
