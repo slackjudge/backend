@@ -44,13 +44,12 @@ public class SlackNotificationService {
 
         try {
             slackMessageSender.sendMessage("C0A0M8HUQDT", message);
+            dailyRankMessageRepository.save(DailyRankMessageEntity.of(message));
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
             throw new BusinessException(ErrorCode.SLACK_MESSAGE_FAILED, "slack 메시지 전송 중 오류 발생 : " + e.getMessage());
         }
-
-        dailyRankMessageRepository.save(DailyRankMessageEntity.of(message));
     }
 
     public void sendRankChangeMessage() {
