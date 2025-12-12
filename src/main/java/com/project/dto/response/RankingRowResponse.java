@@ -12,22 +12,27 @@ import lombok.Setter;
 public class RankingRowResponse {
 
     private Long userId;
-    private int rank;
+    private int rank; // 서비스에서 계산
     private int tier;
     private String name;
     private int totalScore;
     private long solvedCount;
-    private String baejoonId;
+    private String baekjoonId;
     private String team;
-    private int diff;
+    private int diff; // 서비스에서 계산
 
-    public RankingRowResponse(Long userId, String name, int tier, int totalScore, String baejoonId, String team) {
+    /**
+     * db 조회용 생성자
+     */
+    public RankingRowResponse(Long userId, String name, int tier, int totalScore, long solvedCount, String baekjoonId, String team) {
         this.userId = userId;
         this.name = name;
         this.tier = tier;
         this.totalScore = totalScore;
-        this.baejoonId = baejoonId;
+        this.solvedCount = solvedCount;
+        this.baekjoonId = baekjoonId;
         this.team = team;
+        // DB 조회 시점에서는 랭킹 계산을 하지 않기에 0으로 초기화
         this.rank = 0;
         this.diff = 0;
     }

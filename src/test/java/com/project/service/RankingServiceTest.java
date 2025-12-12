@@ -36,21 +36,23 @@ class RankingServiceTest {
         // given
         LocalDateTime baseTime = LocalDateTime.of(2025, 12, 11, 14, 30);
 
+        /** 조회용 데이터
+         *  userID, name, tier, totalScore, solvedCount, baekjoonId, team
+         *  userA : 100 -> 120점 / userB : 80 -> 80 동일
+         */
         List<RankingRowResponse> currentRows = List.of(
-                new RankingRowResponse(1L, "사용자A", 10, 100, "bojA", "BACKEND"),
-                new RankingRowResponse(2L, "사용자B", 9, 80, "bojB", "BACKEND")
+                new RankingRowResponse(1L, "userA", 2, 100, 2, "gr2146", "BACKEND_FACE"),
+                new RankingRowResponse(2L, "userB", 9, 80, 2,"q1w2e3r4", "BACKEND_NON_FACE")
         );
         List<RankingRowResponse> prevRows = List.of(
-                new RankingRowResponse(1L, "사용자A", 10, 90, "bojA", "BACKEND"),
-                new RankingRowResponse(2L, "사용자B", 9, 70, "bojB", "BACKEND")
+                new RankingRowResponse(1L, "userA", 2, 120, 3, "gr2146", "BACKEND_FACE"),
+                new RankingRowResponse(2L, "userB", 9, 80, 2,"q1w2e3r4", "BACKEND_NON_FACE")
         );
 
         when(rankingQueryRepository.getRankingRows(
                 any(LocalDateTime.class),
                 any(LocalDateTime.class),
-                anyString(),
-                anyInt(),
-                anyInt()
+                anyString()
         )).thenReturn(currentRows, prevRows);
 
         // when
@@ -71,22 +73,27 @@ class RankingServiceTest {
         // given
         LocalDateTime baseTime = LocalDateTime.of(2025, 12, 11, 14, 30);
 
+        /** 조회용 데이터
+         *  userID, name, tier, totalScore, solvedCount, baekjoonId, team
+         */
+
+        // 현재: userA  1등, userB 2등
         List<RankingRowResponse> currentRows = List.of(
-                new RankingRowResponse(1L, "사용자A", 10, 100, "bojA", "BACKEND"),
-                new RankingRowResponse(2L, "사용자B", 9, 80, "bojB", "BACKEND")
-        );
-        List<RankingRowResponse> prevRows = List.of(
-                // 이전 시간대에는 B가 1등, A가 2등이라는 가정
-                new RankingRowResponse(2L, "사용자B", 9, 90, "bojB", "BACKEND"),
-                new RankingRowResponse(1L, "사용자A", 10, 70, "bojA", "BACKEND")
+                new RankingRowResponse(1L, "userA", 2, 140, 3, "gr2146", "BACKEND_FACE"),
+                new RankingRowResponse(2L, "userB", 9, 120, 3,"q1w2e3r4", "BACKEND_NON_FACE")
         );
 
+        // 직전 : userB 1등, userA 2등
+        List<RankingRowResponse> prevRows = List.of(
+                new RankingRowResponse(2L, "userB", 9, 100, 2,"q1w2e3r4", "BACKEND_NON_FACE"),
+                new RankingRowResponse(1L, "userA", 2, 80, 2, "gr2146", "BACKEND_FACE")
+        );
+
+        // 조회 -> 랭킹 -> diff 계산
         when(rankingQueryRepository.getRankingRows(
                 any(LocalDateTime.class),
                 any(LocalDateTime.class),
-                anyString(),
-                anyInt(),
-                anyInt()
+                anyString()
         )).thenReturn(currentRows, prevRows);
 
         // when
@@ -104,8 +111,8 @@ class RankingServiceTest {
                 .orElseThrow();
 
         // A는 2등 → 1등 (diff = +1), B는 1등 → 2등 (diff = -1) 라는 식으로 나올 것
-        assertThat(userA.getDiff()).isNotZero();
-        assertThat(userB.getDiff()).isNotZero();
+        assertThat(userA.getDiff()).isEqualTo(1);
+        assertThat(userB.getDiff()).isEqualTo(-1);
     }
 
 
@@ -120,6 +127,9 @@ class RankingServiceTest {
         int page = 1;
         int size = 2;
 
+        /** 조회용 데이터
+         *  userID, name, tier, totalScore, solvedCount, baekjoonId, team
+         */
         RankingRowResponse currentUser1 =
                 new RankingRowResponse(1L, 0, 5, "user1", 100, 10L, "boj1", "BACKEND", 0);
         RankingRowResponse currentUser2 =
@@ -135,9 +145,7 @@ class RankingServiceTest {
         when(rankingQueryRepository.getRankingRows(
                 any(LocalDateTime.class),
                 any(LocalDateTime.class),
-                anyString(),
-                anyInt(),
-                anyInt()
+                anyString()
         )).thenReturn(currentRows, prevRows);
 
         // when
