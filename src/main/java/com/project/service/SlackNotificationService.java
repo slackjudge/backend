@@ -88,7 +88,7 @@ public class SlackNotificationService {
 
             if (currentRank > RANKING_LIMIT) break;
 
-            ranked.add(new DailyRankInfo(r.getUsername(), r.getSolvedCount().intValue(), r.getScore().intValue(), currentRank));
+            ranked.add(new DailyRankInfo(r.getUsername(), r.getSolvedCount(), r.getScore(), currentRank));
         }
         return ranked;
     }

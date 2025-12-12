@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class DailyRankInfo {
     private String name;
-    private int solved;
-    private int score;
+    private long solved;
+    private long score;
     private int rank;
 }
