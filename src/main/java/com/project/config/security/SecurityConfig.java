@@ -1,5 +1,12 @@
 package com.project.config.security;
 
+import static com.project.common.util.WebSecurityUrl.LOCAL_LOGIN_ENDPOINT;
+import static com.project.common.util.WebSecurityUrl.LOCAL_SIGN_ENDPOINT;
+import static com.project.common.util.WebSecurityUrl.LOGIN_ENDPOINT;
+import static com.project.common.util.WebSecurityUrl.REISSUE_ENDPOINT;
+import static com.project.common.util.WebSecurityUrl.getHealthCheckEndpoints;
+import static com.project.common.util.WebSecurityUrl.getReadOnlyPublicEndpoints;
+
 import com.project.common.security.filter.JwtAuthenticationFilter;
 import com.project.common.security.filter.JwtExceptionFilter;
 import lombok.RequiredArgsConstructor;
@@ -16,52 +23,51 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import static com.project.common.util.WebSecurityUrl.getReadOnlyPublicEndpoints;
-import static com.project.common.util.WebSecurityUrl.getHealthCheckEndpoints;
-import static com.project.common.util.WebSecurityUrl.LOGIN_ENDPOINT;
-import static com.project.common.util.WebSecurityUrl.REISSUE_ENDPOINT;
-import static com.project.common.util.WebSecurityUrl.LOCAL_LOGIN_ENDPOINT;
-import static com.project.common.util.WebSecurityUrl.LOCAL_SIGN_ENDPOINT;
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CorsConfigurationSource corsConfigurationSource;
-    private final JwtExceptionFilter jwtExceptionFilter;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final AccessDeniedHandler accessDeniedHandler;
-    private final AuthenticationEntryPoint authenticationEntryPoint;
+  private final CorsConfigurationSource corsConfigurationSource;
+  private final JwtExceptionFilter jwtExceptionFilter;
+  private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final AccessDeniedHandler accessDeniedHandler;
+  private final AuthenticationEntryPoint authenticationEntryPoint;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http
-                .exceptionHandling(
-                        exception -> exception
-                                .accessDeniedHandler(accessDeniedHandler)
-                                .authenticationEntryPoint(authenticationEntryPoint)
-                )
-                .cors(cors -> cors.configurationSource(corsConfigurationSource))
-                .csrf(AbstractHttpConfigurer::disable)
-                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, getReadOnlyPublicEndpoints()).permitAll()
-                        .requestMatchers(getHealthCheckEndpoints()).permitAll()
-                        .requestMatchers(LOCAL_LOGIN_ENDPOINT).permitAll()
-                        .requestMatchers(LOCAL_SIGN_ENDPOINT).permitAll()
-                        .requestMatchers(LOGIN_ENDPOINT).permitAll()
-                        .requestMatchers(REISSUE_ENDPOINT).permitAll()
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtExceptionFilter, JwtAuthenticationFilter.class);
-        return http.build();
-    }
+    http.exceptionHandling(
+            exception ->
+                exception
+                    .accessDeniedHandler(accessDeniedHandler)
+                    .authenticationEntryPoint(authenticationEntryPoint))
+        .cors(cors -> cors.configurationSource(corsConfigurationSource))
+        .csrf(AbstractHttpConfigurer::disable)
+        .formLogin(AbstractHttpConfigurer::disable)
+        .httpBasic(AbstractHttpConfigurer::disable)
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            auth ->
+                auth.requestMatchers(HttpMethod.OPTIONS, "/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, getReadOnlyPublicEndpoints())
+                    .permitAll()
+                    .requestMatchers(getHealthCheckEndpoints())
+                    .permitAll()
+                    .requestMatchers(LOCAL_LOGIN_ENDPOINT)
+                    .permitAll()
+                    .requestMatchers(LOCAL_SIGN_ENDPOINT)
+                    .permitAll()
+                    .requestMatchers(LOGIN_ENDPOINT)
+                    .permitAll()
+                    .requestMatchers(REISSUE_ENDPOINT)
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(jwtExceptionFilter, JwtAuthenticationFilter.class);
+    return http.build();
+  }
 }
