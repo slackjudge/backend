@@ -4,6 +4,8 @@ import com.project.dto.DailyRankInfo;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class MessageFormatUtilTest {
@@ -13,18 +15,21 @@ class MessageFormatUtilTest {
     @Test
     @DisplayName("일일 랭킹 메시지 포맷팅 검증")
     void dailyRankFormatTest() {
-        DailyRankInfo r1 = new DailyRankInfo("유재석", 7, 48);
-        DailyRankInfo r2 = new DailyRankInfo("정형돈", 5, 32);
-        DailyRankInfo r3 = new DailyRankInfo("노홍철", 4, 30);
+        List<DailyRankInfo> ranks = List.of(
+                new DailyRankInfo("유재석", 7, 48, 1),
+                new DailyRankInfo("정형돈", 5, 32, 2),
+                new DailyRankInfo("노홍철", 4, 30, 3)
+        );
 
         String expected = """
-            🏆 오늘 TOP 3
+            🏆 오늘의 랭킹
 
-            🥇 1위 유재석 — 7 solved (+48)
-            🥈 2위 정형돈 — 5 solved (+32)
-            🥉 3위 노홍철 — 4 solved (+30)""";
+            🥇 1위 유재석 - 7 solved (+48)
+            🥈 2위 정형돈 - 5 solved (+32)
+            🥉 3위 노홍철 - 4 solved (+30)
+            """;
 
-        String result = util.formatDailyRank(r1, r2, r3);
+        String result = util.formatDailyRank(ranks);
 
         assertThat(result).isEqualTo(expected);
     }
