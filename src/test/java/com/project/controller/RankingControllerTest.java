@@ -50,7 +50,7 @@ class RankingControllerTest {
                 .willReturn(dummyResponse);
 
         // when & then
-        mockMvc.perform(get("/api/rank")
+        mockMvc.perform(get("/rank")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
@@ -100,7 +100,7 @@ class RankingControllerTest {
                 .willReturn(dummyResponse);
 
         // when & then
-        mockMvc.perform(get("/api/rank")
+        mockMvc.perform(get("/rank")
                         .param("period", period)
                         .param("dateTime", dateTimeStr)
                         .param("group", group)

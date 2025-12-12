@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping("/api/rank")
+@RequestMapping("/rank")
 @Slf4j
 @RequiredArgsConstructor
 public class RankingController {
