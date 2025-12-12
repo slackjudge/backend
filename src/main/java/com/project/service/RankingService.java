@@ -52,12 +52,11 @@ public class RankingService {
 
     // hasNext -> 프론트에서 다음 데이터 로딩 // size : 20행
     boolean hasNext = currentRows.size() > size;
-    if(hasNext) {
+    if (hasNext) {
       currentRows.remove(currentRows.size() - 1);
     }
 
     return new RankingPageResponse(hasNext, currentRows);
-
   }
 
 
@@ -82,11 +81,10 @@ public class RankingService {
         // 이전 랭킹에 없던 유저이거나 rank 정보 없으면 변동 없음(0)으로 처리
         curRow.setDiff(0);
       } else {
-        int diff = prevRow.getRank() - curRow.getRank();
-        curRow.setDiff(diff);
+          int diff = prevRow.getRank() - curRow.getRank();
+          curRow.setDiff(diff);
       }
     }
-
   }
 
 
@@ -95,7 +93,9 @@ public class RankingService {
    */
   private void calculateRanks(List<RankingRowResponse> rows) {
 
-    if(rows.isEmpty()) return;
+    if (rows.isEmpty()) {
+      return;
+    }
 
     rows.get(0).setRank(1);
 
@@ -103,13 +103,13 @@ public class RankingService {
       RankingRowResponse prev = rows.get(i - 1);
       RankingRowResponse curr = rows.get(i);
 
-      if(prev.getTotalScore() == curr.getTotalScore()){
+      if (prev.getTotalScore() == curr.getTotalScore()){
         curr.setRank(prev.getRank());
       } else {
         curr.setRank(i + 1);
       }
     }
   }
-  }
+}
 
 

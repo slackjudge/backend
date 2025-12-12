@@ -56,7 +56,9 @@ public class RankingQueryRepository {
   }
 
   private Predicate groupFilter(String group, QUserEntity userEntity) {
-    if(group.equals("ALL")) return null;
+    if (group.equals("ALL")) {
+        return null;
+    }
     return userEntity.teamName.eq(EurekaTeamName.valueOf(group));
   }
 }

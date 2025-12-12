@@ -27,7 +27,7 @@ public class RankUtil {
     public static LocalDateTime getPeriodStart(String period, LocalDateTime baseTime){
         LocalDateTime t = resolveBaseTime(baseTime);
 
-        return switch (period){
+        return switch (period) {
             case "week" -> t
                     .with(DayOfWeek.MONDAY)
                     .toLocalDate()

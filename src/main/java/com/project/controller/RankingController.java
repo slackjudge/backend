@@ -41,7 +41,6 @@ public class RankingController {
           @RequestParam(defaultValue = "20") int size){
 
     RankingPageResponse response = rankingService.getRanking(period, dateTime, group, page, size);
-
     return ResponseEntity.ok(ApiResponse.success(response));
   }
 }

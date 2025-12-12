@@ -13,7 +13,7 @@ class RankUtilTest {
 
     @Test
     @DisplayName("resolveBaseTime - null값 테스트")
-    void resolvedTime_null(){
+    void resolvedTime_null() {
         //given
         LocalDate today = LocalDate.now();
 
