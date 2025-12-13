@@ -77,7 +77,7 @@ public class MyPageRepository {
             usersProblemEntity.user.userId.eq(userId),
             usersProblemEntity.isSolved.isTrue(),
             usersProblemEntity.solvedTime.between(startOfDay, endOfDay))
-        .orderBy(usersProblemEntity.solvedTime.asc()) // 난이도 높은 순 정렬
+        .orderBy(usersProblemEntity.solvedTime.asc()) // 푼 시간 오름 차순 정렬
         .fetch();
   }
 }

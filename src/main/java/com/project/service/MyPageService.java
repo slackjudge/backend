@@ -55,13 +55,13 @@ public class MyPageService {
     }
 
     // 7. 전체 랭킹 및 점수
-    int myTotalScore = user.getTotalSolvedCount() != null ? user.getTotalSolvedCount() : 0;
+    int totalSolvedCount = user.getTotalSolvedCount() != null ? user.getTotalSolvedCount() : 0;
 
     // 8. DTO 조립 및 변환 (Record 사용)
     DailyStats stats =
         new DailyStats(dailyScore, (int) dailyRank, solvedCount, maxDifficulty, problemList);
 
-    return buildResponse(user, myTotalScore, targetDate, stats, grassList);
+    return buildResponse(user, totalSolvedCount, targetDate, stats, grassList);
   }
 
   /**
