@@ -151,7 +151,7 @@ class UserControllerTest {
     // then : API 호출 및 검증
     mockMvc
         .perform(
-            get("/api/user/me")
+            get("/user/me")
                 .param("year", String.valueOf(year))
                 .param("month", String.valueOf(month))
                 .param("date", date))
