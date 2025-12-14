@@ -38,11 +38,9 @@ public class RankChangeStateService {
                 .withDayOfMonth(1)
                 .atStartOfDay();
 
-        // 월간 랭킹 조회
         List<RankRawData> raw = usersProblemRepository.findMonthlyRank(monthStart);
         if (raw.isEmpty()) return;
 
-        // 랭킹 계산
         Map<Long, Integer> currentRanks = calculateRank(raw);
 
         Map<Long, Long> scoreMap = raw.stream()
@@ -50,53 +48,48 @@ public class RankChangeStateService {
 
         List<Long> userIds = new ArrayList<>(currentRanks.keySet());
 
-        // 상태 조회
         Map<Long, RankChangeStateEntity> stateMap = rankChangeStateRepository.findAllById(userIds).stream()
-                .collect(HashMap::new,
-                        (m, v) -> m.put(v.getUserId(), v),
-                        HashMap::putAll);
+                .collect(Collectors.toMap(RankChangeStateEntity::getUserId, s -> s));
 
-        // 유저 조회
         Map<Long, UserEntity> userMap = userRepository.findAllById(userIds).stream()
-                .collect(HashMap::new,
-                        (m, v) -> m.put(v.getUserId(), v),
-                        HashMap::putAll);
+                .collect(Collectors.toMap(UserEntity::getUserId, u -> u));
 
-        // 순위 비교
+        List<RankChangeStateEntity> statesToSave = new ArrayList<>();
+
         for (Long userId : userIds) {
             int currentRank = currentRanks.get(userId);
             RankChangeStateEntity state = stateMap.get(userId);
 
-            // 최초 -> 기준 저장
+            // 최초 유저
             if (state == null) {
-                rankChangeStateRepository.save(RankChangeStateEntity.create(userId, currentRank));
+                statesToSave.add(RankChangeStateEntity.create(userId, currentRank));
                 continue;
             }
 
             int lastRank = state.getLastNotifiedRank();
+            if (currentRank >= lastRank) continue;
 
-            // 상승한 경우만 알림
-            if (currentRank < lastRank) {
-                UserEntity user = userMap.get(userId);
-                if (user == null) continue;
-                if (!user.isAlertAgreed()) continue;
-                if (user.getSlackId() == null || "initial".equals(user.getSlackId())) continue;
 
+            UserEntity user = userMap.get(userId);
+            if (user == null || !user.isAlertAgreed()) continue;
+
+            try {
                 String message = messageFormatUtil.formatRankChange(
                         user.getUsername(),
                         lastRank,
                         currentRank,
-                        Math.toIntExact(scoreMap.getOrDefault(userId, 0L))
+                        scoreMap.getOrDefault(userId, 0L)
                 );
+                slackMessageSender.sendMessage(user.getSlackId(), message);
 
-                try {
-                    slackMessageSender.sendMessage(user.getSlackId(), message);
-                    state.updateRank(currentRank);
-                    rankChangeStateRepository.save(state);
-                } catch (Exception e) {
-                    log.warn("순위 변동 DM 실패 userId={}, err={}", userId, e.getMessage());
-                }
+                state.updateRank(currentRank);
+                statesToSave.add(state);
+            } catch (Exception e) {
+                log.warn("순위 변동 DM 실패 userId={}, err={}", userId, e.getMessage());
             }
+        }
+        if (!statesToSave.isEmpty()) {
+            rankChangeStateRepository.saveAll(statesToSave);
         }
     }
 
