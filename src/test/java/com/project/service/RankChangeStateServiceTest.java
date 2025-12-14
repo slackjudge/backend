@@ -22,10 +22,10 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,27 +53,22 @@ public class RankChangeStateServiceTest {
     void rankUp_sendDm_and_updateState() throws Exception {
         // given
         RankRawData row = new RankRawData(1L, "유재석", 5L, 200L);
-
         when(usersProblemRepository.findMonthlyRank(any()))
                 .thenReturn(List.of(row));
 
         RankChangeStateEntity state = RankChangeStateEntity.create(1L, 5); // 이전 5위
-
-        when(rankChangeStateRepository.findAllById(any()))
-                .thenReturn(List.of(state));
+        when(rankChangeStateRepository.findAllById(any())).thenReturn(List.of(state));
 
         UserEntity user = UserEntity.builder()
                 .userId(1L)
                 .slackId("U1")
                 .username("유재석")
-                .baekjoonId("boj")
                 .isAlertAgreed(true)
                 .build();
 
-        when(userRepository.findAllById(any()))
-                .thenReturn(List.of(user));
+        when(userRepository.findAllById(any())).thenReturn(List.of(user));
 
-        when(messageFormatUtil.formatRankChange(any(), anyInt(), anyInt(), anyInt()))
+        when(messageFormatUtil.formatRankChange(any(), anyInt(), anyInt(), anyLong()))
                 .thenReturn("RANK_UP");
 
         when(slackMessageSender.sendMessage(any(), any()))
@@ -84,7 +79,7 @@ public class RankChangeStateServiceTest {
 
         // then
         verify(slackMessageSender).sendMessage("U1", "RANK_UP");
-        verify(rankChangeStateRepository).save(state);
+        verify(rankChangeStateRepository).saveAll(anyList());
     }
 
     @Test
@@ -92,33 +87,27 @@ public class RankChangeStateServiceTest {
     void firstUser_onlySaveState() throws SlackApiException, IOException {
         // given
         RankRawData row = new RankRawData(1L, "유재석", 5L, 100L);
+        when(usersProblemRepository.findMonthlyRank(any())).thenReturn(List.of(row));
 
-        when(usersProblemRepository.findMonthlyRank(any()))
-                .thenReturn(List.of(row));
-
-        when(rankChangeStateRepository.findAllById(any()))
-                .thenReturn(List.of()); // state 없음
+        when(rankChangeStateRepository.findAllById(any())).thenReturn(List.of());
 
         // when
         rankChangeStateService.sendRankChangeMessage();
 
         // then
-        verify(rankChangeStateRepository, times(1))
-                .save(any(RankChangeStateEntity.class));
-
-        verify(slackMessageSender, never())
-                .sendMessage(anyString(), anyString());
+        verify(rankChangeStateRepository).saveAll(anyList());
+        verify(slackMessageSender, never()).sendMessage(any(), any());
     }
 
     @Test
-    @DisplayName("순위 유지 또는 하락 시 알림 없음")
+    @DisplayName("순위 유지 또는 하락 시 알림 없음, 상태만 업데이트")
     void rankNotUp_noDm() throws SlackApiException, IOException {
+        // given
         RankRawData row = new RankRawData(1L, "유재석", 5L, 100L);
-
         when(usersProblemRepository.findMonthlyRank(any()))
                 .thenReturn(List.of(row));
 
-        RankChangeStateEntity state = RankChangeStateEntity.create(1L, 1); // 이미 1위
+        RankChangeStateEntity state = RankChangeStateEntity.create(1L, 1);
         when(rankChangeStateRepository.findAllById(any()))
                 .thenReturn(List.of(state));
 
@@ -126,16 +115,18 @@ public class RankChangeStateServiceTest {
                 .userId(1L)
                 .slackId("U1")
                 .username("유재석")
-                .baekjoonId("boj")
                 .isAlertAgreed(true)
                 .build();
 
         when(userRepository.findAllById(any()))
                 .thenReturn(List.of(user));
 
+        // when
         rankChangeStateService.sendRankChangeMessage();
 
+        // then
         verify(slackMessageSender, never()).sendMessage(any(), any());
+        verify(rankChangeStateRepository).saveAll(anyList());
     }
 
     @Test
@@ -143,7 +134,6 @@ public class RankChangeStateServiceTest {
     void notAgreed_noDm() throws SlackApiException, IOException {
         // given
         RankRawData row = new RankRawData(1L, "유재석", 5L, 200L);
-
         when(usersProblemRepository.findMonthlyRank(any()))
                 .thenReturn(List.of(row));
 
@@ -155,7 +145,6 @@ public class RankChangeStateServiceTest {
                 .userId(1L)
                 .slackId("U1")
                 .username("유재석")
-                .baekjoonId("boj")
                 .isAlertAgreed(false)
                 .build();
 
@@ -166,18 +155,15 @@ public class RankChangeStateServiceTest {
         rankChangeStateService.sendRankChangeMessage();
 
         // then
-        verify(slackMessageSender, never())
-                .sendMessage(anyString(), anyString());
-        verify(rankChangeStateRepository, never())
-                .save(state);
+        verify(slackMessageSender, never()).sendMessage(any(), any());
+        verify(rankChangeStateRepository).saveAll(anyList());
     }
 
     @Test
-    @DisplayName("DM 실패 시 상태 업데이트하지 않는다")
+    @DisplayName("DM 실패해도 상태는 업데이트된다.")
     void dmFail_notUpdateState() throws Exception {
         // given
         RankRawData row = new RankRawData(1L, "유재석", 5L, 200L);
-
         when(usersProblemRepository.findMonthlyRank(any()))
                 .thenReturn(List.of(row));
 
@@ -189,21 +175,19 @@ public class RankChangeStateServiceTest {
                 .userId(1L)
                 .slackId("U1")
                 .username("유재석")
-                .baekjoonId("boj")
                 .isAlertAgreed(true)
                 .build();
 
         when(userRepository.findAllById(any()))
                 .thenReturn(List.of(user));
 
-        when(slackMessageSender.sendMessage(anyString(), anyString()))
+        when(slackMessageSender.sendMessage(any(), any()))
                 .thenThrow(new RuntimeException("slack error"));
 
         // when
         rankChangeStateService.sendRankChangeMessage();
 
         // then
-        verify(rankChangeStateRepository, never())
-                .save(state);
+        verify(rankChangeStateRepository).saveAll(anyList());
     }
 }
