@@ -9,8 +9,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.List;
-import java.util.Map;
 
 import com.project.dto.response.BojUserResponse;
 import lombok.extern.slf4j.Slf4j;
