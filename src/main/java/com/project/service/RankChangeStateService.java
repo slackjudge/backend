@@ -34,51 +34,43 @@ public class RankChangeStateService {
 
     @Transactional
     public void sendRankChangeMessage() {
-        LocalDateTime monthStart = LocalDate.now()
-                .withDayOfMonth(1)
-                .atStartOfDay();
+        LocalDateTime monthStart = LocalDate.now().withDayOfMonth(1).atStartOfDay();
 
         List<RankRawData> raw = usersProblemRepository.findMonthlyRank(monthStart);
         if (raw.isEmpty()) return;
 
         Map<Long, Integer> currentRanks = calculateRank(raw);
 
-        Map<Long, Long> scoreMap = raw.stream()
-                .collect(Collectors.toMap(RankRawData::getUserId, RankRawData::getScore));
+        Map<Long, Long> scoreMap = raw.stream().collect(Collectors.toMap(RankRawData::getUserId, RankRawData::getScore));
 
-        List<Long> userIds = new ArrayList<>(currentRanks.keySet());
-
-        Map<Long, RankChangeStateEntity> stateMap = rankChangeStateRepository.findAllById(userIds).stream()
+        Map<Long, RankChangeStateEntity> stateMap = rankChangeStateRepository.findAllById(currentRanks.keySet()).stream()
                 .collect(Collectors.toMap(RankChangeStateEntity::getUserId, s -> s));
 
-        Map<Long, UserEntity> userMap = userRepository.findAllById(userIds).stream()
+        Map<Long, UserEntity> userMap = userRepository.findAllById(currentRanks.keySet()).stream()
                 .collect(Collectors.toMap(UserEntity::getUserId, u -> u));
 
         List<RankChangeStateEntity> statesToSave = new ArrayList<>();
 
-        for (Long userId : userIds) {
-            int currentRank = currentRanks.get(userId);
+        for (Map.Entry<Long, Integer> entry : currentRanks.entrySet()) {
+            Long userId = entry.getKey();
+            int currentRank = entry.getValue();
             RankChangeStateEntity state = stateMap.get(userId);
 
-            // 최초 유저
             if (state == null) {
                 statesToSave.add(RankChangeStateEntity.create(userId, currentRank));
                 continue;
             }
 
             int lastRank = state.getLastCheckedRank();
-
             UserEntity user = userMap.get(userId);
-            boolean canNotify = user != null && user.isAlertAgreed();
 
-            if (canNotify && currentRank < lastRank) {
+            if (user != null && user.isAlertAgreed() && currentRank < lastRank) {
                 try {
                     String message = messageFormatUtil.formatRankChange(
                             user.getUsername(),
                             lastRank,
                             currentRank,
-                            scoreMap.getOrDefault(userId, 0L)
-                    );
+                            scoreMap.getOrDefault(userId, 0L));
                     slackMessageSender.sendMessage(user.getSlackId(), message);
                 } catch (Exception e) {
                     log.warn("순위 변동 DM 실패 userId={}, err={}", userId, e.getMessage());
