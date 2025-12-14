@@ -25,7 +25,7 @@ public class MessageFormatUtil {
     return sb.toString();
   }
 
-  public String formatRankChange(String userName, int oldRank, int newRank, int score) {
+  public String formatRankChange(String userName, int oldRank, int newRank, long score) {
     return String.format(
         """
                         🔥 %s님이 %d위 → %d위로 상승! 🔥
