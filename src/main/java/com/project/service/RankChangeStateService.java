@@ -66,27 +66,26 @@ public class RankChangeStateService {
                 continue;
             }
 
-            int lastRank = state.getLastNotifiedRank();
-            if (currentRank >= lastRank) continue;
-
+            int lastRank = state.getLastCheckedRank();
 
             UserEntity user = userMap.get(userId);
-            if (user == null || !user.isAlertAgreed()) continue;
+            boolean canNotify = user != null && user.isAlertAgreed();
 
-            try {
-                String message = messageFormatUtil.formatRankChange(
-                        user.getUsername(),
-                        lastRank,
-                        currentRank,
-                        scoreMap.getOrDefault(userId, 0L)
-                );
-                slackMessageSender.sendMessage(user.getSlackId(), message);
-
-                state.updateRank(currentRank);
-                statesToSave.add(state);
-            } catch (Exception e) {
-                log.warn("순위 변동 DM 실패 userId={}, err={}", userId, e.getMessage());
+            if (canNotify && currentRank < lastRank) {
+                try {
+                    String message = messageFormatUtil.formatRankChange(
+                            user.getUsername(),
+                            lastRank,
+                            currentRank,
+                            scoreMap.getOrDefault(userId, 0L)
+                    );
+                    slackMessageSender.sendMessage(user.getSlackId(), message);
+                } catch (Exception e) {
+                    log.warn("순위 변동 DM 실패 userId={}, err={}", userId, e.getMessage());
+                }
             }
+            state.updateRank(currentRank);
+            statesToSave.add(state);
         }
         if (!statesToSave.isEmpty()) {
             rankChangeStateRepository.saveAll(statesToSave);

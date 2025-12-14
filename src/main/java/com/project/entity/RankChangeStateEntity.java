@@ -18,20 +18,20 @@ public class RankChangeStateEntity extends BaseTimeEntity {
     @Id
     private Long userId;
 
-    @Column(name = "last_notified_rank", nullable = false)
-    private int lastNotifiedRank;
+    @Column(name = "last_checked_rank", nullable = false)
+    private int lastCheckedRank;
 
-    private RankChangeStateEntity(Long userId, int lastNotifiedRank) {
+    private RankChangeStateEntity(Long userId, int lastCheckedRank) {
         this.userId = userId;
-        this.lastNotifiedRank = lastNotifiedRank;
+        this.lastCheckedRank = lastCheckedRank;
     }
 
     // 최초 생성 시 알림은 보내지 않고 기준만 저장한다.
-    public static RankChangeStateEntity create(Long userId, int lastNotifiedRank) {
-        return new RankChangeStateEntity(userId, lastNotifiedRank);
+    public static RankChangeStateEntity create(Long userId, int lastCheckedRank) {
+        return new RankChangeStateEntity(userId, lastCheckedRank);
     }
 
     public void updateRank(int newRank) {
-        this.lastNotifiedRank = newRank;
+        this.lastCheckedRank = newRank;
     }
 }
