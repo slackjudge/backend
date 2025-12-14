@@ -8,9 +8,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @TestConfiguration
 public class TestContainerConfig {
 
-  @Bean
-  @ServiceConnection
-  public PostgreSQLContainer<?> postgresContainer() {
-    return new PostgreSQLContainer<>("postgres:13.3");
-  }
+    @Bean
+    @ServiceConnection
+    public PostgreSQLContainer<?> postgresContainer() {
+        return new PostgreSQLContainer<>("postgres:13.3");
+    }
 }
