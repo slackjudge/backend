@@ -14,9 +14,9 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(DailyRankMessageController.class)
+@WebMvcTest(RankChangeStateController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import(DailyRankMessageControllerTest.TestConfig.class)
+@Import(RankChangeStateControllerTest.TestConfig.class)
 public class RankChangeStateControllerTest {
 
     @Autowired
