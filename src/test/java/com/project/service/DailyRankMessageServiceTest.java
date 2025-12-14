@@ -4,7 +4,7 @@ import com.project.common.exception.BusinessException;
 import com.project.common.exception.ErrorCode;
 import com.project.common.util.MessageFormatUtil;
 import com.project.common.util.SlackMessageSender;
-import com.project.dto.DailyRankRawData;
+import com.project.dto.RankRawData;
 import com.project.repository.DailyRankMessageRepository;
 import com.project.repository.UsersProblemRepository;
 import com.slack.api.methods.response.chat.ChatPostMessageResponse;
@@ -46,7 +46,7 @@ class DailyRankMessageServiceTest {
     @Test
     @DisplayName("일일 랭킹 알림 메시지 전송 검증")
     void sendDailyRankMessage() throws Exception {
-        List<DailyRankRawData> raw = List.of(new DailyRankRawData(1L, "유재석", 7L, 48L));
+        List<RankRawData> raw = List.of(new RankRawData(1L, "유재석", 7L, 48L));
 
         when(usersProblemRepository.findDailyRank(any(), any())).thenReturn(raw);
         when(messageFormatUtil.formatDailyRank(any())).thenReturn("TEST_FORMATTED_MESSAGE");
@@ -100,7 +100,7 @@ class DailyRankMessageServiceTest {
 
         when(usersProblemRepository.findDailyRank(any(), any()))
                 .thenReturn(List.of(
-                        new DailyRankRawData(1L, "유재석", 7L, 48L)
+                        new RankRawData(1L, "유재석", 7L, 48L)
                 ));
 
         when(messageFormatUtil.formatDailyRank(any()))
@@ -122,7 +122,7 @@ class DailyRankMessageServiceTest {
 
         when(usersProblemRepository.findDailyRank(any(), any()))
                 .thenReturn(List.of(
-                        new DailyRankRawData(1L, "유재석", 7L, 48L)
+                        new RankRawData(1L, "유재석", 7L, 48L)
                 ));
 
         when(messageFormatUtil.formatDailyRank(any()))

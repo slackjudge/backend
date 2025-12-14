@@ -5,7 +5,7 @@ import com.project.common.exception.ErrorCode;
 import com.project.common.util.MessageFormatUtil;
 import com.project.common.util.SlackMessageSender;
 import com.project.dto.DailyRankInfo;
-import com.project.dto.DailyRankRawData;
+import com.project.dto.RankRawData;
 import com.project.entity.DailyRankMessageEntity;
 import com.project.repository.DailyRankMessageRepository;
 import com.project.repository.UsersProblemRepository;
@@ -33,7 +33,7 @@ public class DailyRankMessageService {
         LocalDateTime start = LocalDate.now().atStartOfDay();
         LocalDateTime end = LocalDateTime.now();
 
-        List<DailyRankRawData> raw = usersProblemRepository.findDailyRank(start, end);
+        List<RankRawData> raw = usersProblemRepository.findDailyRank(start, end);
 
         List<DailyRankInfo> ranked = calculateRank(raw);
 
@@ -73,14 +73,14 @@ public class DailyRankMessageService {
         }
     }
 
-    private List<DailyRankInfo> calculateRank(List<DailyRankRawData> raw) {
+    private List<DailyRankInfo> calculateRank(List<RankRawData> raw) {
         if (raw.isEmpty()) return List.of();
 
         List<DailyRankInfo> ranked = new ArrayList<>();
         int currentRank = 1;
 
         for (int i = 0; i < raw.size(); i++) {
-            DailyRankRawData r = raw.get(i);
+            RankRawData r = raw.get(i);
 
             if (i > 0 && !raw.get(i - 1).getScore().equals(r.getScore())) {
                 currentRank = i + 1;
