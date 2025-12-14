@@ -78,7 +78,9 @@ public class RankChangeStateService {
             // 상승한 경우만 알림
             if (currentRank < lastRank) {
                 UserEntity user = userMap.get(userId);
-                if (user == null || user.getSlackId() == null) continue;
+                if (user == null) continue;
+                if (!user.isAlertAgreed()) continue;
+                if (user.getSlackId() == null || "initial".equals(user.getSlackId())) continue;
 
                 String message = messageFormatUtil.formatRankChange(
                         user.getUsername(),
