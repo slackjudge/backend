@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
-class SlackNotificationServiceTest {
+class DailyRankMessageServiceTest {
 
     @Mock
     SlackMessageSender slackMessageSender;
@@ -41,7 +41,7 @@ class SlackNotificationServiceTest {
     DailyRankMessageRepository dailyRankMessageRepository;
 
     @InjectMocks
-    SlackNotificationService slackNotificationService;
+    DailyRankMessageService dailyRankMessageService;
 
     @Test
     @DisplayName("일일 랭킹 알림 메시지 전송 검증")
@@ -56,7 +56,7 @@ class SlackNotificationServiceTest {
 
         when(slackMessageSender.sendMessage(anyString(), anyString())).thenReturn(mockResponse);
 
-        slackNotificationService.sendDailyRankMessage();
+        dailyRankMessageService.sendDailyRankMessage();
 
         verify(slackMessageSender, times(1)).sendMessage("C0A0M8HUQDT", "TEST_FORMATTED_MESSAGE");
         verify(dailyRankMessageRepository).save(any());
@@ -72,7 +72,7 @@ class SlackNotificationServiceTest {
 
         when(slackMessageSender.sendMessage(anyString(), anyString())).thenReturn(response);
 
-        slackNotificationService.sendDailyRankMessage();
+        dailyRankMessageService.sendDailyRankMessage();
 
         verify(slackMessageSender, times(1)).sendMessage("C0A0M8HUQDT", "오늘은 새로운 문제 풀이가 없습니다.😊");
     }
@@ -89,7 +89,7 @@ class SlackNotificationServiceTest {
         when(slackMessageSender.sendMessage(anyString(), anyString()))
                 .thenReturn(mockResponse);
 
-        slackNotificationService.sendRankChangeMessage();
+        dailyRankMessageService.sendRankChangeMessage();
 
         verify(slackMessageSender).sendMessage("U0A1NG7GEA2", "RANK_CHANGED");
     }
@@ -109,7 +109,7 @@ class SlackNotificationServiceTest {
         when(slackMessageSender.sendMessage(anyString(), anyString()))
                 .thenThrow(new BusinessException(ErrorCode.SLACK_MESSAGE_FAILED));
 
-        assertThatThrownBy(() -> slackNotificationService.sendDailyRankMessage())
+        assertThatThrownBy(() -> dailyRankMessageService.sendDailyRankMessage())
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.SLACK_MESSAGE_FAILED);
 
@@ -131,7 +131,7 @@ class SlackNotificationServiceTest {
         when(slackMessageSender.sendMessage(anyString(), anyString()))
                 .thenThrow(new RuntimeException("unknown error"));
 
-        assertThatThrownBy(() -> slackNotificationService.sendDailyRankMessage())
+        assertThatThrownBy(() -> dailyRankMessageService.sendDailyRankMessage())
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.SLACK_MESSAGE_FAILED);
 

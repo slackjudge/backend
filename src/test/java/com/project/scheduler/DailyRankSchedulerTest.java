@@ -1,6 +1,6 @@
 package com.project.scheduler;
 
-import com.project.service.SlackNotificationService;
+import com.project.service.DailyRankMessageService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,11 +16,11 @@ class DailyRankSchedulerTest {
     DailyRankScheduler dailyRankScheduler;
 
     @Mock
-    SlackNotificationService slackNotificationService;
+    DailyRankMessageService dailyRankMessageService;
 
     @Test
     void dailyRankScheduler_runs() {
         dailyRankScheduler.runDailyRank();
-        verify(slackNotificationService).sendDailyRankMessage();
+        verify(dailyRankMessageService).sendDailyRankMessage();
     }
 }

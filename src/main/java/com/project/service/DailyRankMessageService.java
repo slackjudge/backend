@@ -19,7 +19,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class SlackNotificationService {
+public class DailyRankMessageService {
 
     private final UsersProblemRepository usersProblemRepository;
     private final SlackMessageSender slackMessageSender;

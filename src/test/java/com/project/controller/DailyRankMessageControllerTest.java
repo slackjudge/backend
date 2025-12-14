@@ -1,6 +1,6 @@
 package com.project.controller;
 
-import com.project.service.SlackNotificationService;
+import com.project.service.DailyRankMessageService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,21 +17,21 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(SlackNotificationController.class)
+@WebMvcTest(DailyRankMessageController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import(SlackNotificationControllerTest.TestConfig.class)
-class SlackNotificationControllerTest {
+@Import(DailyRankMessageControllerTest.TestConfig.class)
+class DailyRankMessageControllerTest {
 
     @Autowired
     MockMvc mvc;
 
     @Autowired
-    SlackNotificationService slackNotificationService;
+    DailyRankMessageService dailyRankMessageService;
 
     static class TestConfig {
         @Bean
-        public SlackNotificationService slackNotificationService() {
-            return mock(SlackNotificationService.class);
+        public DailyRankMessageService slackNotificationService() {
+            return mock(DailyRankMessageService.class);
         }
     }
 
@@ -43,7 +43,7 @@ class SlackNotificationControllerTest {
         mvc.perform(post("/slack/daily-rank"))
                 .andExpect(status().isOk());
 
-        verify(slackNotificationService, times(1)).sendDailyRankMessage();
+        verify(dailyRankMessageService, times(1)).sendDailyRankMessage();
     }
 
     @Test
@@ -53,6 +53,6 @@ class SlackNotificationControllerTest {
         mvc.perform(post("/slack/rank-change"))
                 .andExpect(status().isOk());
 
-        verify(slackNotificationService, times(1)).sendRankChangeMessage();
+        verify(dailyRankMessageService, times(1)).sendRankChangeMessage();
     }
 }
