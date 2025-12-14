@@ -54,25 +54,6 @@ public class DailyRankMessageService {
         }
     }
 
-    public void sendRankChangeMessage() {
-        try {
-            String userId = "U0A1NG7GEA2";
-
-            String userName = "박명수";
-            int oldRank = 5;
-            int newRank = 3;
-            int score = 26;
-
-            String message = messageFormatUtil.formatRankChange(userName, oldRank, newRank, score);
-
-            slackMessageSender.sendMessage(userId, message);
-        } catch (BusinessException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new BusinessException(ErrorCode.SLACK_MESSAGE_FAILED, "slack 메시지 전송 중 오류 발생 : " + e.getMessage());
-        }
-    }
-
     private List<DailyRankInfo> calculateRank(List<RankRawData> raw) {
         if (raw.isEmpty()) return List.of();
 

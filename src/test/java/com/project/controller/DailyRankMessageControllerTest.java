@@ -30,7 +30,7 @@ class DailyRankMessageControllerTest {
 
     static class TestConfig {
         @Bean
-        public DailyRankMessageService slackNotificationService() {
+        public DailyRankMessageService dailyRankMessageService() {
             return mock(DailyRankMessageService.class);
         }
     }
@@ -44,15 +44,5 @@ class DailyRankMessageControllerTest {
                 .andExpect(status().isOk());
 
         verify(dailyRankMessageService, times(1)).sendDailyRankMessage();
-    }
-
-    @Test
-    @DisplayName("개인 순위 변동 알림 API 호출 성공")
-    void rankChangeApiTest() throws Exception {
-
-        mvc.perform(post("/slack/rank-change"))
-                .andExpect(status().isOk());
-
-        verify(dailyRankMessageService, times(1)).sendRankChangeMessage();
     }
 }

@@ -78,23 +78,6 @@ class DailyRankMessageServiceTest {
     }
 
     @Test
-    @DisplayName("개인 순위 변동 메시지 전송 검증")
-    void sendRankChangeMessage() throws Exception {
-        when(messageFormatUtil.formatRankChange(anyString(), anyInt(), anyInt(), anyInt()))
-                .thenReturn("RANK_CHANGED");
-
-        ChatPostMessageResponse mockResponse = new ChatPostMessageResponse();
-        mockResponse.setOk(true);
-
-        when(slackMessageSender.sendMessage(anyString(), anyString()))
-                .thenReturn(mockResponse);
-
-        dailyRankMessageService.sendRankChangeMessage();
-
-        verify(slackMessageSender).sendMessage("U0A1NG7GEA2", "RANK_CHANGED");
-    }
-
-    @Test
     @DisplayName("DailyRankMessage - BusinessException 발생 시 그대로 throw")
     void dailyRankMessage_businessException() throws Exception {
 

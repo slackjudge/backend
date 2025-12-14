@@ -21,10 +21,4 @@ public class DailyRankMessageController {
         dailyRankMessageService.sendDailyRankMessage();
         return ResponseEntity.ok(ApiResponse.success("ok", null));
     }
-
-    @PostMapping("/rank-change")
-    public ResponseEntity<ApiResponse<Void>> sendRankChange() {
-        dailyRankMessageService.sendRankChangeMessage();
-        return ResponseEntity.ok(ApiResponse.success("ok", null));
-    }
 }
