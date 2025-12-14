@@ -7,27 +7,27 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class ApiResponse<T> {
-    private boolean success;
+  private boolean success;
 
-    private String errorCode;
+  private String errorCode;
 
-    private String message;
+  private String message;
 
-    private T data;
+  private T data;
 
-    public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(true, null, "Success", data);
-    }
+  public static <T> ApiResponse<T> success(T data) {
+    return new ApiResponse<>(true, null, "Success", data);
+  }
 
-    public static <T> ApiResponse<T> success(String message, T data) {
-        return new ApiResponse<>(true, null, message, data);
-    }
+  public static <T> ApiResponse<T> success(String message, T data) {
+    return new ApiResponse<>(true, null, message, data);
+  }
 
-    public static <T> ApiResponse<T> error(ErrorCode errorCode) {
-        return new ApiResponse<>(false, errorCode.getCode(), errorCode.getMessage(), null);
-    }
+  public static <T> ApiResponse<T> error(ErrorCode errorCode) {
+    return new ApiResponse<>(false, errorCode.getCode(), errorCode.getMessage(), null);
+  }
 
-    public static <T> ApiResponse<T> error(ErrorCode errorCode, String message) {
-        return new ApiResponse<>(false, errorCode.getCode(), message, null);
-    }
+  public static <T> ApiResponse<T> error(ErrorCode errorCode, String message) {
+    return new ApiResponse<>(false, errorCode.getCode(), message, null);
+  }
 }

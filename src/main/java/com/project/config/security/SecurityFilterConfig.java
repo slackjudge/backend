@@ -13,17 +13,18 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 @Configuration
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class SecurityFilterConfig {
-    private final UserDetailsService userDetailsService;
-    private final AccessDeniedHandler accessDeniedHandler;
-    private final JwtProvider accessTokenProvider;
+  private final UserDetailsService userDetailsService;
+  private final AccessDeniedHandler accessDeniedHandler;
+  private final JwtProvider accessTokenProvider;
 
-    @Bean
-    public JwtExceptionFilter jwtExceptionFilter() {
-        return new JwtExceptionFilter();
-    }
+  @Bean
+  public JwtExceptionFilter jwtExceptionFilter() {
+    return new JwtExceptionFilter();
+  }
 
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(userDetailsService, accessTokenProvider, accessDeniedHandler);
-    }
+  @Bean
+  public JwtAuthenticationFilter jwtAuthenticationFilter() {
+    return new JwtAuthenticationFilter(
+        userDetailsService, accessTokenProvider, accessDeniedHandler);
+  }
 }
