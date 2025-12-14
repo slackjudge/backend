@@ -2,7 +2,6 @@ package com.project.service;
 
 import com.project.common.exception.BusinessException;
 import com.project.common.exception.ErrorCode;
-import com.project.dto.response.GrassResponse;
 import com.project.dto.response.MyPageResponse;
 import com.project.dto.response.ProblemResponse;
 import com.project.entity.UserEntity;
@@ -25,10 +24,16 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
-
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class MyPageServiceTest {
 
@@ -52,59 +57,38 @@ class MyPageServiceTest {
     void getMyPage_Success() {
         // given
         Long userId = 1L;
-        int year = 2025;
-        int month = 12;
         String dateStr = "2025-12-05";
         LocalDate targetDate = LocalDate.parse(dateStr);
 
-        // 1. Mock User
-        UserEntity mockUser = UserEntity.builder()
-                .userId(userId)
-                .username("testUser")
-                .totalSolvedCount(100)
-                .build();
-        given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
-
-        // 2. Mock Grass List (빈 리스트여도 상관없음)
-        given(myPageRepository.findGrassList(userId, year, month)).willReturn(Collections.emptyList());
-
-        // 3. Mock Problem List (통계 계산 검증용 핵심 데이터)
-        // 난이도 5, 난이도 10인 문제 2개를 풀었다고 가정
+        // 1. Mock 데이터 생성
+        UserEntity mockUser = UserEntity.builder().userId(userId).totalSolvedCount(100).build();
         List<ProblemResponse> mockProblems = List.of(
-                new ProblemResponse("A", 5, "url1"),  // tierLevel: 5
-                new ProblemResponse("B", 10, "url2")  // tierLevel: 10
+                new ProblemResponse("A", 5, "url1"),
+                new ProblemResponse("B", 10, "url2")
         );
-        given(myPageRepository.findSolvedProblemList(userId, targetDate)).willReturn(mockProblems);
 
-        // 4. Mock Ranking (문제를 풀었으므로 랭킹 조회 호출됨)
-        given(rankingDayRepository.calculateDailyRank(anyInt(), any(LocalDateTime.class), any(LocalDateTime.class)))
-                .willReturn(1L); // 1등이라고 가정
-
-        // 5. Mock Mapper (결과 반환용)
-        MyPageResponse mockResponse = mock(MyPageResponse.class);
-        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), anyInt(), anyInt(), anyInt(), anyInt(), anyList()))
-                .willReturn(mockResponse);
+        // 2. Mock 동작 설정 (Checkstyle 메서드 길이 제한을 위해 헬퍼 메서드로 분리)
+        setupSuccessMocks(userId, targetDate, mockUser, mockProblems);
 
         // when
-        MyPageResponse result = myPageService.getMyPage(userId, year, month, dateStr);
+        MyPageResponse result = myPageService.getMyPage(userId, 2025, 12, dateStr);
 
         // then
         assertThat(result).isNotNull();
 
-        // [핵심 검증] Mapper에게 전달된 파라미터가 비즈니스 로직대로 계산되었는지 확인
+        // [핵심 변경] 4개의 숫자를 DailyStatistics 객체 하나로 묶어서 검증
+        // 5 + 10 = 15점, 1등, 2문제, 최대난이도 10
+        MyPageMapper.DailyStatistics expectedStats = new MyPageMapper.DailyStatistics(15, 1, 2, 10);
+
         verify(myPageMapper).toResponse(
                 eq(mockUser),
                 eq(100),                // totalSolvedCount
                 anyList(),              // grassList
                 eq(targetDate),         // date
-                eq(15),                 // dailyScore (5 + 10 = 15) -> 계산 로직 검증
-                eq(1),                  // dailyRank (Mock 반환값)
-                eq(2),                  // solvedCount (List size)
-                eq(10),                 // maxDifficulty (Max 10) -> 계산 로직 검증
+                eq(expectedStats),      // [변경] 통계 객체 검증
                 eq(mockProblems)        // problemList
         );
 
-        // 랭킹 리포지토리가 호출되었는지 확인
         verify(rankingDayRepository, times(1))
                 .calculateDailyRank(eq(15), any(LocalDateTime.class), any(LocalDateTime.class));
     }
@@ -114,34 +98,32 @@ class MyPageServiceTest {
     void getMyPage_NoSolvedProblems() {
         // given
         Long userId = 1L;
-        String dateStr = "2025-12-05";
-        LocalDate targetDate = LocalDate.parse(dateStr);
+        LocalDate targetDate = LocalDate.parse("2025-12-05");
 
         UserEntity mockUser = UserEntity.builder().userId(userId).totalSolvedCount(0).build();
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
-        given(myPageRepository.findSolvedProblemList(userId, targetDate)).willReturn(Collections.emptyList()); // 빈 리스트
+        given(myPageRepository.findSolvedProblemList(userId, targetDate)).willReturn(Collections.emptyList());
 
-        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), anyInt(), anyInt(), anyInt(), anyInt(), anyList()))
+        // [변경] Mapper 파라미터가 6개로 줄어듦 (DailyStatistics 포함)
+        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList()))
                 .willReturn(mock(MyPageResponse.class));
 
         // when
-        myPageService.getMyPage(userId, 2025, 12, dateStr);
+        myPageService.getMyPage(userId, 2025, 12, "2025-12-05");
 
         // then
-        // [핵심 검증] 0으로 계산되어 Mapper에 전달되었는지 확인
+        // [핵심 변경] 모든 통계가 0인 객체 생성
+        MyPageMapper.DailyStatistics zeroStats = new MyPageMapper.DailyStatistics(0, 0, 0, 0);
+
         verify(myPageMapper).toResponse(
                 eq(mockUser),
                 eq(0),
                 anyList(),
                 eq(targetDate),
-                eq(0),  // dailyScore
-                eq(0),  // dailyRank
-                eq(0),  // solvedCount
-                eq(0),  // maxDifficulty
+                eq(zeroStats), // [변경] 0으로 채워진 통계 객체 확인
                 eq(Collections.emptyList())
         );
 
-        // [중요] 문제가 없으면 랭킹 조회 쿼리가 실행되지 않아야 함 (성능 최적화 확인)
         verify(rankingDayRepository, never()).calculateDailyRank(anyInt(), any(), any());
     }
 
@@ -163,23 +145,40 @@ class MyPageServiceTest {
     void getMyPage_DateLogic() {
         // given
         Long userId = 1L;
-        int pastYear = 2020; // 과거
-        int pastMonth = 1;
-
         UserEntity mockUser = UserEntity.builder().userId(userId).build();
+
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
         given(myPageRepository.findSolvedProblemList(any(), any())).willReturn(Collections.emptyList());
-        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), anyInt(), anyInt(), anyInt(), anyInt(), anyList()))
+
+        // [변경] 파라미터 개수 6개로 맞춤
+        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList()))
                 .willReturn(mock(MyPageResponse.class));
 
-        // when: 날짜 문자열 없이(null) 호출
-        myPageService.getMyPage(userId, pastYear, pastMonth, null);
+        // when
+        myPageService.getMyPage(userId, 2020, 1, null);
 
-        // then: Mapper에 넘어간 날짜가 "2020-01-01"인지 확인
+        // then
         verify(myPageMapper).toResponse(
                 any(), anyInt(), anyList(),
                 eq(LocalDate.of(2020, 1, 1)), // 기대값
-                anyInt(), anyInt(), anyInt(), anyInt(), anyList()
+                any(), // DailyStatistics
+                anyList()
         );
+    }
+
+    // [Checkstyle 해결] 메서드 길이를 줄이기 위한 헬퍼 메서드
+    private void setupSuccessMocks(Long userId, LocalDate targetDate,
+            UserEntity mockUser, List<ProblemResponse> mockProblems) {
+        given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
+        given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt()))
+                .willReturn(Collections.emptyList());
+        given(myPageRepository.findSolvedProblemList(userId, targetDate))
+                .willReturn(mockProblems);
+        given(rankingDayRepository.calculateDailyRank(anyInt(), any(), any()))
+                .willReturn(1L);
+
+        // [변경] Mapper Mock 설정 (파라미터 6개)
+        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(MyPageMapper.DailyStatistics.class), anyList()))
+                .willReturn(mock(MyPageResponse.class));
     }
 }

@@ -47,26 +47,11 @@ public class MyPageService {
                 myPageRepository.findSolvedProblemList(userId, targetDate);
 
         // 5. 통계 계산
-        int solvedCount = problemList.size();
+        MyPageMapper.DailyStatistics dailyStats = calculateDailyStatistics(problemList, targetDate);
 
-        int dailyScore =
-                problemList.stream().mapToInt(ProblemResponse::tierLevel).sum();
-        int maxDifficulty =
-                problemList.stream().mapToInt(ProblemResponse::tierLevel).max().orElse(0);
 
         // 6. 상세: 일간 랭킹 계산 (Native Query)
         int dailyRank = 0;
-        if (solvedCount > 0) {
-            LocalDateTime startOfDay = targetDate.atStartOfDay();
-            LocalDateTime nextDayStart = targetDate.plusDays(1).atStartOfDay();
-
-            long rankResult = rankingDayRepository.calculateDailyRank(
-                    dailyScore,
-                    startOfDay,
-                    nextDayStart
-            );
-            dailyRank = Math.toIntExact(rankResult);
-        }
 
         // 7. 전체 랭킹 및 점수
         int totalSolvedCount = user.getTotalSolvedCount() != null ? user.getTotalSolvedCount() : 0;
@@ -76,15 +61,28 @@ public class MyPageService {
                 totalSolvedCount,
                 grassList,
                 targetDate,
-                dailyScore,
-                (int) dailyRank,
-                solvedCount,
-                maxDifficulty,
+                dailyStats,
                 problemList
         );
-
-
     }
+    private MyPageMapper.DailyStatistics calculateDailyStatistics(List<ProblemResponse> problemList, LocalDate targetDate) {
+        int solvedCount = problemList.size();
+        int dailyScore = problemList.stream().mapToInt(ProblemResponse::tierLevel).sum();
+        int maxDifficulty = problemList.stream().mapToInt(ProblemResponse::tierLevel).max().orElse(0);
+
+        int dailyRank = 0;
+        if (solvedCount > 0) {
+            long rankResult = rankingDayRepository.calculateDailyRank(
+                    dailyScore,
+                    targetDate.atStartOfDay(),
+                    targetDate.plusDays(1).atStartOfDay()
+            );
+            dailyRank = (int) rankResult;
+        }
+
+        return new MyPageMapper.DailyStatistics(dailyScore, dailyRank, solvedCount, maxDifficulty);
+    }
+
     private LocalDate determineTargetDate(int year, int month, String dateStr) {
         try {
             if (dateStr != null && !dateStr.isBlank()) {

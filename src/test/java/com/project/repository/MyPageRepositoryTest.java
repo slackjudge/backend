@@ -4,7 +4,11 @@ import com.project.config.TestContainerConfig;
 import com.project.config.TestQueryDslConfig;
 import com.project.dto.response.GrassResponse;
 import com.project.dto.response.ProblemResponse;
-import com.project.entity.*;
+import com.project.entity.EurekaTeamName;
+import com.project.entity.ProblemEntity;
+import com.project.entity.UserEntity;
+import com.project.entity.UsersProblemEntity;
+import com.project.entity.UserRole;
 import jakarta.persistence.EntityManager;
 
 import org.junit.jupiter.api.BeforeEach;

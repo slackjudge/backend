@@ -15,7 +15,8 @@ import java.util.List;
 public class MyPageMapper {
     public MyPageResponse toResponse(UserEntity user, int totalScore,
             List<GrassResponse> grassList,
-            LocalDate date, int dailyScore, int dailyRank, int solvedCount, int maxDifficulty,
+            LocalDate date,
+            DailyStatistics dailyStats,
             List<ProblemResponse> problemList) {
 
         // 1. 프로필 Record 생성
@@ -29,14 +30,21 @@ public class MyPageMapper {
         // 2. 상세 정보 Record 생성
         MyPageDetailResponse detail = new MyPageDetailResponse(
                 date.toString(),
-                dailyScore,
-                dailyRank,
-                solvedCount,
-                maxDifficulty,
+                dailyStats.dailyScore(),      // Record에서 꺼냄
+                dailyStats.dailyRank(),
+                dailyStats.solvedCount(),
+                dailyStats.maxDifficulty(),
                 problemList
         );
 
         // 3. 최종 Record 조립 후 반환
         return new MyPageResponse(profile, grassList, detail);
+    }
+    public record DailyStatistics(
+            int dailyScore,
+            int dailyRank,
+            int solvedCount,
+            int maxDifficulty
+    ) {
     }
 }

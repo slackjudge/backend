@@ -64,7 +64,7 @@ public class MyPageRepository {
                 .where(
                         usersProblemEntity.user.userId.eq(userId),
                         usersProblemEntity.isSolved.isTrue(),
-                        usersProblemEntity.solvedTime.between(startOfDay,endOfDay))
+                        usersProblemEntity.solvedTime.between(startOfDay, endOfDay))
                 .orderBy(usersProblemEntity.solvedTime.asc())
                 .fetch();
     }
