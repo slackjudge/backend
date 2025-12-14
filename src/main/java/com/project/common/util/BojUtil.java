@@ -11,6 +11,8 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+
+import com.project.dto.response.BojUserResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -27,49 +29,49 @@ public class BojUtil {
     this.httpClient =
         HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_2)
-            .connectTimeout(Duration.ofSeconds(3)) // 연결 지연 대비 (3초 추천)
+            .connectTimeout(Duration.ofSeconds(3)) // 연결 지연 대비
             .build();
   }
 
   public boolean checkBojId(String baekjoonId) {
-    Map<String, Object> map = getBojMap(baekjoonId);
-
-    Double count = (Double) map.get("count");
-
-    return count != 0;
+    BojUserResponse response = requestBojUser(baekjoonId);
+    return response != null;
   }
 
   public int getBojTier(String baekjoonId) {
-    Map<String, Object> map = getBojMap(baekjoonId);
-
-    List<Map<String, Object>> items = (List<Map<String, Object>>) map.get("items");
-    Map<String, Object> userData = items.get(0);
-
-    Double tierDouble = (Double) userData.get("tier");
-    return tierDouble.intValue();
+    BojUserResponse response = requestBojUser(baekjoonId);
+    return response.tier();
   }
 
-  private Map<String, Object> getBojMap(String baekjoonId) {
-    HttpRequest request =
-        HttpRequest.newBuilder()
-            .uri(URI.create("https://solved.ac/api/v3/search/user?query=" + baekjoonId))
+  private BojUserResponse requestBojUser(String baekjoonId) {
+    HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("https://solved.ac/api/v3/user/show?handle=" + baekjoonId))
             .header("x-solvedac-language", "ko")
             .header("Accept", "application/json")
-            .timeout(Duration.ofSeconds(10)) // solved api는 응답이 매우 빠르므로 10초로 두었습니다
+            .timeout(Duration.ofSeconds(5))
             .GET()
             .build();
 
-    HttpResponse<String> response;
     try {
-      response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+      HttpResponse<String> response =
+              httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+      // 존재하지 않는 ID
+      if (response.statusCode() == 404) {
+        return null;
+      }
+
+      if (response.statusCode() != 200) {
+        throw new BusinessException(ErrorCode.BAEKJOON_AUTH_INVALID);
+      }
+
+      return gson.fromJson(response.body(), BojUserResponse.class);
+
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new BusinessException(ErrorCode.BAEKJOON_AUTH_INVALID);
-
     } catch (IOException e) {
       throw new BusinessException(ErrorCode.BAEKJOON_AUTH_INVALID);
     }
-
-    return gson.fromJson(response.body(), Map.class);
   }
 }
