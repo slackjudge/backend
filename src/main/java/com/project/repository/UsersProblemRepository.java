@@ -2,14 +2,14 @@ package com.project.repository;
 
 import com.project.dto.DailyRankRawData;
 import com.project.entity.UsersProblemEntity;
+import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 public interface UsersProblemRepository extends JpaRepository<UsersProblemEntity, Long> {
-    @Query("""
+  @Query(
+      """
         SELECT new com.project.dto.DailyRankRawData(
             u.user.userId,
             u.user.username,
@@ -23,6 +23,5 @@ public interface UsersProblemRepository extends JpaRepository<UsersProblemEntity
         GROUP BY u.user.userId, u.user.username
         ORDER BY SUM(p.problemLevel) DESC, u.user.username ASC
     """)
-    List<DailyRankRawData> findDailyRank(LocalDateTime start, LocalDateTime end);
-
+  List<DailyRankRawData> findDailyRank(LocalDateTime start, LocalDateTime end);
 }

@@ -11,10 +11,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DailyRankScheduler {
 
-    private final SlackNotificationService slackNotificationService;
+  private final SlackNotificationService slackNotificationService;
 
-    @Scheduled(cron = "0 45 17 * * *", zone = "Asia/Seoul")
-    public void runDailyRank() {
-        slackNotificationService.sendDailyRankMessage();
-    }
+  @Scheduled(cron = "0 45 17 * * *", zone = "Asia/Seoul")
+  public void runDailyRank() {
+    slackNotificationService.sendDailyRankMessage();
+  }
 }
