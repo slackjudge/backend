@@ -25,4 +25,21 @@ public interface UsersProblemRepository extends JpaRepository<UsersProblemEntity
     """)
     List<RankRawData> findDailyRank(LocalDateTime start, LocalDateTime end);
 
+    @Query("""
+        SELECT new com.project.dto.RankRawData(
+            u.user.userId,
+            u.user.username,
+            COUNT(u),
+            SUM(p.problemLevel)
+        )
+        FROM UsersProblemEntity u
+        JOIN u.problem p
+        WHERE u.isSolved = true
+          AND u.solvedTime >= :start
+        GROUP BY u.user.userId, u.user.username
+        ORDER BY SUM(p.problemLevel) DESC, u.user.username ASC
+    """)
+    List<RankRawData> findMonthlyRank(LocalDateTime start);
+
+
 }
