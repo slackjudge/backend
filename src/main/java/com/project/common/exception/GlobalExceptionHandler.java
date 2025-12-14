@@ -10,26 +10,33 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(BusinessException.class)
-  public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e) {
-    ErrorCode errorCode = e.getErrorCode();
-    return ResponseEntity.ok(ApiResponse.error(errorCode));
-  }
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        return ResponseEntity
+                .ok(ApiResponse.error(errorCode));
+    }
 
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
-    return ResponseEntity.ok(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR, e.getMessage()));
-  }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
+        return ResponseEntity
+                .ok(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR, e.getMessage()));
+    }
 
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ApiResponse<Void>> handleValidationException(
-      MethodArgumentNotValidException e) {
-    String message =
-        e.getBindingResult().getFieldErrors().stream()
-            .findFirst()
-            .map(FieldError::getDefaultMessage)
-            .orElse(ErrorCode.INVALID_INPUT.getMessage());
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .findFirst()
+                .map(FieldError::getDefaultMessage)
+                .orElse(ErrorCode.INVALID_INPUT.getMessage());
 
-    return ResponseEntity.ok(ApiResponse.error(ErrorCode.INVALID_INPUT, message));
-  }
+        return ResponseEntity.ok(
+                ApiResponse.error(
+                        ErrorCode.INVALID_INPUT,
+                        message
+                )
+        );
+    }
 }

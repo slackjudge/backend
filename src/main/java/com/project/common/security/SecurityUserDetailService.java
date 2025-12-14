@@ -12,12 +12,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class SecurityUserDetailService implements UserDetailsService {
 
-  private final UserService userService;
+    private final UserService userService;
 
-  @Override
-  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    UserEntity user = userService.findUser(Long.parseLong(username));
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        UserEntity user = userService.findUser(Long.parseLong(username));
 
-    return new SecurityUserDetails(user);
-  }
+        return new SecurityUserDetails(user);
+    }
 }

@@ -16,18 +16,18 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class SecurityAuthConfig {
 
-  @Bean
-  public PasswordEncoder bcryptPasswordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
+    @Bean
+    public PasswordEncoder bcryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-  @Bean
-  public AccessDeniedHandler accessDeniedHandler(ObjectMapper objectMapper) {
-    return new JwtAccessDeniedHandler(objectMapper);
-  }
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler(ObjectMapper objectMapper) {
+        return new JwtAccessDeniedHandler(objectMapper);
+    }
 
-  @Bean
-  public AuthenticationEntryPoint authenticationEntryPoint() {
-    return new JwtAuthenticationEntryPoint();
-  }
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint() {
+        return new JwtAuthenticationEntryPoint();
+    }
 }

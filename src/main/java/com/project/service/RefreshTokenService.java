@@ -12,20 +12,20 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class RefreshTokenService {
 
-  private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-  public void saveRefreshToken(Long userId, String refreshToken) {
-    refreshTokenRepository.save(String.valueOf(userId), refreshToken);
-  }
-
-  public void removeRefreshToken(Long userId) {
-    refreshTokenRepository.delete(String.valueOf(userId));
-  }
-
-  public void validateRefreshToken(Long userId, String expectedRefreshToken) {
-    String refreshToken = refreshTokenRepository.find(String.valueOf(userId));
-    if (!refreshToken.equals(expectedRefreshToken)) {
-      throw new JwtException(ErrorCode.REFRESH_TOKEN_MISMATCH);
+    public void saveRefreshToken(Long userId, String refreshToken) {
+        refreshTokenRepository.save(String.valueOf(userId), refreshToken);
     }
-  }
+
+    public void removeRefreshToken(Long userId) {
+        refreshTokenRepository.delete(String.valueOf(userId));
+    }
+
+    public void validateRefreshToken(Long userId, String expectedRefreshToken) {
+        String refreshToken = refreshTokenRepository.find(String.valueOf(userId));
+        if (!refreshToken.equals(expectedRefreshToken)) {
+            throw new JwtException(ErrorCode.REFRESH_TOKEN_MISMATCH);
+        }
+    }
 }

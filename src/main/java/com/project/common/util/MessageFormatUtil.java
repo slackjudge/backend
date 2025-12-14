@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class MessageFormatUtil {
-
   public String formatDailyRank(List<DailyRankInfo> ranks) {
     StringBuilder sb = new StringBuilder("🏆 오늘의 랭킹\n\n");
 
@@ -33,7 +32,6 @@ public class MessageFormatUtil {
                         현재 점수: %d점""",
         userName, oldRank, newRank, score);
   }
-
   private String medal(int rank) {
     return switch (rank) {
       case 1 -> "🥇";

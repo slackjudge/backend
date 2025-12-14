@@ -40,6 +40,4 @@ public interface UsersProblemRepository extends JpaRepository<UsersProblemEntity
         ORDER BY SUM(p.problemLevel) DESC, u.user.username ASC
     """)
     List<RankRawData> findMonthlyRank(LocalDateTime start);
-
-
 }

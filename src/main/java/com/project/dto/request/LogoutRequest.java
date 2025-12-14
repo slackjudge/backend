@@ -1,5 +1,6 @@
 package com.project.dto.request;
 
-public record LogoutRequest(String refreshToken
+public record LogoutRequest(
+        String refreshToken
 ) {
 }

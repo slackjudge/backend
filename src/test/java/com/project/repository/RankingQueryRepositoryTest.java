@@ -1,6 +1,6 @@
 package com.project.repository;
 
-import com.project.config.QueryDslConfig;
+import com.project.config.QuerydslConfig;
 import com.project.config.security.JpaAuditingConfig;
 import com.project.dto.response.RankingRowResponse;
 import com.project.entity.EurekaTeamName;
@@ -19,7 +19,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import({QueryDslConfig.class, JpaAuditingConfig.class, RankingQueryRepository.class})
+@Import({QuerydslConfig.class, JpaAuditingConfig.class, RankingQueryRepository.class})
 @ActiveProfiles("test")
 @Sql(
         value = "/sql/insert-ranking-test-data.sql",
