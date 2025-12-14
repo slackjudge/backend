@@ -15,47 +15,45 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserService {
 
-  private final UserRepository userRepository;
-  private final BojUtil bojUtil;
+    private final UserRepository userRepository;
+    private final BojUtil bojUtil;
 
-  @Transactional
-  public UserEntity findUser(Long userId) {
-    return userRepository
-        .findById(userId)
-        .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-  }
+    @Transactional
+    public UserEntity findUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+    }
 
-  @Transactional
-  public UserEntity findUserBySlackId(String slackId) {
-    return userRepository
-        .findBySlackId(slackId)
-        .orElseGet(() -> userRepository.save(UserEntity.createUser(slackId)));
-  }
+    @Transactional
+    public UserEntity findUserBySlackId(String slackId) {
+        return userRepository.findBySlackId(slackId)
+                .orElseGet(() -> userRepository.save(UserEntity.createUser(slackId)));
+    }
 
-  @Transactional
-  public void signUp(Long userId, SignUpRequest signUpRequest) {
+    @Transactional
+    public void signUp(Long userId, SignUpRequest signUpRequest) {
 
-    UserEntity user =
-        userRepository
-            .findById(userId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-    int bojTier = bojUtil.getBojTier(signUpRequest.baekjoonId());
+        int bojTier = bojUtil.getBojTier(signUpRequest.baekjoonId());
 
-    user.signUp(signUpRequest, bojTier);
-    userRepository.save(user);
-  }
+        user.signUp(signUpRequest, bojTier);
+        userRepository.save(user);
+    }
 
-  @Transactional
-  public BojCheckResponse checkBaekjoonId(Long userId, String baekjoonId) {
+    @Transactional
+    public BojCheckResponse checkBaekjoonId(Long userId, String baekjoonId) {
 
-    // User Not Found 예외처리
-    userRepository
-        .findById(userId)
-        .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        // User Not Found 예외처리
+        userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-    boolean isBaekjoonId = bojUtil.checkBojId(baekjoonId);
+        boolean isBaekjoonId = bojUtil.checkBojId(baekjoonId);
 
-    return new BojCheckResponse(baekjoonId, isBaekjoonId);
-  }
+        return new BojCheckResponse(
+                baekjoonId,
+                isBaekjoonId
+        );
+    }
 }
