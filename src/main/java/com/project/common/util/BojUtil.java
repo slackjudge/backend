@@ -11,6 +11,8 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+
+import com.project.dto.response.BojUserResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +40,9 @@ public class BojUtil {
 
     public int getBojTier(String baekjoonId) {
         BojUserResponse response = requestBojUser(baekjoonId);
+        if (response == null) {
+            throw new BusinessException(ErrorCode.BAEKJOON_AUTH_INVALID);
+        }
         return response.tier();
     }
 
