@@ -2,7 +2,7 @@ package com.project.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.project.config.QueryDslConfig;
+import com.project.config.QuerydslConfig;
 import com.project.config.TestContainerConfig;
 import com.project.dto.response.MyPageResponse;
 import com.project.entity.UserEntity;
@@ -25,7 +25,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @DataJpaTest
 @EnableJpaAuditing
-@Import({QueryDslConfig.class, TestContainerConfig.class, MyPageRepository.class})
+@Import({QuerydslConfig.class, TestContainerConfig.class, MyPageRepository.class})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class MyPageRepositoryTest {
 
