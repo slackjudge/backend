@@ -39,8 +39,8 @@ public class RankingQueryRepository {
                     userEntity.teamName.stringValue()
             ))
             .from(usersProblemEntity)
-            .join(usersProblemEntity.user, userEntity)
-            .join(usersProblemEntity.problem, problemEntity)
+            .join(usersProblemEntity.ref.user, userEntity)
+            .join(usersProblemEntity.ref.problem, problemEntity)
             .where(
                     usersProblemEntity.solvedTime.goe(start),
                     usersProblemEntity.solvedTime.lt(endExclusive),

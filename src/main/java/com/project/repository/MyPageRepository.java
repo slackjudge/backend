@@ -41,7 +41,7 @@ public class MyPageRepository {
                 ))
                 .from(usersProblemEntity)
                 .where(
-                        usersProblemEntity.user.userId.eq(userId),
+                        usersProblemEntity.ref.user.userId.eq(userId),
                         usersProblemEntity.solvedTime.between(startOfMonth, endOfMonth))
                 .groupBy(dateStr)
                 .fetch();
@@ -60,9 +60,9 @@ public class MyPageRepository {
                         problemEntity.problemLevel,
                         problemEntity.problemUrl))
                 .from(usersProblemEntity)
-                .join(usersProblemEntity.problem, problemEntity)
+                .join(usersProblemEntity.ref.problem, problemEntity)
                 .where(
-                        usersProblemEntity.user.userId.eq(userId),
+                        usersProblemEntity.ref.user.userId.eq(userId),
                         usersProblemEntity.isSolved.isTrue(),
                         usersProblemEntity.solvedTime.between(startOfDay, endOfDay))
                 .orderBy(usersProblemEntity.solvedTime.asc())
