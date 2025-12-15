@@ -1,6 +1,6 @@
 package com.project.scheduler;
 
-import com.project.service.SlackNotificationService;
+import com.project.service.DailyRankMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -11,10 +11,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DailyRankScheduler {
 
-    private final SlackNotificationService slackNotificationService;
+    private final DailyRankMessageService dailyRankMessageService;
 
     @Scheduled(cron = "0 45 17 * * *", zone = "Asia/Seoul")
     public void runDailyRank() {
-        slackNotificationService.sendDailyRankMessage();
+        log.info("[DailyRankScheduler] run");
+        dailyRankMessageService.sendDailyRankMessage();
     }
 }

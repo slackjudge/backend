@@ -1,7 +1,7 @@
 package com.project.controller;
 
 import com.project.common.dto.ApiResponse;
-import com.project.service.SlackNotificationService;
+import com.project.service.DailyRankMessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,19 +12,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/slack")
-public class SlackNotificationController {
+public class DailyRankMessageController {
 
-    private final SlackNotificationService slackNotificationService;
+    private final DailyRankMessageService dailyRankMessageService;
 
     @PostMapping("/daily-rank")
     public ResponseEntity<ApiResponse<Void>> sendDailyRank() {
-        slackNotificationService.sendDailyRankMessage();
-        return ResponseEntity.ok(ApiResponse.success("ok", null));
-    }
-
-    @PostMapping("/rank-change")
-    public ResponseEntity<ApiResponse<Void>> sendRankChange() {
-        slackNotificationService.sendRankChangeMessage();
+        dailyRankMessageService.sendDailyRankMessage();
         return ResponseEntity.ok(ApiResponse.success("ok", null));
     }
 }

@@ -1,6 +1,6 @@
 package com.project.scheduler;
 
-import com.project.service.DailyRankMessageService;
+import com.project.service.RankChangeStateService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,17 +10,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class DailyRankSchedulerTest {
+public class RankChangeSchedulerTest {
 
     @InjectMocks
-    DailyRankScheduler dailyRankScheduler;
+    RankChangeScheduler rankChangeScheduler;
 
     @Mock
-    DailyRankMessageService dailyRankMessageService;
+    RankChangeStateService rankChangeStateService;
 
     @Test
     void dailyRankScheduler_runs() {
-        dailyRankScheduler.runDailyRank();
-        verify(dailyRankMessageService).sendDailyRankMessage();
+        rankChangeScheduler.runRankChange();
+        verify(rankChangeStateService).sendRankChangeMessage();
     }
 }
