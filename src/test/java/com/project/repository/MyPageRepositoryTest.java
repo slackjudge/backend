@@ -44,7 +44,7 @@ class MyPageRepositoryTest {
                 .slackId("123")
                 .baekjoonId("gkdud0909")
                 .username("최하영")
-                .totalSolvedCount(10)
+                .totalSolvedCount(4)
                 .bojTier(14)
                 .isAlertAgreed(true)
                 .isDeleted(false)
@@ -59,11 +59,20 @@ class MyPageRepositoryTest {
         // 2. 문제 더미 데이터 생성
         ProblemEntity p1 = createProblem(1001, "별찍기", 5);
         ProblemEntity p2 = createProblem(1002, "A+B", 10);
+        ProblemEntity p3 = createProblem(1003, "A하하하", 4);
+        ProblemEntity p4 = createProblem(1004, "문제!", 12);
+        ProblemEntity p5 = createProblem(1005, "하이!", 15);
+        ProblemEntity p6 = createProblem(1006, "슬립!", 17);
+
 
         // 3. 풀이 기록 생성 (시나리오: 12월 5일에 2문제 해결)
         // p2(A+B)는 오전 10시, p1(별찍기)는 오후 2시 -> 오름차순 정렬 시 p2가 먼저 나와야 함
-        createSolvedHistory(user, p1, LocalDate.of(2025, 12, 5).atTime(14, 0));
+        createSolvedHistory(user, p1, LocalDate.of(2025, 12, 5).atTime(10, 0));
         createSolvedHistory(user, p2, LocalDate.of(2025, 12, 5).atTime(10, 0));
+        createSolvedHistory(user, p3, LocalDate.of(2025, 12, 5).atTime(14, 0));
+        createSolvedHistory(user, p4, LocalDate.of(2025, 12, 5).atTime(15, 0));
+        createSolvedHistory(user, p5, LocalDate.of(2025, 12, 5).atTime(15, 0));
+        createSolvedHistory(user, p6, LocalDate.of(2025, 12, 6).atTime(15, 0));
 
         // 4. 영속성 컨텍스트 초기화 (쿼리가 실제로 DB로 날아가도록)
         em.flush();
@@ -77,17 +86,44 @@ class MyPageRepositoryTest {
         int year = 2025;
         int month = 12;
 
+        // [테스트 시나리오] 과거: 회원가입후 10시에 배치 돌았을때
+        LocalDateTime ignoreStart = LocalDateTime.of(2000, 12, 5, 10, 0, 0);
+        LocalDateTime ignoreEnd = LocalDateTime.of(2000, 12, 5, 10, 59, 59);
+
         // when
         List<GrassResponse> result =
-                myPageRepository.findGrassList(user.getUserId(), year, month);
+                myPageRepository.findGrassList(user.getUserId(), year, month, ignoreStart, ignoreEnd);
 
         // then
-        assertThat(result).hasSize(1); // 5일 하루 -> 1개 데이터
-
+        assertThat(result).hasSize(2); // 5일 하루 -> 1개 데이터
         GrassResponse dayData = result.get(0);
         assertThat(dayData.date()).isEqualTo("2025-12-05");
-        assertThat(dayData.solvedCount()).isEqualTo(2);
+        assertThat(dayData.solvedCount()).isEqualTo(5);
     }
+
+    @Test
+    @DisplayName("월간 잔디 조회: 설정한 제외 시간대 (가입 직후 배치) 데이터는 집계에서 제외되어야 한다. ")
+    void findGrassList_ExcludeSolved() {
+        int year = 2025;
+        int month = 12;
+
+        // setUp에서 10:00 , 14:00 15:00 데이터 넣음
+        // 가입 직후 14:00-14:59에 배치가 돌았을때 가정
+        LocalDateTime ignoreStart = LocalDateTime.of(2025, 12, 5, 10, 0, 0);
+        LocalDateTime ignoreEnd = LocalDateTime.of(2025, 12, 5, 10, 59, 59);
+
+        // when
+        List<GrassResponse> result =
+                myPageRepository.findGrassList(user.getUserId(), year, month, ignoreStart, ignoreEnd);
+
+        //then
+        assertThat(result).hasSize(2);
+        GrassResponse dayData = result.get(0);
+        assertThat(dayData.date()).isEqualTo("2025-12-05");
+        //4개중 10:00에 푼 2개 빠지므로 3개여야 함
+        assertThat(dayData.solvedCount()).isEqualTo(3);
+    }
+
 
     @Test
     @DisplayName("일간 문제 상세 조회: 해당 날짜의 solved=true만 오름차순으로 조회되어야 한다.")
@@ -100,9 +136,10 @@ class MyPageRepositoryTest {
                 myPageRepository.findSolvedProblemList(user.getUserId(), date);
 
         // then
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).title()).isEqualTo("A+B");   // 10:00
-        assertThat(result.get(1).title()).isEqualTo("별찍기"); // 14:00
+        assertThat(result).hasSize(5);
+        assertThat(result.get(0).title()).isEqualTo("별찍기");
+        assertThat(result.get(1).title()).isEqualTo("A+B");
+
     }
 
 

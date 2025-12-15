@@ -24,8 +24,10 @@ public class MyPageRepository {
 
     /**
      * 월간 잔디 데이터 조회
+     * @param ignoreStart 제외할 시간 범위 시작 (가입 직후 배치 시작 시간)
+     * @param ignoreEnd 제외할 시간 범위 끝 (가입 직후 배치 종료 시간)
      */
-    public List<GrassResponse> findGrassList(Long userId, int year, int month) {
+    public List<GrassResponse> findGrassList(Long userId, int year, int month, LocalDateTime ignoreStart, LocalDateTime ignoreEnd) {
         LocalDateTime startOfMonth = LocalDate.of(year, month, 1).atStartOfDay();
         LocalDateTime endOfMonth = LocalDate.of(year, month, 1).plusMonths(1).minusDays(1).atTime(23, 59, 59);
 
@@ -42,8 +44,11 @@ public class MyPageRepository {
                 .from(usersProblemEntity)
                 .where(
                         usersProblemEntity.ref.user.userId.eq(userId),
-                        usersProblemEntity.solvedTime.between(startOfMonth, endOfMonth))
+                        usersProblemEntity.solvedTime.between(startOfMonth, endOfMonth),
+                        usersProblemEntity.solvedTime.notBetween(ignoreStart, ignoreEnd)
+                )
                 .groupBy(dateStr)
+                .orderBy(dateStr.asc())
                 .fetch();
     }
 
