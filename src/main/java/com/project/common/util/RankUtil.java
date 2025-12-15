@@ -46,51 +46,40 @@ public class RankUtil {
 
 
     /**
-     * period에 따른 "현재 구간 endExclusive" 계산
+     * period에 따른 "현재 구간 endiNclusive" 계산
      *
      * 규칙:
-     * - 오늘/이번주/이번달(=현재 진행 중인 기간) -> now 정각 + 1시간 (as-of)
-     * - 과거 기간 -> 해당 기간의 끝(다음 day/week/month의 시작 00:00)
-     *  현재 진행의 경우 -> 이번달 -> 요청한 날짜가 12.15일 경우 어차피 16일부터 데이터는 없기 때문에
-     *  12.01 ~ 12.15일까지의 데이터만 수집하면됨
+     * 1) 요청한 period가 "현재 진행 중인 기간"이면:
+     *    - DB에 존재 가능한 최신 스냅샷은 floor(now) 이므로 endInclusive = floor(now)
      *
-     *  요청이 들어온게 과거일 경우(어제, 저번주, 저번달)
-     *  request : 사용자가 저번주를 선택함 12.9일 -> 저번주
-     *  now : 서버에 요청을 보낸 현재 시각  12.15일 -> 이번주
-     *  과거의 경우 기간의 끝을 다음날 00:00, 다음주 월요일 00:00, 다음달 1일 00:00 으로 잡야아햠
+     * 2) 요청한 period가 "과거 기간"이면:
+     *    - 그 기간의 마지막 스냅샷을 포함하려면 endInclusive는 "기간 끝(다음 기간의 시작 00:00)" 이어야 함
+     *      day   -> 다음날 00:00
+     *      week  -> 다음주 월요일 00:00
+     *      month -> 다음달 1일 00:00
+     *
+     * 3) 요청이 미래면(방어): -> 프론트에서 클릭 안되게 해놨음
+     *    - 데이터가 없으므로 endInclusive를 floor(now)로 캡(clamp)
      */
-    public static LocalDateTime getPeriodEndExclusive(String period, LocalDateTime requested, LocalDateTime now) {
+    public static LocalDateTime getPeriodEndInclusive(String period, LocalDateTime requested, LocalDateTime now) {
         LocalDateTime req = resolveBaseTime(requested);
         LocalDateTime cur = resolveBaseTime(now);
 
+        LocalDateTime reqStart = getPeriodStart(period, req);
+        LocalDateTime curStart = getPeriodStart(period, cur);
+
+        boolean isCurrentPeriod = reqStart.equals(curStart);
+
+        // 현재 진행 -> 최신 스냅샷은 floor(now)
+        if (isCurrentPeriod) {
+            return cur;
+        }
+
+        // 과거 기간: 기간 끝(다음 기간 시작 00:00) 스냅샷까지 포함
         return switch (period) {
-            case "day" -> {
-                boolean sameDay = req.toLocalDate().equals(cur.toLocalDate());
-                yield sameDay
-                        ? cur.plusHours(1)
-                        : req.toLocalDate().plusDays(1).atStartOfDay(); // 다음날 00:00
-            }
-
-            case "week" -> {
-                LocalDateTime reqWeekStart = getPeriodStart("week", req);
-                LocalDateTime curWeekStart = getPeriodStart("week", cur);
-
-                boolean sameWeek = reqWeekStart.equals(curWeekStart);
-                yield sameWeek
-                        ? cur.plusHours(1)
-                        : reqWeekStart.plusWeeks(1); // 다음주 월요일 00:00
-            }
-
-            case "month" -> {
-                LocalDateTime reqMonthStart = getPeriodStart("month", req);
-                LocalDateTime curMonthStart = getPeriodStart("month", cur);
-
-                boolean sameMonth = reqMonthStart.equals(curMonthStart);
-                yield sameMonth
-                        ? cur.plusHours(1)
-                        : reqMonthStart.plusMonths(1); // 다음달 1일 00:00
-            }
-
+            case "week" -> reqStart.plusWeeks(1);
+            case "month" -> reqStart.plusMonths(1);
+            case "day" -> reqStart.plusDays(1);
             default -> throw new IllegalArgumentException("invalid period: " + period);
         };
     }
