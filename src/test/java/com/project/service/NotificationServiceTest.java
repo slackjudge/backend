@@ -51,7 +51,7 @@ class NotificationServiceTest {
         assertThat(result.get(0).getId()).isEqualTo(10L);
 
         verify(repository, times(1))
-                .findAllByOrderByMessageIdDesc(any(PageRequest.class));
+                .findAllByOrderByMessageIdDesc(eq(PageRequest.of(0, 20)));
         verify(repository, never())
                 .findByMessageIdLessThanOrderByMessageIdDesc(anyLong(), any());
     }
@@ -76,7 +76,7 @@ class NotificationServiceTest {
         assertThat(result.get(0).getId()).isEqualTo(5L);
 
         verify(repository, times(1))
-                .findByMessageIdLessThanOrderByMessageIdDesc(eq(6L), any());
+                .findByMessageIdLessThanOrderByMessageIdDesc(eq(6L), eq(PageRequest.of(0, 20)));
         verify(repository, never())
                 .findAllByOrderByMessageIdDesc(any());
     }

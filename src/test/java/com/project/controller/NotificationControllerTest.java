@@ -42,21 +42,28 @@ class NotificationControllerTest {
     }
 
     @Test
-    @DisplayName("알림 조회 API 호출 성공")
-    void getNotifications_api_ok() throws Exception {
-
-        when(notificationService.getNotifications(any(), anyInt()))
+    @DisplayName("알림 조회 API 첫 페이지 호출 성공")
+    void getNotifications_firstPage_api_ok() throws Exception {
+        when(notificationService.getNotifications(null, 20))
                 .thenReturn(List.of());
 
         mockMvc.perform(get("/notification"))
                 .andExpect(status().isOk());
+
+        verify(notificationService).getNotifications(null, 20);
+    }
+
+    @Test
+    @DisplayName("알림 조회 API 커서 기반 호출 성공")
+    void getNotifications_withCursor_api_ok() throws Exception {
+        when(notificationService.getNotifications(10L, 5))
+                .thenReturn(List.of());
 
         mockMvc.perform(get("/notification")
                         .param("lastId", "10")
                         .param("size", "5"))
                 .andExpect(status().isOk());
 
-        verify(notificationService, times(2))
-                .getNotifications(any(), anyInt());
+        verify(notificationService).getNotifications(10L, 5);
     }
 }
