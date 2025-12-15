@@ -17,11 +17,11 @@ import lombok.NoArgsConstructor;
 public class UserProblemRef {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name ="user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name ="problem_id", nullable = false)
+    @JoinColumn(name = "problem_id", nullable = false)
     private ProblemEntity problem;
 
     public UserProblemRef(UserEntity user, ProblemEntity problem) {
