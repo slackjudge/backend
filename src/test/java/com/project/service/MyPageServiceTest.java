@@ -99,8 +99,9 @@ class MyPageServiceTest {
         // given
         Long userId = 1L;
         LocalDate targetDate = LocalDate.parse("2025-12-05");
+        LocalDateTime createdAt = LocalDateTime.of(2025, 1, 1, 10, 0);
 
-        UserEntity mockUser = UserEntity.builder().userId(userId).totalSolvedCount(0).build();
+        UserEntity mockUser = UserEntity.builder().userId(userId).createdAt(createdAt).totalSolvedCount(0).build();
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
         given(myPageRepository.findSolvedProblemList(userId, targetDate)).willReturn(Collections.emptyList());
 
@@ -145,7 +146,8 @@ class MyPageServiceTest {
     void getMyPage_DateLogic() {
         // given
         Long userId = 1L;
-        UserEntity mockUser = UserEntity.builder().userId(userId).build();
+        LocalDateTime createdAt = LocalDateTime.of(2025, 1, 1, 10, 0);
+        UserEntity mockUser = UserEntity.builder().userId(userId).createdAt(createdAt).build();
 
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
         given(myPageRepository.findSolvedProblemList(any(), any())).willReturn(Collections.emptyList());
@@ -163,6 +165,42 @@ class MyPageServiceTest {
                 eq(LocalDate.of(2020, 1, 1)), // 기대값
                 any(), // DailyStatistics
                 anyList()
+        );
+    }
+
+    @Test
+    @DisplayName("검증: 가입 직후 첫 배치 시간대(가입 시간 + 1시간의 정각 ~ 59분)가 제외 시간으로 전달된다.")
+    void getMyPage_VerifyIgnoreTimeCalculation() {
+        // given
+        Long userId = 1L;
+        LocalDateTime signUpTime = LocalDateTime.of(2025, 12, 1, 13, 30, 45);
+
+        UserEntity mockUser = UserEntity.builder()
+                .userId(userId)
+                .createdAt(signUpTime) // [수정] 가입일 설정
+                .build();
+
+        given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
+        given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt(), any(), any()))
+                .willReturn(Collections.emptyList());
+        given(myPageRepository.findSolvedProblemList(any(), any())).willReturn(Collections.emptyList());
+        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList()))
+                .willReturn(mock(MyPageResponse.class));
+
+        // when
+        myPageService.getMyPage(userId, 2025, 12, "2025-12-05");
+
+        // then
+        // 예상: 13:30 가입 -> 14:00:00 ~ 14:59:59 제외
+        LocalDateTime expectedStart = LocalDateTime.of(2025, 12, 1, 14, 0, 0);
+        LocalDateTime expectedEnd = LocalDateTime.of(2025, 12, 1, 14, 59, 59);
+
+        verify(myPageRepository).findGrassList(
+                eq(userId),
+                eq(2025),
+                eq(12),
+                eq(expectedStart),
+                eq(expectedEnd)
         );
     }
 
