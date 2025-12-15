@@ -170,7 +170,7 @@ class MyPageServiceTest {
     private void setupSuccessMocks(Long userId, LocalDate targetDate,
             UserEntity mockUser, List<ProblemResponse> mockProblems) {
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
-        given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt()))
+        given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt(), any(), any()))
                 .willReturn(Collections.emptyList());
         given(myPageRepository.findSolvedProblemList(userId, targetDate))
                 .willReturn(mockProblems);

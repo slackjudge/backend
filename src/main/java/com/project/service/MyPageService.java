@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -28,29 +29,34 @@ public class MyPageService {
     private final RankingDayRepository rankingDayRepository;
     private final MyPageMapper myPageMapper; // Mapper 주입
 
+
     public MyPageResponse getMyPage(Long userId, int year, int month, String dateStr) {
 
-        // 1. 데이터 조회 및 계산
         // 1. 유저 조회
         UserEntity user = userRepository.findById(userId)
                         .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        // 2. 기준 날짜 설정 & 유효성 검증
+        // 제외할 시간대 계산 (가입 직후 첫 배치 시간)
+        // 가입: 13:30 -> 제외 범위 : 14:00:00 ~ 14:59:59
+        LocalDateTime createdAt = user.getCreatedAt();
+        LocalDateTime ignoreStart = createdAt.plusHours(1).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime ignoreEnd = ignoreStart.withMinute(59).withSecond(59);
+
+        // 2. 리포지토리에 제외할 시간 범위 (ignoreStart, ignoreEnd)
+        // Repository에서 solvedTime.notBetween(ignoreStart, ignoreEnd) 처리를 수행
+        List<GrassResponse> grassList = myPageRepository.findGrassList(
+                userId, year, month, ignoreStart, ignoreEnd
+        );
+
+        // 상세 조회 할 날짜 결정
         LocalDate targetDate = determineTargetDate(year, month, dateStr);
 
-        // 3. 잔디: 월간 데이터 조회
-        List<GrassResponse> grassList = myPageRepository.findGrassList(userId, year, month);
-
-        // 4. 상세: 일간 문제 목록 조회 (푼 시간 정렬)
+        // 상세: 일간 문제 목록 조회 (푼 시간 정렬)
         List<ProblemResponse> problemList =
                 myPageRepository.findSolvedProblemList(userId, targetDate);
 
         // 5. 통계 계산
         MyPageMapper.DailyStatistics dailyStats = calculateDailyStatistics(problemList, targetDate);
-
-
-        // 6. 상세: 일간 랭킹 계산 (Native Query)
-        int dailyRank = 0;
 
         // 7. 전체 랭킹 및 점수
         int totalSolvedCount = user.getTotalSolvedCount() != null ? user.getTotalSolvedCount() : 0;
