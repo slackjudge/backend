@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 public class RankChangeStateEntity extends BaseTimeEntity {
 
     @Id
+    @Column(name="user_id")
     private Long userId;
 
     @Column(name = "last_checked_rank", nullable = false)
