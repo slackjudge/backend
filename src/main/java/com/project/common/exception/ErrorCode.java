@@ -37,7 +37,6 @@ public enum ErrorCode {
     SLACK_MESSAGE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SLACK_001", "Failed to send Slack Message"),
 
     // Ranking
-    RANKING_NOT_FOUND(HttpStatus.NOT_FOUND, "RANK_001", "Ranking data not found"),
     INVALID_RANKING_PERIOD(HttpStatus.BAD_REQUEST, "RANK_002", "Invalid ranking period"),
     INVALID_RANKING_GROUP(HttpStatus.BAD_REQUEST, "RANK_003", "Invalid ranking group"),
     INVALID_RANKING_PAGINATION(HttpStatus.BAD_REQUEST, "RANK_004", "Invalid ranking pagination");

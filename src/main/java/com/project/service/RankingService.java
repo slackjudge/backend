@@ -8,6 +8,7 @@ import com.project.dto.response.RankingRowResponse;
 import com.project.entity.EurekaTeamName;
 import com.project.repository.RankingQueryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 
@@ -21,6 +22,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RankingService {
 
   private static final Set<String> ALLOWED_PERIOD = Set.of("day", "week", "month");
@@ -30,6 +32,7 @@ public class RankingService {
 
   /**
    * 해당 시간대의 랭킹과 직전 시간대 랭킹을 비교하여 반환
+   * @Param : dateTime -> 사용자가 요청한 시간대 2025.10.12T14:21:29
    */
   public RankingPageResponse getRanking(String period, LocalDateTime dateTime, String group, int page, int size) {
 
@@ -37,42 +40,40 @@ public class RankingService {
     EurekaTeamName team = parseAndValidateGroup(group);
     validatePagination(page, size);
 
-    // 도커 컨테이너 타임존 한국 시간으로 변경
     LocalDateTime effective = (dateTime != null) ? dateTime : LocalDateTime.now(clock);
 
-    // 기준 시각 정규화 (null -> now, 분/초/나노 0)
     LocalDateTime baseTime = RankUtil.resolveBaseTime(effective);
+    LocalDateTime now = LocalDateTime.now(clock);
 
     // 집계 시작 시각 (주의 월요일, 달의 첫째 날..) 2025-12-01T00:00:00
     LocalDateTime periodStart = RankUtil.getPeriodStart(normalizedPeriod, baseTime);
 
-    // [start, endExclusive) 구간 설정
-    LocalDateTime currentEndExclusive = RankUtil.getPeriodEndExclusive(baseTime);              // ex) 15:00
-    LocalDateTime prevEndExclusive    = RankUtil.getPeriodEndExclusive(baseTime.minusHours(1)); // ex) 14:00
+
+    // 종료 시점은 period + now에 따라서 변경 -> 현재인지 과거인지 구별할 필요성
+    LocalDateTime currentEndInclusive = RankUtil.getPeriodEndInclusive(normalizedPeriod, baseTime, now);              // ex) 15:00
+    LocalDateTime prevEndInclusive = currentEndInclusive.minusHours(1); // ex) 14:00
 
 
     // 현재 구간 랭킹 조회
-    List<RankingRowResponse> currentAll = rankingQueryRepository.getRankingRows(periodStart, currentEndExclusive, team);
+    List<RankingRowResponse> currentAll =
+            rankingQueryRepository.getRankingRows(periodStart, currentEndInclusive, team);
 
+    // 해당 기간/그룹에 문제를 푼 사람이 없을 경우 -> 정상처리 후 -> 빈 배열 반환
     if (currentAll.isEmpty()) {
-      throw new BusinessException(ErrorCode.RANKING_NOT_FOUND, "선택한 기간/그룹에 대한 데이터가 존재하지 않습니다.");
+       return new RankingPageResponse(false, List.of());
     }
 
     // 이전 구간 랭킹 조회 (직전 한 시간 전까지)
-    List<RankingRowResponse> prevAll = rankingQueryRepository.getRankingRows(periodStart, prevEndExclusive, team);
+    List<RankingRowResponse> prevAll =
+            rankingQueryRepository.getRankingRows(periodStart, prevEndInclusive, team);
 
-    // 전체 순위 계산
     calculateRanks(currentAll);
     calculateRanks(prevAll);
-
-    // 전체 diff 계산
     calculateDiff(currentAll, prevAll);
 
-    //page, size 슬라이싱 작업
     int fromIndex = Math.max(0, (page - 1) * size);
     if (fromIndex >= currentAll.size()) {
-      throw new BusinessException(ErrorCode.RANKING_NOT_FOUND,
-              "요청한 페이지에 데이터가 없습니다.");
+      return new RankingPageResponse(false, List.of());
     }
 
     int toIndex = Math.min(fromIndex + size, currentAll.size());

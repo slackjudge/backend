@@ -228,27 +228,24 @@ class RankingServiceTest {
     }
 
     @Test
-    @DisplayName("getRanking - 현재 구간 랭킹 조회 결과가 비면 BusinessException(RANKING_NOT_FOUND)")
+    @DisplayName("getRanking - 현재 구간 랭킹 조회 결과가 비면 정상처리 후 빈 결과 반환")
     void getRanking_noCurrentData() {
         when(rankingQueryRepository.getRankingRows(any(), any(), isNull()))
                 .thenReturn(List.of()); // currentAll empty
 
-        assertThatThrownBy(() -> rankingService.getRanking(
-                "day",
-                LocalDateTime.of(2025, 12, 11, 14, 30),
-                "ALL",
-                1,
-                20
-        ))
-                .isInstanceOf(BusinessException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.RANKING_NOT_FOUND);
+        RankingPageResponse res = rankingService.getRanking(
+                "day", LocalDateTime.of(2025, 12, 11, 14, 30), "ALL", 1, 20
+        );
+
+        assertThat(res.isHasNext()).isFalse();
+        assertThat(res.getRows()).isEmpty();
 
         // currentAll 조회 1번에서 바로 터지므로, 호출은 1회까지만 기대 가능
         verify(rankingQueryRepository, times(1)).getRankingRows(any(), any(), isNull());
     }
 
     @Test
-    @DisplayName("getRanking - 요청 page가 범위를 벗어나면 BusinessException(RANKING_NOT_FOUND)")
+    @DisplayName("getRanking - 요청 page가 범위를 벗어나면 빈 결과 반환으로 변경")
     void getRanking_pageOutOfRange() {
         // currentAll은 1개만 존재
         List<RankingRowResponse> currentRows = List.of(
@@ -261,16 +258,12 @@ class RankingServiceTest {
         when(rankingQueryRepository.getRankingRows(any(), any(), isNull()))
                 .thenReturn(currentRows, prevRows);
 
-        // page=2, size=20 -> fromIndex=20 >= currentAll.size(1) -> 예외
-        assertThatThrownBy(() -> rankingService.getRanking(
-                "day",
-                LocalDateTime.of(2025, 12, 11, 14, 30),
-                "ALL",
-                2,
-                20
-        ))
-                .isInstanceOf(BusinessException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.RANKING_NOT_FOUND);
+        // page=2, size=20 -> fromIndex=20 >= currentAll.size(1) -> 빈 결과 반환
+
+        RankingPageResponse res = rankingService.getRanking("day", LocalDateTime.of(2025, 12, 11, 14, 30), "All", 2, 20);
+
+        assertThat(res.isHasNext()).isFalse();
+        assertThat(res.getRows()).isEmpty();
 
         // current/prev 조회는 둘 다 수행된 다음 슬라이싱에서 터짐
         verify(rankingQueryRepository, times(2)).getRankingRows(any(), any(), isNull());

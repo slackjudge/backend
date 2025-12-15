@@ -42,8 +42,8 @@ public class RankingQueryRepository {
             .join(usersProblemEntity.ref.user, userEntity)
             .join(usersProblemEntity.ref.problem, problemEntity)
             .where(
-                    usersProblemEntity.solvedTime.goe(start),
-                    usersProblemEntity.solvedTime.lt(endExclusive),
+                    usersProblemEntity.solvedTime.gt(start), // 집계 시간 제외
+                    usersProblemEntity.solvedTime.loe(endExclusive), // end = 배치 돌린 시각 포함
                     teamFilter(team, userEntity)
             )
             .groupBy(userEntity.userId)

@@ -46,13 +46,41 @@ public class RankUtil {
 
 
     /**
-     * 랭킹 조회용 기간 끝 시각 (exclusive)
-     * baseTime = 2025-12-11T14:37 ->
-     *   resolveBaseTime(baseTime) = 2025-12-11T14:00
-     *   리턴 = 2025-12-11T15:00
-     * 즉 [start, endExclusive) 에서 endExclusive로 사용
+     * period에 따른 "현재 구간 endiNclusive" 계산
+     *
+     * 규칙:
+     * 1) 요청한 period가 "현재 진행 중인 기간"이면:
+     *    - DB에 존재 가능한 최신 스냅샷은 floor(now) 이므로 endInclusive = floor(now)
+     *
+     * 2) 요청한 period가 "과거 기간"이면:
+     *    - 그 기간의 마지막 스냅샷을 포함하려면 endInclusive는 "기간 끝(다음 기간의 시작 00:00)" 이어야 함
+     *      day   -> 다음날 00:00
+     *      week  -> 다음주 월요일 00:00
+     *      month -> 다음달 1일 00:00
+     *
+     * 3) 요청이 미래면(방어): -> 프론트에서 클릭 안되게 해놨음
+     *    - 데이터가 없으므로 endInclusive를 floor(now)로 캡(clamp)
      */
-    public static LocalDateTime getPeriodEndExclusive(LocalDateTime baseTime) {
-        return resolveBaseTime(baseTime).plusHours(1);
+    public static LocalDateTime getPeriodEndInclusive(String period, LocalDateTime requested, LocalDateTime now) {
+        LocalDateTime req = resolveBaseTime(requested);
+        LocalDateTime cur = resolveBaseTime(now);
+
+        LocalDateTime reqStart = getPeriodStart(period, req);
+        LocalDateTime curStart = getPeriodStart(period, cur);
+
+        boolean isCurrentPeriod = reqStart.equals(curStart);
+
+        // 현재 진행 -> 최신 스냅샷은 floor(now)
+        if (isCurrentPeriod) {
+            return cur;
+        }
+
+        // 과거 기간: 기간 끝(다음 기간 시작 00:00) 스냅샷까지 포함
+        return switch (period) {
+            case "week" -> reqStart.plusWeeks(1);
+            case "month" -> reqStart.plusMonths(1);
+            case "day" -> reqStart.plusDays(1);
+            default -> throw new IllegalArgumentException("invalid period: " + period);
+        };
     }
 }
