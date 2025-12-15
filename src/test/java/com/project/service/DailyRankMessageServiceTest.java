@@ -4,7 +4,7 @@ import com.project.common.exception.BusinessException;
 import com.project.common.exception.ErrorCode;
 import com.project.common.util.MessageFormatUtil;
 import com.project.common.util.SlackMessageSender;
-import com.project.dto.DailyRankRawData;
+import com.project.dto.RankRawData;
 import com.project.repository.DailyRankMessageRepository;
 import com.project.repository.UsersProblemRepository;
 import com.slack.api.methods.response.chat.ChatPostMessageResponse;
@@ -20,13 +20,12 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
-class SlackNotificationServiceTest {
+class DailyRankMessageServiceTest {
 
     @Mock
     SlackMessageSender slackMessageSender;
@@ -41,12 +40,12 @@ class SlackNotificationServiceTest {
     DailyRankMessageRepository dailyRankMessageRepository;
 
     @InjectMocks
-    SlackNotificationService slackNotificationService;
+    DailyRankMessageService dailyRankMessageService;
 
     @Test
     @DisplayName("일일 랭킹 알림 메시지 전송 검증")
     void sendDailyRankMessage() throws Exception {
-        List<DailyRankRawData> raw = List.of(new DailyRankRawData(1L, "유재석", 7L, 48L));
+        List<RankRawData> raw = List.of(new RankRawData(1L, "유재석", 7L, 48L));
 
         when(usersProblemRepository.findDailyRank(any(), any())).thenReturn(raw);
         when(messageFormatUtil.formatDailyRank(any())).thenReturn("TEST_FORMATTED_MESSAGE");
@@ -56,7 +55,7 @@ class SlackNotificationServiceTest {
 
         when(slackMessageSender.sendMessage(anyString(), anyString())).thenReturn(mockResponse);
 
-        slackNotificationService.sendDailyRankMessage();
+        dailyRankMessageService.sendDailyRankMessage();
 
         verify(slackMessageSender, times(1)).sendMessage("C0A0M8HUQDT", "TEST_FORMATTED_MESSAGE");
         verify(dailyRankMessageRepository).save(any());
@@ -72,26 +71,9 @@ class SlackNotificationServiceTest {
 
         when(slackMessageSender.sendMessage(anyString(), anyString())).thenReturn(response);
 
-        slackNotificationService.sendDailyRankMessage();
+        dailyRankMessageService.sendDailyRankMessage();
 
         verify(slackMessageSender, times(1)).sendMessage("C0A0M8HUQDT", "오늘은 새로운 문제 풀이가 없습니다.😊");
-    }
-
-    @Test
-    @DisplayName("개인 순위 변동 메시지 전송 검증")
-    void sendRankChangeMessage() throws Exception {
-        when(messageFormatUtil.formatRankChange(anyString(), anyInt(), anyInt(), anyInt()))
-                .thenReturn("RANK_CHANGED");
-
-        ChatPostMessageResponse mockResponse = new ChatPostMessageResponse();
-        mockResponse.setOk(true);
-
-        when(slackMessageSender.sendMessage(anyString(), anyString()))
-                .thenReturn(mockResponse);
-
-        slackNotificationService.sendRankChangeMessage();
-
-        verify(slackMessageSender).sendMessage("U0A1NG7GEA2", "RANK_CHANGED");
     }
 
     @Test
@@ -100,7 +82,7 @@ class SlackNotificationServiceTest {
 
         when(usersProblemRepository.findDailyRank(any(), any()))
                 .thenReturn(List.of(
-                        new DailyRankRawData(1L, "유재석", 7L, 48L)
+                        new RankRawData(1L, "유재석", 7L, 48L)
                 ));
 
         when(messageFormatUtil.formatDailyRank(any()))
@@ -109,7 +91,7 @@ class SlackNotificationServiceTest {
         when(slackMessageSender.sendMessage(anyString(), anyString()))
                 .thenThrow(new BusinessException(ErrorCode.SLACK_MESSAGE_FAILED));
 
-        assertThatThrownBy(() -> slackNotificationService.sendDailyRankMessage())
+        assertThatThrownBy(() -> dailyRankMessageService.sendDailyRankMessage())
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.SLACK_MESSAGE_FAILED);
 
@@ -122,7 +104,7 @@ class SlackNotificationServiceTest {
 
         when(usersProblemRepository.findDailyRank(any(), any()))
                 .thenReturn(List.of(
-                        new DailyRankRawData(1L, "유재석", 7L, 48L)
+                        new RankRawData(1L, "유재석", 7L, 48L)
                 ));
 
         when(messageFormatUtil.formatDailyRank(any()))
@@ -131,7 +113,7 @@ class SlackNotificationServiceTest {
         when(slackMessageSender.sendMessage(anyString(), anyString()))
                 .thenThrow(new RuntimeException("unknown error"));
 
-        assertThatThrownBy(() -> slackNotificationService.sendDailyRankMessage())
+        assertThatThrownBy(() -> dailyRankMessageService.sendDailyRankMessage())
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.SLACK_MESSAGE_FAILED);
 

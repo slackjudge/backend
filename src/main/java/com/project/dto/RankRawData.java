@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class DailyRankRawData {
+public class RankRawData {
     private Long userId;
     private String username;
     private Long solvedCount;
