@@ -1,0 +1,62 @@
+package com.project.controller;
+
+import com.project.service.NotificationService;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
+
+
+@WebMvcTest(NotificationController.class)
+@AutoConfigureMockMvc(addFilters = false)
+@Import(NotificationControllerTest.TestConfig.class)
+class NotificationControllerTest {
+
+    @Autowired
+    MockMvc mockMvc;
+
+    @Autowired
+    NotificationService notificationService;
+
+    static class TestConfig {
+        @Bean
+        public NotificationService notificationService() {
+            return mock(NotificationService.class);
+        }
+    }
+
+    @Test
+    @DisplayName("알림 조회 API 호출 성공")
+    void getNotifications_api_ok() throws Exception {
+
+        when(notificationService.getNotifications(any(), anyInt()))
+                .thenReturn(List.of());
+
+        mockMvc.perform(get("/notification"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/notification")
+                        .param("lastId", "10")
+                        .param("size", "5"))
+                .andExpect(status().isOk());
+
+        verify(notificationService, times(2))
+                .getNotifications(any(), anyInt());
+    }
+}
