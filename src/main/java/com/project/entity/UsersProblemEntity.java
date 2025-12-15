@@ -38,7 +38,7 @@ public class UsersProblemEntity {
     private Long usersProblemId;
 
     /**
-     * 복합 속성 (user_id, problem_id)
+     * 복합 속성 (user_id, problem_id) test
      */
     @Embedded
     private UserProblemRef ref;
