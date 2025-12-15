@@ -260,7 +260,7 @@ class RankingServiceTest {
 
         // page=2, size=20 -> fromIndex=20 >= currentAll.size(1) -> 빈 결과 반환
 
-        RankingPageResponse res = rankingService.getRanking("day", LocalDateTime.of(2025, 12, 11, 14,30), "All", 2, 20);
+        RankingPageResponse res = rankingService.getRanking("day", LocalDateTime.of(2025, 12, 11, 14, 30), "All", 2, 20);
 
         assertThat(res.isHasNext()).isFalse();
         assertThat(res.getRows()).isEmpty();
