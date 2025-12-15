@@ -1,22 +1,32 @@
 package com.project.entity;
 
-import jakarta.persistence.FetchType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Column;
 import jakarta.persistence.Table;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.UniqueConstraint;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+
 import java.time.LocalDateTime;
 
-@Builder
-@Table(name = "users_problem")
+
+
+@Table(
+        name = "users_problem",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_users_problem", columnNames = {"user_id", "problem_id"})
+        }
+)
 @Getter
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UsersProblemEntity {
 
     /**
@@ -27,27 +37,16 @@ public class UsersProblemEntity {
     @Column(name = "users_problem_id")
     private Long usersProblemId;
 
-
     /**
-     * 문제 - FK
+     * 복합 속성 (user_id, problem_id) test
      */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "problem_id", nullable = false)
-    private ProblemEntity problem;
-
-
-    /**
-     * 유저 - FK
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity user;
+    @Embedded
+    private UserProblemRef ref;
 
 
     /**
      * 문제 풀이 유무 : 초기값 false -> 첫 회원가입 후, 첫 배치때 푼 문제 true 전환
      */
-    @Builder.Default
     @Column(name = "is_solved", nullable = false)
     private boolean isSolved = false;
 
@@ -57,4 +56,12 @@ public class UsersProblemEntity {
      */
     @Column(name = "solved_time")
     private LocalDateTime solvedTime;
+
+
+    @Builder
+    public UsersProblemEntity(UserEntity user, ProblemEntity problem, boolean isSolved, LocalDateTime solvedTime) {
+        this.ref = new UserProblemRef(user, problem);
+        this.isSolved = isSolved;
+        this.solvedTime = solvedTime;
+    }
 }

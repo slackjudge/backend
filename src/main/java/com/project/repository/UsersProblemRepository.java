@@ -11,33 +11,35 @@ import java.util.List;
 public interface UsersProblemRepository extends JpaRepository<UsersProblemEntity, Long> {
     @Query("""
         SELECT new com.project.dto.RankRawData(
-            u.user.userId,
-            u.user.username,
+            usr.userId,
+            usr.username,
             COUNT(u),
             SUM(p.problemLevel)
         )
         FROM UsersProblemEntity u
-        JOIN u.problem p
+         JOIN u.ref.user usr
+         JOIN u.ref.problem p
         WHERE u.isSolved = true
           AND u.solvedTime BETWEEN :start AND :end
-        GROUP BY u.user.userId, u.user.username
-        ORDER BY SUM(p.problemLevel) DESC, u.user.username ASC
+        GROUP BY usr.userId, usr.username
+        ORDER BY SUM(p.problemLevel) DESC, usr.username ASC
     """)
     List<RankRawData> findDailyRank(LocalDateTime start, LocalDateTime end);
 
     @Query("""
         SELECT new com.project.dto.RankRawData(
-            u.user.userId,
-            u.user.username,
+            usr.userId,
+            usr.username,
             COUNT(u),
             SUM(p.problemLevel)
         )
         FROM UsersProblemEntity u
-        JOIN u.problem p
+        JOIN u.ref.user usr
+         JOIN u.ref.problem p
         WHERE u.isSolved = true
           AND u.solvedTime >= :start
-        GROUP BY u.user.userId, u.user.username
-        ORDER BY SUM(p.problemLevel) DESC, u.user.username ASC
+        GROUP BY usr.userId, usr.username
+        ORDER BY SUM(p.problemLevel) DESC, usr.username ASC
     """)
     List<RankRawData> findMonthlyRank(LocalDateTime start);
 }
