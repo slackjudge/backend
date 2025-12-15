@@ -15,7 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import org.springframework.test.util.ReflectionTestUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -59,6 +59,7 @@ class MyPageServiceTest {
         Long userId = 1L;
         String dateStr = "2025-12-05";
         LocalDate targetDate = LocalDate.parse(dateStr);
+        LocalDateTime createdAt = LocalDateTime.of(2025, 1, 1, 10, 0);
 
         // 1. Mock 데이터 생성
         UserEntity mockUser = UserEntity.builder().userId(userId).totalSolvedCount(100).build();
@@ -66,6 +67,7 @@ class MyPageServiceTest {
                 new ProblemResponse("A", 5, "url1"),
                 new ProblemResponse("B", 10, "url2")
         );
+        ReflectionTestUtils.setField(mockUser, "createdAt", createdAt);
 
         // 2. Mock 동작 설정 (Checkstyle 메서드 길이 제한을 위해 헬퍼 메서드로 분리)
         setupSuccessMocks(userId, targetDate, mockUser, mockProblems);
@@ -104,6 +106,8 @@ class MyPageServiceTest {
         UserEntity mockUser = UserEntity.builder().userId(userId).createdAt(createdAt).totalSolvedCount(0).build();
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
         given(myPageRepository.findSolvedProblemList(userId, targetDate)).willReturn(Collections.emptyList());
+
+        ReflectionTestUtils.setField(mockUser, "createdAt", createdAt);
 
         // [변경] Mapper 파라미터가 6개로 줄어듦 (DailyStatistics 포함)
         given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList()))
@@ -149,6 +153,7 @@ class MyPageServiceTest {
         LocalDateTime createdAt = LocalDateTime.of(2025, 1, 1, 10, 0);
         UserEntity mockUser = UserEntity.builder().userId(userId).createdAt(createdAt).build();
 
+        ReflectionTestUtils.setField(mockUser, "createdAt", createdAt);
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
         given(myPageRepository.findSolvedProblemList(any(), any())).willReturn(Collections.emptyList());
 
@@ -179,7 +184,7 @@ class MyPageServiceTest {
                 .userId(userId)
                 .createdAt(signUpTime) // [수정] 가입일 설정
                 .build();
-
+        ReflectionTestUtils.setField(mockUser, "createdAt", signUpTime);
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
         given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt(), any(), any()))
                 .willReturn(Collections.emptyList());
