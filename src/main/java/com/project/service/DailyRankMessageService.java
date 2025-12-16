@@ -8,20 +8,26 @@ import com.project.common.util.SlackMessageSender;
 import com.project.dto.DailyRankInfo;
 import com.project.dto.RankRawData;
 import com.project.entity.DailyRankMessageEntity;
+import com.project.entity.UserEntity;
 import com.project.repository.DailyRankMessageRepository;
+import com.project.repository.UserRepository;
 import com.project.repository.UsersProblemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class DailyRankMessageService {
 
+    private final UserRepository userRepository;
     private final UsersProblemRepository usersProblemRepository;
     private final SlackMessageSender slackMessageSender;
     private final MessageFormatUtil messageFormatUtil;
@@ -36,7 +42,22 @@ public class DailyRankMessageService {
 
         List<RankRawData> raw = usersProblemRepository.findDailyRank(start, end);
 
-        List<DailyRankInfo> ranked = calculateRank(raw);
+        Map<Long, UserEntity> userMap = userRepository
+                .findAllById(raw.stream().map(RankRawData::getUserId).toList())
+                .stream()
+                .collect(Collectors.toMap(UserEntity::getUserId, u -> u));
+
+        List<RankRawData> filtered = raw.stream()
+                .filter(r -> {
+                    UserEntity user = userMap.get(r.getUserId());
+                    LocalDateTime validAfter =
+                            user.getCreatedAt().truncatedTo(ChronoUnit.HOURS)
+                                    .plusHours(2);
+                    return validAfter.isBefore(end);
+                })
+                .toList();
+
+        List<DailyRankInfo> ranked = calculateRank(filtered);
 
         String message;
         if (ranked.isEmpty()) {
@@ -52,9 +73,10 @@ public class DailyRankMessageService {
             throw e;
         } catch (Exception e) {
             throw new BusinessException(
-                ErrorCode.SLACK_MESSAGE_FAILED, "slack 메시지 전송 중 오류 발생 : " + e.getMessage());
+                    ErrorCode.SLACK_MESSAGE_FAILED, "slack 메시지 전송 중 오류 발생 : " + e.getMessage());
         }
     }
+
 
     private List<DailyRankInfo> calculateRank(List<RankRawData> raw) {
         if (raw.isEmpty()) return List.of();
