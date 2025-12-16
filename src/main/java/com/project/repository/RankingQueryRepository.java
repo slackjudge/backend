@@ -34,7 +34,7 @@ public class RankingQueryRepository {
       DateTimeExpression<LocalDateTime> validAfterExpr =
               Expressions.dateTimeTemplate(
                       LocalDateTime.class,
-                      "date_trunc('hour', {0}) + interval '2 hour'",
+                      "timestampadd(HOUR, 2, function('date_trunc', 'hour', {0}))",
                       userEntity.createdAt
               );
 
