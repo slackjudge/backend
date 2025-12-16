@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class MessageFormatUtil {
   public String formatDailyRank(List<DailyRankInfo> ranks) {
-    StringBuilder sb = new StringBuilder("🏆 오늘의 랭킹\n\n");
+    StringBuilder sb = new StringBuilder("📊 오늘 진행 중인 랭킹\n\n\n");
 
     for (DailyRankInfo r : ranks) {
       sb.append(medal(r.getRank()))

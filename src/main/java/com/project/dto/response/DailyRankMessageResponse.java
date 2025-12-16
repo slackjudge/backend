@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 @AllArgsConstructor
 public class DailyRankMessageResponse {
 
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("M월 d일");
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("M/d HH:mm");
 
     private Long id;
 

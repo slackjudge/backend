@@ -15,7 +15,7 @@ public class DailyRankScheduler {
 
     private final DailyRankMessageService dailyRankMessageService;
 
-    @Scheduled(cron = "0 */10 * * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 9,15,21 * * *", zone = "Asia/Seoul")
     public void runDailyRank() {
         log.info("[DailyRankScheduler] run");
         dailyRankMessageService.sendDailyRankMessage();
