@@ -73,7 +73,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
 
         return matches(uri, PUBLIC_ENDPOINTS)   // 완전 공개 API
-                || matches(uri, getAnonymousEndpoints()); // 토큰 없어도 허용되는 API
+                || matches(uri, getAnonymousEndpoints())
+                || MATCHER.match("/slack/**", uri); // 토큰 없어도 허용되는 API
     }
 
     private String resolveAccessToken(
