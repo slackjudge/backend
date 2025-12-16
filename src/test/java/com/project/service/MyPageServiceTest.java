@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,6 +35,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
 @ExtendWith(MockitoExtension.class)
 class MyPageServiceTest {
 
@@ -59,15 +61,14 @@ class MyPageServiceTest {
         Long userId = 1L;
         String dateStr = "2025-12-05";
         LocalDate targetDate = LocalDate.parse(dateStr);
+        LocalDateTime createAt = LocalDateTime.of(2025, 1, 1, 13, 0, 0);
 
         // 1. Mock 데이터 생성
         UserEntity mockUser = UserEntity.builder().userId(userId).totalSolvedCount(100).build();
-        List<ProblemResponse> mockProblems = List.of(
-                new ProblemResponse("A", 5, "url1"),
-                new ProblemResponse("B", 10, "url2")
-        );
+        List<ProblemResponse> mockProblems = List.of(new ProblemResponse("A", 5, "url1"), new ProblemResponse("B", 10, "url2"));
+        ReflectionTestUtils.setField(mockUser, "createdAt", createAt);
 
-        // 2. Mock 동작 설정 (Checkstyle 메서드 길이 제한을 위해 헬퍼 메서드로 분리)
+        // 2. Mock 동작 설정
         setupSuccessMocks(userId, targetDate, mockUser, mockProblems);
 
         // when
@@ -76,21 +77,17 @@ class MyPageServiceTest {
         // then
         assertThat(result).isNotNull();
 
-        // [핵심 변경] 4개의 숫자를 DailyStatistics 객체 하나로 묶어서 검증
         // 5 + 10 = 15점, 1등, 2문제, 최대난이도 10
         MyPageMapper.DailyStatistics expectedStats = new MyPageMapper.DailyStatistics(15, 1, 2, 10);
 
-        verify(myPageMapper).toResponse(
-                eq(mockUser),
-                eq(100),                // totalSolvedCount
+        verify(myPageMapper).toResponse(eq(mockUser), eq(100),                // totalSolvedCount
                 anyList(),              // grassList
                 eq(targetDate),         // date
-                eq(expectedStats),      // [변경] 통계 객체 검증
+                eq(expectedStats),      // 통계 객체 검증
                 eq(mockProblems)        // problemList
         );
 
-        verify(rankingDayRepository, times(1))
-                .calculateDailyRank(eq(15), any(LocalDateTime.class), any(LocalDateTime.class));
+        verify(rankingDayRepository, times(1)).calculateDailyRank(eq(15), any(LocalDateTime.class), any(LocalDateTime.class));
     }
 
     @Test
@@ -99,30 +96,25 @@ class MyPageServiceTest {
         // given
         Long userId = 1L;
         LocalDate targetDate = LocalDate.parse("2025-12-05");
+        LocalDateTime createdAt = LocalDateTime.of(2025, 1, 1, 10, 0);
 
-        UserEntity mockUser = UserEntity.builder().userId(userId).totalSolvedCount(0).build();
+        UserEntity mockUser = UserEntity.builder().userId(userId).createdAt(createdAt).totalSolvedCount(0).build();
+        ReflectionTestUtils.setField(mockUser, "createdAt", createdAt);
+
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
-        given(myPageRepository.findSolvedProblemList(userId, targetDate)).willReturn(Collections.emptyList());
 
-        // [변경] Mapper 파라미터가 6개로 줄어듦 (DailyStatistics 포함)
-        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList()))
-                .willReturn(mock(MyPageResponse.class));
+        // ignoreStart/End 대신 any() 사용
+        given(myPageRepository.findSolvedProblemList(eq(userId), eq(targetDate), any())).willReturn(Collections.emptyList());
+
+        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList())).willReturn(mock(MyPageResponse.class));
 
         // when
         myPageService.getMyPage(userId, 2025, 12, "2025-12-05");
 
         // then
-        // [핵심 변경] 모든 통계가 0인 객체 생성
         MyPageMapper.DailyStatistics zeroStats = new MyPageMapper.DailyStatistics(0, 0, 0, 0);
 
-        verify(myPageMapper).toResponse(
-                eq(mockUser),
-                eq(0),
-                anyList(),
-                eq(targetDate),
-                eq(zeroStats), // [변경] 0으로 채워진 통계 객체 확인
-                eq(Collections.emptyList())
-        );
+        verify(myPageMapper).toResponse(eq(mockUser), eq(0), anyList(), eq(targetDate), eq(zeroStats), eq(Collections.emptyList()));
 
         verify(rankingDayRepository, never()).calculateDailyRank(anyInt(), any(), any());
     }
@@ -135,9 +127,7 @@ class MyPageServiceTest {
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> myPageService.getMyPage(userId, 2025, 12, "2025-12-05"))
-                .isInstanceOf(BusinessException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
+        assertThatThrownBy(() -> myPageService.getMyPage(userId, 2025, 12, "2025-12-05")).isInstanceOf(BusinessException.class).hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
     }
 
     @Test
@@ -145,40 +135,67 @@ class MyPageServiceTest {
     void getMyPage_DateLogic() {
         // given
         Long userId = 1L;
-        UserEntity mockUser = UserEntity.builder().userId(userId).build();
+        LocalDateTime createdAt = LocalDateTime.of(2025, 1, 1, 10, 0);
+        UserEntity mockUser = UserEntity.builder().userId(userId).createdAt(createdAt).build();
+        ReflectionTestUtils.setField(mockUser, "createdAt", createdAt);
 
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
-        given(myPageRepository.findSolvedProblemList(any(), any())).willReturn(Collections.emptyList());
 
-        // [변경] 파라미터 개수 6개로 맞춤
-        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList()))
-                .willReturn(mock(MyPageResponse.class));
+        // ignoreStart, ignoreEnd 대신 any() 사용
+        given(myPageRepository.findSolvedProblemList(any(), any(), any())).willReturn(Collections.emptyList());
+
+        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList())).willReturn(mock(MyPageResponse.class));
 
         // when
         myPageService.getMyPage(userId, 2020, 1, null);
 
         // then
-        verify(myPageMapper).toResponse(
-                any(), anyInt(), anyList(),
-                eq(LocalDate.of(2020, 1, 1)), // 기대값
-                any(), // DailyStatistics
-                anyList()
+        verify(myPageMapper).toResponse(any(), anyInt(), anyList(), eq(LocalDate.of(2020, 1, 1)), // 기대값
+                any(), anyList());
+    }
+
+    @Test
+    @DisplayName("검증: 가입 직후 두번째 배치시점인 2시간을 더한 시점을 기준 시간으로 정한다.")
+    void getMyPage_VerifyIgnoreTimeCalculation() {
+        // given
+        Long userId = 1L;
+        // 시나리오: 13:58
+        LocalDateTime signUpTime = LocalDateTime.of(2025, 12, 1, 13, 58, 45);
+
+        UserEntity mockUser = UserEntity.builder().userId(userId).build();
+        ReflectionTestUtils.setField(mockUser, "createdAt", signUpTime);
+
+        given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
+
+        // Mocking: any()를 사용하여 어떤 시간이 들어오든 에러가 안 나게 설정
+        given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt(), any())).willReturn(Collections.emptyList());
+        given(myPageRepository.findSolvedProblemList(any(), any(), any())).willReturn(Collections.emptyList());
+        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList())).willReturn(mock(MyPageResponse.class));
+
+        // when
+        myPageService.getMyPage(userId, 2025, 12, "2025-12-01");
+
+        // then
+        // 예상: 13:30 가입 -> 14:00:00.000 ~ 14:59:59.999... 제외
+        LocalDateTime expectedStart = LocalDateTime.of(2025, 12, 1, 15, 0, 0);
+
+        // Repository에 15:00가 넘어갔는지 확인
+        verify(myPageRepository).findGrassList(
+                eq(userId),
+                eq(2025),
+                eq(12),
+                eq(expectedStart)
         );
     }
 
-    // [Checkstyle 해결] 메서드 길이를 줄이기 위한 헬퍼 메서드
-    private void setupSuccessMocks(Long userId, LocalDate targetDate,
-            UserEntity mockUser, List<ProblemResponse> mockProblems) {
+    private void setupSuccessMocks(Long userId, LocalDate targetDate, UserEntity mockUser, List<ProblemResponse> mockProblems) {
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
-        given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt()))
-                .willReturn(Collections.emptyList());
-        given(myPageRepository.findSolvedProblemList(userId, targetDate))
-                .willReturn(mockProblems);
-        given(rankingDayRepository.calculateDailyRank(anyInt(), any(), any()))
-                .willReturn(1L);
 
-        // [변경] Mapper Mock 설정 (파라미터 6개)
-        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(MyPageMapper.DailyStatistics.class), anyList()))
-                .willReturn(mock(MyPageResponse.class));
+        given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt(), any())).willReturn(Collections.emptyList());
+        given(myPageRepository.findSolvedProblemList(eq(userId), eq(targetDate), any())).willReturn(mockProblems);
+
+        given(rankingDayRepository.calculateDailyRank(anyInt(), any(), any())).willReturn(1L);
+
+        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(MyPageMapper.DailyStatistics.class), anyList())).willReturn(mock(MyPageResponse.class));
     }
 }
