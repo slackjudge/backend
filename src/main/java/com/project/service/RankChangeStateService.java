@@ -15,10 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +32,7 @@ public class RankChangeStateService {
 
     @Transactional
     public void sendRankChangeMessage() {
+        LocalDateTime now = LocalDateTime.now();
         LocalDateTime monthStart = LocalDate.now().withDayOfMonth(1).atStartOfDay();
 
         List<RankRawData> raw = usersProblemRepository.findMonthlyRank(monthStart);
@@ -43,17 +42,27 @@ public class RankChangeStateService {
 
         Map<Long, Long> scoreMap = raw.stream().collect(Collectors.toMap(RankRawData::getUserId, RankRawData::getScore));
 
-        Map<Long, RankChangeStateEntity> stateMap = rankChangeStateRepository.findAllById(currentRanks.keySet()).stream()
-                .collect(Collectors.toMap(RankChangeStateEntity::getUserId, s -> s));
+        Set<Long> userIds = currentRanks.keySet();
 
-        Map<Long, UserEntity> userMap = userRepository.findAllById(currentRanks.keySet()).stream()
+        Map<Long, UserEntity> userMap = userRepository.findAllById(userIds).stream()
                 .collect(Collectors.toMap(UserEntity::getUserId, u -> u));
+
+        Map<Long, RankChangeStateEntity> stateMap = rankChangeStateRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(RankChangeStateEntity::getUserId, s -> s));
 
         List<RankChangeStateEntity> statesToSave = new ArrayList<>();
 
         for (Map.Entry<Long, Integer> entry : currentRanks.entrySet()) {
             Long userId = entry.getKey();
             int currentRank = entry.getValue();
+
+            UserEntity user = userMap.get(userId);
+            if (user == null) continue;
+
+            LocalDateTime validAfter = user.getCreatedAt().truncatedTo(ChronoUnit.HOURS).plusHours(2);
+
+            if (!validAfter.isBefore(now)) { continue; }
+
             RankChangeStateEntity state = stateMap.get(userId);
 
             if (state == null) {
@@ -62,9 +71,8 @@ public class RankChangeStateService {
             }
 
             int lastRank = state.getLastCheckedRank();
-            UserEntity user = userMap.get(userId);
 
-            if (user != null && user.isAlertAgreed() && currentRank < lastRank) {
+            if (user.isAlertAgreed() && currentRank < lastRank) {
                 try {
                     String message = messageFormatUtil.formatRankChange(
                             user.getUsername(),
