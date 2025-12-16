@@ -65,10 +65,7 @@ class MyPageServiceTest {
 
         // 1. Mock 데이터 생성
         UserEntity mockUser = UserEntity.builder().userId(userId).totalSolvedCount(100).build();
-        List<ProblemResponse> mockProblems = List.of(
-                new ProblemResponse("A", 5, "url1"),
-                new ProblemResponse("B", 10, "url2")
-        );
+        List<ProblemResponse> mockProblems = List.of(new ProblemResponse("A", 5, "url1"), new ProblemResponse("B", 10, "url2"));
         ReflectionTestUtils.setField(mockUser, "createdAt", createdAt);
 
         // 2. Mock 동작 설정
@@ -83,17 +80,14 @@ class MyPageServiceTest {
         // 5 + 10 = 15점, 1등, 2문제, 최대난이도 10
         MyPageMapper.DailyStatistics expectedStats = new MyPageMapper.DailyStatistics(15, 1, 2, 10);
 
-        verify(myPageMapper).toResponse(
-                eq(mockUser),
-                eq(100),                // totalSolvedCount
+        verify(myPageMapper).toResponse(eq(mockUser), eq(100),                // totalSolvedCount
                 anyList(),              // grassList
                 eq(targetDate),         // date
                 eq(expectedStats),      // 통계 객체 검증
                 eq(mockProblems)        // problemList
         );
 
-        verify(rankingDayRepository, times(1))
-                .calculateDailyRank(eq(15), any(LocalDateTime.class), any(LocalDateTime.class));
+        verify(rankingDayRepository, times(1)).calculateDailyRank(eq(15), any(LocalDateTime.class), any(LocalDateTime.class));
     }
 
     @Test
@@ -110,11 +104,9 @@ class MyPageServiceTest {
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
 
         // ignoreStart/End 대신 any() 사용
-        given(myPageRepository.findSolvedProblemList(eq(userId), eq(targetDate), any(), any()))
-                .willReturn(Collections.emptyList());
+        given(myPageRepository.findSolvedProblemList(eq(userId), eq(targetDate), any(), any())).willReturn(Collections.emptyList());
 
-        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList()))
-                .willReturn(mock(MyPageResponse.class));
+        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList())).willReturn(mock(MyPageResponse.class));
 
         // when
         myPageService.getMyPage(userId, 2025, 12, "2025-12-05");
@@ -122,14 +114,7 @@ class MyPageServiceTest {
         // then
         MyPageMapper.DailyStatistics zeroStats = new MyPageMapper.DailyStatistics(0, 0, 0, 0);
 
-        verify(myPageMapper).toResponse(
-                eq(mockUser),
-                eq(0),
-                anyList(),
-                eq(targetDate),
-                eq(zeroStats),
-                eq(Collections.emptyList())
-        );
+        verify(myPageMapper).toResponse(eq(mockUser), eq(0), anyList(), eq(targetDate), eq(zeroStats), eq(Collections.emptyList()));
 
         verify(rankingDayRepository, never()).calculateDailyRank(anyInt(), any(), any());
     }
@@ -142,9 +127,7 @@ class MyPageServiceTest {
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> myPageService.getMyPage(userId, 2025, 12, "2025-12-05"))
-                .isInstanceOf(BusinessException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
+        assertThatThrownBy(() -> myPageService.getMyPage(userId, 2025, 12, "2025-12-05")).isInstanceOf(BusinessException.class).hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
     }
 
     @Test
@@ -159,22 +142,16 @@ class MyPageServiceTest {
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
 
         // ignoreStart, ignoreEnd 대신 any() 사용
-        given(myPageRepository.findSolvedProblemList(any(), any(), any(), any()))
-                .willReturn(Collections.emptyList());
+        given(myPageRepository.findSolvedProblemList(any(), any(), any(), any())).willReturn(Collections.emptyList());
 
-        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList()))
-                .willReturn(mock(MyPageResponse.class));
+        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList())).willReturn(mock(MyPageResponse.class));
 
         // when
         myPageService.getMyPage(userId, 2020, 1, null);
 
         // then
-        verify(myPageMapper).toResponse(
-                any(), anyInt(), anyList(),
-                eq(LocalDate.of(2020, 1, 1)), // 기대값
-                any(),
-                anyList()
-        );
+        verify(myPageMapper).toResponse(any(), anyInt(), anyList(), eq(LocalDate.of(2020, 1, 1)), // 기대값
+                any(), anyList());
     }
 
     @Test
@@ -185,20 +162,15 @@ class MyPageServiceTest {
         // 시나리오: 13:30:45 가입
         LocalDateTime signUpTime = LocalDateTime.of(2025, 12, 1, 13, 30, 45);
 
-        UserEntity mockUser = UserEntity.builder()
-                .userId(userId)
-                .build();
+        UserEntity mockUser = UserEntity.builder().userId(userId).build();
         ReflectionTestUtils.setField(mockUser, "createdAt", signUpTime);
 
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
 
         // Mocking: any()를 사용하여 어떤 시간이 들어오든 에러가 안 나게 설정
-        given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt(), any(), any()))
-                .willReturn(Collections.emptyList());
-        given(myPageRepository.findSolvedProblemList(any(), any(), any(), any()))
-                .willReturn(Collections.emptyList());
-        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList()))
-                .willReturn(mock(MyPageResponse.class));
+        given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt(), any(), any())).willReturn(Collections.emptyList());
+        given(myPageRepository.findSolvedProblemList(any(), any(), any(), any())).willReturn(Collections.emptyList());
+        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList())).willReturn(mock(MyPageResponse.class));
 
         // when
         myPageService.getMyPage(userId, 2025, 12, "2025-12-05");
@@ -210,36 +182,20 @@ class MyPageServiceTest {
         LocalDateTime expectedEnd = LocalDateTime.of(2025, 12, 1, 14, 59, 59, 999_999_999);
 
         // [핵심 검증] Service가 계산한 시간이 정확한지 Repository 호출 인자 확인
-        verify(myPageRepository).findGrassList(
-                eq(userId),
-                eq(2025),
-                eq(12),
-                eq(expectedStart),
-                eq(expectedEnd)
-        );
+        verify(myPageRepository).findGrassList(eq(userId), eq(2025), eq(12), eq(expectedStart), eq(expectedEnd));
 
         // 상세 목록 조회에도 동일한 필터링이 적용되는지 확인
-        verify(myPageRepository).findSolvedProblemList(
-                eq(userId),
-                any(LocalDate.class),
-                eq(expectedStart),
-                eq(expectedEnd)
-        );
+        verify(myPageRepository).findSolvedProblemList(eq(userId), any(LocalDate.class), eq(expectedStart), eq(expectedEnd));
     }
 
-    private void setupSuccessMocks(Long userId, LocalDate targetDate,
-            UserEntity mockUser, List<ProblemResponse> mockProblems) {
+    private void setupSuccessMocks(Long userId, LocalDate targetDate, UserEntity mockUser, List<ProblemResponse> mockProblems) {
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
 
-        given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt(), any(), any()))
-                .willReturn(Collections.emptyList());
-        given(myPageRepository.findSolvedProblemList(eq(userId), eq(targetDate), any(), any()))
-                .willReturn(mockProblems);
+        given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt(), any(), any())).willReturn(Collections.emptyList());
+        given(myPageRepository.findSolvedProblemList(eq(userId), eq(targetDate), any(), any())).willReturn(mockProblems);
 
-        given(rankingDayRepository.calculateDailyRank(anyInt(), any(), any()))
-                .willReturn(1L);
+        given(rankingDayRepository.calculateDailyRank(anyInt(), any(), any())).willReturn(1L);
 
-        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(MyPageMapper.DailyStatistics.class), anyList()))
-                .willReturn(mock(MyPageResponse.class));
+        given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(MyPageMapper.DailyStatistics.class), anyList())).willReturn(mock(MyPageResponse.class));
     }
 }
