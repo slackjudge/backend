@@ -75,23 +75,23 @@ class RankUtilTest {
     }
 
     @Test
-    @DisplayName("getPeriodEndExclusive(day) - 같은 날(현재 진행) => now 정각 + 1시간")
-    void getPeriodEndInclusive_day_current_returnsNowPlus1Hour() {
+    @DisplayName("getPeriodEndInclusive(day) - 같은 날(현재 진행) => now를 정각으로 내림")
+    void getPeriodEndInclusive_day_current_returnsFlooredNow() {
         // 서버가 요청 받은 시각(now): 12/15 14:39 -> cur=14:00
         LocalDateTime now = LocalDateTime.of(2025, 12, 15, 14, 39);
         // 사용자가 선택한 시각(requested)은 같은 날 아무 시간이든 상관 없음
         LocalDateTime requested = LocalDateTime.of(2025, 12, 15, 9, 14);
 
-        LocalDateTime endExclusive = RankUtil.getPeriodEndInclusive("day", requested, now);
+        LocalDateTime endInclusive = RankUtil.getPeriodEndInclusive("day", requested, now);
 
         // 현재 진행 중(day)이므로 cur= 14:00
-        assertThat(endExclusive).isEqualTo(LocalDateTime.of(2025, 12, 15, 14, 0));
+        assertThat(endInclusive).isEqualTo(LocalDateTime.of(2025, 12, 15, 14, 0));
     }
 
     @Test
     @DisplayName("getPeriodEndExclusive(day) - 과거 날이면 requested 다음날 00:00")
     void getPeriodEndInclusive_day_pastDay_returnsNextDayStart() {
-        //given 요청 시각 : 12.11일 14시 // 현재 서버 시각 : 12.15잉ㄹ 9시:40분
+        //given 요청 시각 : 12.11일 14시 // 현재 서버 시각 : 12.15일 9시:40분
         // 과거에 대한 요청이기 때문에 [12.15일 00:00, 12.16일 00:00) 조회
         LocalDateTime now = LocalDateTime.of(2025, 12, 15, 9, 14);
         LocalDateTime requested = LocalDateTime.of(2025, 12, 11, 14, 39);
@@ -104,8 +104,8 @@ class RankUtilTest {
     }
 
     @Test
-    @DisplayName("getPeriodEndInclusive(week) - 같은 주(현재 진행) => now 정각")
-    void getPeriodEndInclusive_week_current_returnsNowPlus1Hour() {
+    @DisplayName("getPeriodEndInclusive(week) - 같은 주(현재 진행) => now를 정각으로 내림")
+    void getPeriodEndInclusive_week_current_returnsFlooredNow() {
         // now=12/15(월) 14:39 => cur=14:00, weekStart=12/15 00:00
         LocalDateTime now = LocalDateTime.of(2025, 12, 15, 14, 39);
         // requested가 12/16이면 같은 주
@@ -128,8 +128,8 @@ class RankUtilTest {
     }
 
     @Test
-    @DisplayName("getPeriodEndInclusive(month) - 같은 달(현재 진행) => now 정각")
-    void getPeriodEndInclusive_month_current_returnsNowPlus1Hour() {
+    @DisplayName("getPeriodEndInclusive(month) - 같은 달(현재 진행) => now를 정각으로 내림")
+    void getPeriodEndInclusive_month_current_returnsFlooredNow() {
         LocalDateTime now = LocalDateTime.of(2025, 12, 15, 14, 39);
         LocalDateTime requested = LocalDateTime.of(2025, 12, 5, 23, 0); // 12월
 

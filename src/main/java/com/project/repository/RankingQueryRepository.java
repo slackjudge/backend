@@ -7,6 +7,8 @@ import com.project.entity.QUserEntity;
 import com.project.entity.QUsersProblemEntity;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.DateTimeExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -28,6 +30,14 @@ public class RankingQueryRepository {
     QUserEntity userEntity = QUserEntity.userEntity;
     QProblemEntity problemEntity = QProblemEntity.problemEntity;
 
+    //valid 시점 결정
+      DateTimeExpression<LocalDateTime> validAfterExpr =
+              Expressions.dateTimeTemplate(
+                      LocalDateTime.class,
+                      "timestampadd(HOUR, 2, function('date_trunc', 'hour', {0}))",
+                      userEntity.createdAt
+              );
+
    return queryFactory
             .select(Projections.constructor(RankingRowResponse.class,
                     userEntity.userId,
@@ -44,6 +54,7 @@ public class RankingQueryRepository {
             .where(
                     usersProblemEntity.solvedTime.gt(start), // 집계 시간 제외
                     usersProblemEntity.solvedTime.loe(endExclusive), // end = 배치 돌린 시각 포함
+                    usersProblemEntity.solvedTime.goe(validAfterExpr),
                     teamFilter(team, userEntity)
             )
             .groupBy(userEntity.userId)
