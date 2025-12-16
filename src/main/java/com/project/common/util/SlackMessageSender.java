@@ -6,6 +6,7 @@ import com.slack.api.Slack;
 import com.slack.api.methods.SlackApiException;
 import com.slack.api.methods.request.chat.ChatPostMessageRequest;
 import com.slack.api.methods.response.chat.ChatPostMessageResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 @Component
+@Slf4j
 public class SlackMessageSender {
 
     private final Slack slack;
@@ -36,12 +38,16 @@ public class SlackMessageSender {
 
     public ChatPostMessageResponse sendMessage(String id, String message) throws IOException, SlackApiException {
 
+        log.info("[Slack] sendMessage channelId={}", id);
+
         ChatPostMessageRequest request = ChatPostMessageRequest.builder()
                 .channel(id)
                 .text(message)
                 .build();
 
         ChatPostMessageResponse response = slack.methods(slackBotToken).chatPostMessage(request);
+
+        log.info("[Slack] response ok={}, error={}", response.isOk(), response.getError());
 
         if (!response.isOk()) {
             throw new BusinessException(ErrorCode.SLACK_MESSAGE_FAILED, "Slack 메시지 전송 실패: " + response.getError());

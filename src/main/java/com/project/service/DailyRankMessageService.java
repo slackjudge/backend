@@ -13,6 +13,7 @@ import com.project.repository.DailyRankMessageRepository;
 import com.project.repository.UserRepository;
 import com.project.repository.UsersProblemRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DailyRankMessageService {
@@ -67,7 +69,9 @@ public class DailyRankMessageService {
         }
 
         try {
-            slackMessageSender.sendMessage(slackChannelResolver.dailyRank(), message);
+            String channelId = slackChannelResolver.dailyRank();
+            log.info("[DailyRank] resolved channelId={}", channelId);
+            slackMessageSender.sendMessage(channelId, message);
             dailyRankMessageRepository.save(DailyRankMessageEntity.of(message));
         } catch (BusinessException e) {
             throw e;

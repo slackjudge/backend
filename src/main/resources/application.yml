@@ -44,7 +44,7 @@ scheduler:
 
 slack:
   channel:
-    daily-rank: C0A0M8HUQDT
+    daily-rank: C0A3LLS82F5
 
 ---
 spring.config.activate.on-profile: dev
@@ -57,4 +57,4 @@ scheduler:
 
 slack:
   channel:
-    daily-rank: C0A3LLS82F5
+    daily-rank: C0A0M8HUQDT
