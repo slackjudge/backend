@@ -2,12 +2,12 @@ package com.project.service;
 
 import com.project.common.util.MessageFormatUtil;
 import com.project.common.util.SlackMessageSender;
-import com.project.dto.RankRawData;
+import com.project.dto.response.RankingRowResponse;
 import com.project.entity.RankChangeStateEntity;
 import com.project.entity.UserEntity;
 import com.project.repository.RankChangeStateRepository;
+import com.project.repository.RankingQueryRepository;
 import com.project.repository.UserRepository;
-import com.project.repository.UsersProblemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,84 +23,101 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RankChangeStateService {
 
-    private final UsersProblemRepository usersProblemRepository;
     private final RankChangeStateRepository rankChangeStateRepository;
     private final SlackMessageSender slackMessageSender;
     private final MessageFormatUtil messageFormatUtil;
     private final UserRepository userRepository;
+    private final RankingQueryRepository rankingQueryRepository;
 
     @Transactional
     public void sendRankChangeMessage() {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime monthStart = LocalDate.now().withDayOfMonth(1).atStartOfDay();
 
-        List<RankRawData> raw = usersProblemRepository.findMonthlyRank(monthStart);
-        if (raw.isEmpty()) return;
+        // 1️⃣ 월간 랭킹 조회 (정렬 보장)
+        List<RankingRowResponse> rows =
+                rankingQueryRepository.getRankingRows(monthStart, now, null);
 
-        Map<Long, Integer> currentRanks = calculateRank(raw);
+        if (rows.isEmpty()) return;
 
-        Map<Long, Long> scoreMap = raw.stream().collect(Collectors.toMap(RankRawData::getUserId, RankRawData::getScore));
+        // 2️⃣ 순위 계산 (쿼리 순서 기준)
+        Map<Long, Integer> currentRankMap = new HashMap<>();
+        int rank = 1;
+        Long prevScore = null;
 
-        Set<Long> userIds = currentRanks.keySet();
+        for (int i = 0; i < rows.size(); i++) {
+            RankingRowResponse row = rows.get(i);
+            Number score = row.getTotalScore();
+            Long scoreValue = score.longValue();
 
+            if (i == 0 || !scoreValue.equals(prevScore)) {
+                rank = i + 1;
+            }
+
+            currentRankMap.put(row.getUserId(), rank);
+            log.debug(
+                    "[RankCalc] userId={}, score={}, rank={}",
+                    row.getUserId(), scoreValue, rank
+            );
+            prevScore = scoreValue;
+        }
+
+        Set<Long> userIds = currentRankMap.keySet();
+
+        // 3️⃣ 유저 + 기존 state 조회
         Map<Long, UserEntity> userMap = userRepository.findAllById(userIds).stream()
                 .collect(Collectors.toMap(UserEntity::getUserId, u -> u));
 
-        Map<Long, RankChangeStateEntity> stateMap = rankChangeStateRepository.findAllById(userIds).stream()
-                .collect(Collectors.toMap(RankChangeStateEntity::getUserId, s -> s));
+        Map<Long, RankChangeStateEntity> stateMap =
+                rankChangeStateRepository.findAllById(userIds).stream()
+                        .collect(Collectors.toMap(RankChangeStateEntity::getUserId, s -> s));
 
         List<RankChangeStateEntity> statesToSave = new ArrayList<>();
 
-        for (Map.Entry<Long, Integer> entry : currentRanks.entrySet()) {
-            Long userId = entry.getKey();
-            int currentRank = entry.getValue();
+        // 4️⃣ 순위 비교
+        for (RankingRowResponse row : rows) {
+            Long userId = row.getUserId();
+            int currentRank = currentRankMap.get(userId);
 
             UserEntity user = userMap.get(userId);
             if (user == null) continue;
 
-            LocalDateTime validAfter = user.getCreatedAt().truncatedTo(ChronoUnit.HOURS).plusHours(2);
-
-            if (!validAfter.isBefore(now)) { continue; }
-
             RankChangeStateEntity state = stateMap.get(userId);
 
+            // 4-1️⃣ 최초 state → 저장만
             if (state == null) {
-                statesToSave.add(RankChangeStateEntity.create(userId, currentRank));
+                RankChangeStateEntity newState =
+                        RankChangeStateEntity.create(userId, currentRank);
+
+                statesToSave.add(newState);
+                stateMap.put(userId, newState);
                 continue;
             }
 
             int lastRank = state.getLastCheckedRank();
 
+            // 4-2️⃣ 순위 상승 시만 알림
             if (user.isAlertAgreed() && currentRank < lastRank) {
                 try {
                     String message = messageFormatUtil.formatRankChange(
                             user.getUsername(),
                             lastRank,
                             currentRank,
-                            scoreMap.getOrDefault(userId, 0L));
+                            row.getTotalScore()
+                    );
                     slackMessageSender.sendMessage(user.getSlackId(), message);
                 } catch (Exception e) {
                     log.warn("순위 변동 DM 실패 userId={}, err={}", userId, e.getMessage());
                 }
             }
+
             state.updateRank(currentRank);
             statesToSave.add(state);
         }
+
+        // 5️⃣ 상태 저장
         if (!statesToSave.isEmpty()) {
             rankChangeStateRepository.saveAll(statesToSave);
         }
-    }
-
-    private Map<Long, Integer> calculateRank(List<RankRawData> raw) {
-        Map<Long, Integer> rankMap = new HashMap<>();
-        int rank = 1;
-
-        for (int i = 0; i < raw.size(); i++) {
-            if (i > 0 && !raw.get(i - 1).getScore().equals(raw.get(i).getScore())) {
-                rank = i + 1;
-            }
-            rankMap.put(raw.get(i).getUserId(), rank);
-        }
-        return rankMap;
     }
 }
