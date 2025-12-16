@@ -39,8 +39,22 @@ logging:
   level:
     root: INFO
 
+scheduler:
+  enabled: false
+
+slack:
+  channel:
+    daily-rank: C0A0M8HUQDT
+
 ---
 spring.config.activate.on-profile: dev
 logging:
   level:
     root: INFO
+
+scheduler:
+  enabled: true
+
+slack:
+  channel:
+    daily-rank: C0A3LLS82F5
