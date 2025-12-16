@@ -3,6 +3,7 @@ package com.project.service;
 import com.project.common.exception.BusinessException;
 import com.project.common.exception.ErrorCode;
 import com.project.common.util.MessageFormatUtil;
+import com.project.common.util.SlackChannelResolver;
 import com.project.common.util.SlackMessageSender;
 import com.project.dto.DailyRankInfo;
 import com.project.dto.RankRawData;
@@ -24,6 +25,7 @@ public class DailyRankMessageService {
     private final UsersProblemRepository usersProblemRepository;
     private final SlackMessageSender slackMessageSender;
     private final MessageFormatUtil messageFormatUtil;
+    private final SlackChannelResolver slackChannelResolver;
     private final DailyRankMessageRepository dailyRankMessageRepository;
 
     private static final int RANKING_LIMIT = 3;
@@ -44,7 +46,7 @@ public class DailyRankMessageService {
         }
 
         try {
-            slackMessageSender.sendMessage("C0A0M8HUQDT", message);
+            slackMessageSender.sendMessage(slackChannelResolver.dailyRank(), message);
             dailyRankMessageRepository.save(DailyRankMessageEntity.of(message));
         } catch (BusinessException e) {
             throw e;
