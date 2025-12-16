@@ -27,3 +27,10 @@ jwt:
     refresh-token:
       value: dGVzdHRlc3R0dGVzdHRlc3R0dGVzdHRlc3Q=
       expiration-time: 604800000
+
+slack:
+  channel:
+    daily-rank: TEST_CHANNEL
+
+scheduler:
+  enabled: false
