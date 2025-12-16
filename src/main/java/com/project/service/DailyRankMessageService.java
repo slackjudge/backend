@@ -73,13 +73,13 @@ public class DailyRankMessageService {
         int currentRank = 1;
 
         for (int i = 0; i < rows.size(); i++) {
-            if (i >= RANKING_LIMIT) break;
-
             RankingRowResponse r = rows.get(i);
 
             if (i > 0 && rows.get(i - 1).getTotalScore() != r.getTotalScore()) {
                 currentRank = i + 1;
             }
+
+            if (currentRank > RANKING_LIMIT) break;
 
             result.add(new DailyRankInfo(
                     r.getName(),
