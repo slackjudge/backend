@@ -3,6 +3,7 @@ package com.project.repository;
 import com.project.dto.response.GrassResponse;
 import com.project.dto.response.ProblemResponse;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -45,7 +46,7 @@ public class MyPageRepository {
                 .where(
                         usersProblemEntity.ref.user.userId.eq(userId),
                         usersProblemEntity.solvedTime.between(startOfMonth, endOfMonth),
-                        usersProblemEntity.solvedTime.notBetween(ignoreStart, ignoreEnd)
+                        ignoreBatchTime(ignoreStart, ignoreEnd)
                 )
                 .groupBy(dateStr)
                 .orderBy(dateStr.asc())
@@ -70,10 +71,16 @@ public class MyPageRepository {
                         usersProblemEntity.ref.user.userId.eq(userId),
                         usersProblemEntity.isSolved.isTrue(),
                         usersProblemEntity.solvedTime.between(startOfDay, endOfDay),
-                        usersProblemEntity.solvedTime.notBetween(ignoreStart, ignoreEnd)
+                        ignoreBatchTime(ignoreStart, ignoreEnd)
                 )
                 .orderBy(usersProblemEntity.solvedTime.asc())
                 .fetch();
+    }
+    private BooleanExpression ignoreBatchTime(LocalDateTime start, LocalDateTime end) {
+        if (start == null || end == null) {
+            return null; // QueryDSL에서 null을 반환하면 Where 절에서 자동으로 제거됨
+        }
+        return usersProblemEntity.solvedTime.notBetween(start, end);
     }
 
 }

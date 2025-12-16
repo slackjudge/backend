@@ -107,8 +107,6 @@ class MyPageRepositoryTest {
         int year = 2025;
         int month = 12;
 
-        // setUp에서 10:00 , 14:00 15:00 데이터 넣음
-        // 가입 직후 14:00-14:59에 배치가 돌았을때 가정
         LocalDateTime ignoreStart = LocalDateTime.of(2025, 12, 5, 10, 0, 0);
         LocalDateTime ignoreEnd = LocalDateTime.of(2025, 12, 5, 10, 59, 59);
 
