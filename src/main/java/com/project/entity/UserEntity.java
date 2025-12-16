@@ -90,4 +90,8 @@ public class UserEntity extends BaseTimeEntity {
         this.isAlertAgreed = signUpRequest.isAlertAgreed();
         this.bojTier = bojTier;
     }
+
+    public void updateAlertAgreed(boolean isAlertAgreed) {
+        this.isAlertAgreed = isAlertAgreed;
+    }
 }
