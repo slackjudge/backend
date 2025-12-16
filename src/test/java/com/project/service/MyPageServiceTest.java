@@ -61,12 +61,12 @@ class MyPageServiceTest {
         Long userId = 1L;
         String dateStr = "2025-12-05";
         LocalDate targetDate = LocalDate.parse(dateStr);
-        LocalDateTime createdAt = LocalDateTime.of(2025, 1, 1, 13, 0,0);
+        LocalDateTime createAt = LocalDateTime.of(2025, 1, 1, 13, 0, 0);
 
         // 1. Mock 데이터 생성
         UserEntity mockUser = UserEntity.builder().userId(userId).totalSolvedCount(100).build();
         List<ProblemResponse> mockProblems = List.of(new ProblemResponse("A", 5, "url1"), new ProblemResponse("B", 10, "url2"));
-        ReflectionTestUtils.setField(mockUser, "createdAt", createdAt);
+        ReflectionTestUtils.setField(mockUser, "createdAt", createAt);
 
         // 2. Mock 동작 설정
         setupSuccessMocks(userId, targetDate, mockUser, mockProblems);
