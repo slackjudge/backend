@@ -130,10 +130,12 @@ class MyPageRepositoryTest {
     void findSolvedProblemListTest() {
         // given
         LocalDate date = LocalDate.of(2025, 12, 5);
+        LocalDateTime ignoreStart = LocalDateTime.of(2025, 12, 5, 10, 0, 0);
+        LocalDateTime ignoreEnd = LocalDateTime.of(2025, 12, 5, 10, 59, 59);
 
         // when
         List<ProblemResponse> result =
-                myPageRepository.findSolvedProblemList(user.getUserId(), date);
+                myPageRepository.findSolvedProblemList(user.getUserId(), date, ignoreStart, ignoreEnd);
 
         // then
         assertThat(result).hasSize(5);

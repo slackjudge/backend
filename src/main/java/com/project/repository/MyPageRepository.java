@@ -55,9 +55,9 @@ public class MyPageRepository {
     /**
      * 특정 날짜에 푼 문제 상세 목록 조회
      */
-    public List<ProblemResponse> findSolvedProblemList(Long userId, LocalDate date) {
+    public List<ProblemResponse> findSolvedProblemList(Long userId, LocalDate date, LocalDateTime ignoreStart, LocalDateTime ignoreEnd) {
         LocalDateTime startOfDay = date.atStartOfDay();
-        LocalDateTime endOfDay = date.atTime(23, 59, 59);
+        LocalDateTime endOfDay = date.atTime(23, 59, 59, 999_999_999);
 
         return queryFactory
                 .select(Projections.constructor(ProblemResponse.class,
@@ -69,7 +69,9 @@ public class MyPageRepository {
                 .where(
                         usersProblemEntity.ref.user.userId.eq(userId),
                         usersProblemEntity.isSolved.isTrue(),
-                        usersProblemEntity.solvedTime.between(startOfDay, endOfDay))
+                        usersProblemEntity.solvedTime.between(startOfDay, endOfDay),
+                        usersProblemEntity.solvedTime.notBetween(ignoreStart, ignoreEnd)
+                )
                 .orderBy(usersProblemEntity.solvedTime.asc())
                 .fetch();
     }

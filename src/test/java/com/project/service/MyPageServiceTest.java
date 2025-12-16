@@ -105,7 +105,7 @@ class MyPageServiceTest {
 
         UserEntity mockUser = UserEntity.builder().userId(userId).createdAt(createdAt).totalSolvedCount(0).build();
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
-        given(myPageRepository.findSolvedProblemList(userId, targetDate)).willReturn(Collections.emptyList());
+        given(myPageRepository.findSolvedProblemList(userId, targetDate, any(), any())).willReturn(Collections.emptyList());
 
         ReflectionTestUtils.setField(mockUser, "createdAt", createdAt);
 
@@ -155,7 +155,7 @@ class MyPageServiceTest {
 
         ReflectionTestUtils.setField(mockUser, "createdAt", createdAt);
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
-        given(myPageRepository.findSolvedProblemList(any(), any())).willReturn(Collections.emptyList());
+        given(myPageRepository.findSolvedProblemList(any(), any(), any(), any())).willReturn(Collections.emptyList());
 
         // [변경] 파라미터 개수 6개로 맞춤
         given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList()))
@@ -188,7 +188,7 @@ class MyPageServiceTest {
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
         given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt(), any(), any()))
                 .willReturn(Collections.emptyList());
-        given(myPageRepository.findSolvedProblemList(any(), any())).willReturn(Collections.emptyList());
+        given(myPageRepository.findSolvedProblemList(any(), any(), any(), any())).willReturn(Collections.emptyList());
         given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList()))
                 .willReturn(mock(MyPageResponse.class));
 
@@ -198,7 +198,7 @@ class MyPageServiceTest {
         // then
         // 예상: 13:30 가입 -> 14:00:00 ~ 14:59:59 제외
         LocalDateTime expectedStart = LocalDateTime.of(2025, 12, 1, 14, 0, 0);
-        LocalDateTime expectedEnd = LocalDateTime.of(2025, 12, 1, 14, 59, 59);
+        LocalDateTime expectedEnd = LocalDateTime.of(2025, 12, 1, 14, 59, 59,999_999_999);
 
         verify(myPageRepository).findGrassList(
                 eq(userId),
@@ -215,7 +215,7 @@ class MyPageServiceTest {
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
         given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt(), any(), any()))
                 .willReturn(Collections.emptyList());
-        given(myPageRepository.findSolvedProblemList(userId, targetDate))
+        given(myPageRepository.findSolvedProblemList(userId, targetDate, any(), any()))
                 .willReturn(mockProblems);
         given(rankingDayRepository.calculateDailyRank(anyInt(), any(), any()))
                 .willReturn(1L);

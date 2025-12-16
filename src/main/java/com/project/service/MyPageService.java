@@ -37,10 +37,10 @@ public class MyPageService {
                         .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         // 제외할 시간대 계산 (가입 직후 첫 배치 시간)
-        // 가입: 13:30 -> 제외 범위 : 14:00:00 ~ 14:59:59
+        // 가입: 13:30 -> 제외 범위 : 14:00:00 ~ 14:59:59 -> 15:00
         LocalDateTime createdAt = user.getCreatedAt();
         LocalDateTime ignoreStart = createdAt.plusHours(1).withMinute(0).withSecond(0).withNano(0);
-        LocalDateTime ignoreEnd = ignoreStart.withMinute(59).withSecond(59);
+        LocalDateTime ignoreEnd = ignoreStart.withMinute(59).withSecond(59).withNano(999_999_999);
 
         // 2. 리포지토리에 제외할 시간 범위 (ignoreStart, ignoreEnd)
         // Repository에서 solvedTime.notBetween(ignoreStart, ignoreEnd) 처리를 수행
@@ -53,7 +53,7 @@ public class MyPageService {
 
         // 상세: 일간 문제 목록 조회 (푼 시간 정렬)
         List<ProblemResponse> problemList =
-                myPageRepository.findSolvedProblemList(userId, targetDate);
+                myPageRepository.findSolvedProblemList(userId, targetDate, ignoreStart,ignoreEnd);
 
         // 5. 통계 계산
         MyPageMapper.DailyStatistics dailyStats = calculateDailyStatistics(problemList, targetDate);
