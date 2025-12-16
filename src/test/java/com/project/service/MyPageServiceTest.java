@@ -4,10 +4,11 @@ import com.project.common.exception.BusinessException;
 import com.project.common.exception.ErrorCode;
 import com.project.dto.response.MyPageResponse;
 import com.project.dto.response.ProblemResponse;
+import com.project.dto.response.RankingRowResponse;
 import com.project.entity.UserEntity;
 import com.project.mapper.MyPageMapper;
 import com.project.repository.MyPageRepository;
-import com.project.repository.RankingDayRepository;
+import com.project.repository.RankingQueryRepository;
 import com.project.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,8 +18,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -49,10 +52,13 @@ class MyPageServiceTest {
     private MyPageRepository myPageRepository;
 
     @Mock
-    private RankingDayRepository rankingDayRepository;
+    private RankingQueryRepository rankingQueryRepository;
 
     @Mock
     private MyPageMapper myPageMapper;
+
+    @Mock
+    private Clock clock;
 
     @Test
     @DisplayName("성공: 유저가 존재하고 문제를 풀었을 때, 통계(합계, 최대값)와 랭킹이 정상 계산되어야 한다.")
@@ -87,7 +93,7 @@ class MyPageServiceTest {
                 eq(mockProblems)        // problemList
         );
 
-        verify(rankingDayRepository, times(1)).calculateDailyRank(eq(15), any(LocalDateTime.class), any(LocalDateTime.class));
+        verify(rankingQueryRepository, times(1)).getRankingRows(any(LocalDateTime.class), any(LocalDateTime.class), any());
     }
 
     @Test
@@ -116,7 +122,7 @@ class MyPageServiceTest {
 
         verify(myPageMapper).toResponse(eq(mockUser), eq(0), anyList(), eq(targetDate), eq(zeroStats), eq(Collections.emptyList()));
 
-        verify(rankingDayRepository, never()).calculateDailyRank(anyInt(), any(), any());
+        verify(rankingQueryRepository, never()).getRankingRows(any(), any(), any());
     }
 
     @Test
@@ -140,6 +146,8 @@ class MyPageServiceTest {
         ReflectionTestUtils.setField(mockUser, "createdAt", createdAt);
 
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
+        given(clock.instant()).willReturn(java.time.Instant.now());
+        given(clock.getZone()).willReturn(ZoneId.systemDefault());
 
         // ignoreStart, ignoreEnd 대신 any() 사용
         given(myPageRepository.findSolvedProblemList(any(), any(), any())).willReturn(Collections.emptyList());
@@ -194,7 +202,15 @@ class MyPageServiceTest {
         given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt(), any())).willReturn(Collections.emptyList());
         given(myPageRepository.findSolvedProblemList(eq(userId), eq(targetDate), any())).willReturn(mockProblems);
 
-        given(rankingDayRepository.calculateDailyRank(anyInt(), any(), any())).willReturn(1L);
+        // RankingQueryRepository mock 설정
+        // 내 userId가 포함된 랭킹 리스트 반환 (1등으로 설정)
+        RankingRowResponse myRankingRow = new RankingRowResponse(userId, "testUser", 10, 15, 2, "testId", "BACKEND");
+        myRankingRow.setRank(1);
+        given(rankingQueryRepository.getRankingRows(any(LocalDateTime.class), any(LocalDateTime.class), any()))
+                .willReturn(List.of(myRankingRow));
+
+        given(clock.instant()).willReturn(java.time.Instant.now());
+        given(clock.getZone()).willReturn(ZoneId.systemDefault());
 
         given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(MyPageMapper.DailyStatistics.class), anyList())).willReturn(mock(MyPageResponse.class));
     }
