@@ -32,7 +32,7 @@ public class RankingService {
 
   /**
    * 해당 시간대의 랭킹과 직전 시간대 랭킹을 비교하여 반환
-   * @Param : dateTime -> 사용자가 요청한 시간대 2025.10.12T14:21:29
+   * @Param  dateTime -> 사용자가 요청한 시간대 (예: 2025.10.12T14:21:29)
    */
   public RankingPageResponse getRanking(String period, LocalDateTime dateTime, String group, int page, int size) {
 

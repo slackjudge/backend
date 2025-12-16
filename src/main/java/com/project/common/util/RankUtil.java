@@ -46,7 +46,7 @@ public class RankUtil {
 
 
     /**
-     * period에 따른 "현재 구간 endiNclusive" 계산
+     * period에 따른 "현재 구간 endInclusive" 계산
      *
      * 규칙:
      * 1) 요청한 period가 "현재 진행 중인 기간"이면:
