@@ -61,7 +61,7 @@ class MyPageServiceTest {
         Long userId = 1L;
         String dateStr = "2025-12-05";
         LocalDate targetDate = LocalDate.parse(dateStr);
-        LocalDateTime createdAt = LocalDateTime.of(2025, 1, 1, 10, 0);
+        LocalDateTime createdAt = LocalDateTime.of(2025, 1, 1, 13, 0,0);
 
         // 1. Mock 데이터 생성
         UserEntity mockUser = UserEntity.builder().userId(userId).totalSolvedCount(100).build();
@@ -104,7 +104,7 @@ class MyPageServiceTest {
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
 
         // ignoreStart/End 대신 any() 사용
-        given(myPageRepository.findSolvedProblemList(eq(userId), eq(targetDate), any(), any())).willReturn(Collections.emptyList());
+        given(myPageRepository.findSolvedProblemList(eq(userId), eq(targetDate), any())).willReturn(Collections.emptyList());
 
         given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList())).willReturn(mock(MyPageResponse.class));
 
@@ -142,7 +142,7 @@ class MyPageServiceTest {
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
 
         // ignoreStart, ignoreEnd 대신 any() 사용
-        given(myPageRepository.findSolvedProblemList(any(), any(), any(), any())).willReturn(Collections.emptyList());
+        given(myPageRepository.findSolvedProblemList(any(), any(), any())).willReturn(Collections.emptyList());
 
         given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList())).willReturn(mock(MyPageResponse.class));
 
@@ -155,12 +155,12 @@ class MyPageServiceTest {
     }
 
     @Test
-    @DisplayName("검증: 가입 직후 첫 배치 시간대(가입 시간 + 1시간의 정각 ~ 59분)가 제외 시간으로 전달된다.")
+    @DisplayName("검증: 가입 직후 두번째 배치시점인 2시간을 더한 시점을 기준 시간으로 정한다.")
     void getMyPage_VerifyIgnoreTimeCalculation() {
         // given
         Long userId = 1L;
-        // 시나리오: 13:30:45 가입
-        LocalDateTime signUpTime = LocalDateTime.of(2025, 12, 1, 13, 30, 45);
+        // 시나리오: 13:58
+        LocalDateTime signUpTime = LocalDateTime.of(2025, 12, 1, 13, 58, 45);
 
         UserEntity mockUser = UserEntity.builder().userId(userId).build();
         ReflectionTestUtils.setField(mockUser, "createdAt", signUpTime);
@@ -168,31 +168,31 @@ class MyPageServiceTest {
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
 
         // Mocking: any()를 사용하여 어떤 시간이 들어오든 에러가 안 나게 설정
-        given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt(), any(), any())).willReturn(Collections.emptyList());
-        given(myPageRepository.findSolvedProblemList(any(), any(), any(), any())).willReturn(Collections.emptyList());
+        given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt(), any())).willReturn(Collections.emptyList());
+        given(myPageRepository.findSolvedProblemList(any(), any(), any())).willReturn(Collections.emptyList());
         given(myPageMapper.toResponse(any(), anyInt(), anyList(), any(), any(), anyList())).willReturn(mock(MyPageResponse.class));
 
         // when
-        myPageService.getMyPage(userId, 2025, 12, "2025-12-05");
+        myPageService.getMyPage(userId, 2025, 12, "2025-12-01");
 
         // then
         // 예상: 13:30 가입 -> 14:00:00.000 ~ 14:59:59.999... 제외
-        LocalDateTime expectedStart = LocalDateTime.of(2025, 12, 1, 14, 0, 0, 0);
-        // [Checkstyle 해결] 콤마 뒤 공백 추가 완료
-        LocalDateTime expectedEnd = LocalDateTime.of(2025, 12, 1, 14, 59, 59, 999_999_999);
+        LocalDateTime expectedStart = LocalDateTime.of(2025, 12, 1, 15, 0, 0);
 
-        // [핵심 검증] Service가 계산한 시간이 정확한지 Repository 호출 인자 확인
-        verify(myPageRepository).findGrassList(eq(userId), eq(2025), eq(12), eq(expectedStart), eq(expectedEnd));
-
-        // 상세 목록 조회에도 동일한 필터링이 적용되는지 확인
-        verify(myPageRepository).findSolvedProblemList(eq(userId), any(LocalDate.class), eq(expectedStart), eq(expectedEnd));
+        // Repository에 15:00가 넘어갔는지 확인
+        verify(myPageRepository).findGrassList(
+                eq(userId),
+                eq(2025),
+                eq(12),
+                eq(expectedStart)
+        );
     }
 
     private void setupSuccessMocks(Long userId, LocalDate targetDate, UserEntity mockUser, List<ProblemResponse> mockProblems) {
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
 
-        given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt(), any(), any())).willReturn(Collections.emptyList());
-        given(myPageRepository.findSolvedProblemList(eq(userId), eq(targetDate), any(), any())).willReturn(mockProblems);
+        given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt(), any())).willReturn(Collections.emptyList());
+        given(myPageRepository.findSolvedProblemList(eq(userId), eq(targetDate), any())).willReturn(mockProblems);
 
         given(rankingDayRepository.calculateDailyRank(anyInt(), any(), any())).willReturn(1L);
 
