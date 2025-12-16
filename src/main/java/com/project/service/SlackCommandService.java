@@ -5,7 +5,6 @@ import com.project.common.exception.ErrorCode;
 import com.project.entity.UserEntity;
 import com.project.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,11 +44,11 @@ public class SlackCommandService {
 
     private String helpMessage() {
         return """
-            ❓ 사용법 안내
-            
-            /notify on     알림 켜기
-            /notify off    알림 끄기
-            /notify status 상태 확인
-            """;
+        ❓ 사용법 안내
+
+        /notify on     알림 켜기
+        /notify off    알림 끄기
+        /notify status 상태 확인
+        """;
     }
 }

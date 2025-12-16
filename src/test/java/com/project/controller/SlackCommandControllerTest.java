@@ -35,21 +35,66 @@ class SlackCommandControllerTest {
     }
 
     @Test
-    @DisplayName("Slack /notify 요청 시 ephemeral 응답을 반환한다")
-    void notify_command() throws Exception {
-        // given
+    @DisplayName("/notify on → 알림 켜기 응답")
+    void notify_on() throws Exception {
         when(slackCommandService.handleNotify("on", "U123"))
-                .thenReturn("🔔 순위 변동 알림이 켜졌습니다.");
+                .thenReturn("ON MESSAGE");
 
-        // when & then
+        performAndExpect("on", "ON MESSAGE");
+    }
+
+    @Test
+    @DisplayName("/notify off → 알림 끄기 응답")
+    void notify_off() throws Exception {
+        when(slackCommandService.handleNotify("off", "U123"))
+                .thenReturn("OFF MESSAGE");
+
+        performAndExpect("off", "OFF MESSAGE");
+    }
+
+    @Test
+    @DisplayName("/notify status → 상태 조회 응답")
+    void notify_status() throws Exception {
+        when(slackCommandService.handleNotify("status", "U123"))
+                .thenReturn("STATUS MESSAGE");
+
+        performAndExpect("status", "STATUS MESSAGE");
+    }
+
+    @Test
+    @DisplayName("/notify invalid → help 메시지 응답")
+    void notify_invalid() throws Exception {
+        when(slackCommandService.handleNotify("invalid", "U123"))
+                .thenReturn("HELP MESSAGE");
+
+        performAndExpect("invalid", "HELP MESSAGE");
+    }
+
+    @Test
+    @DisplayName("/notify without text → help 메시지 응답")
+    void notify_empty_text() throws Exception {
+        when(slackCommandService.handleNotify(null, "U123"))
+                .thenReturn("HELP MESSAGE");
+
         mockMvc.perform(
                         post("/slack/command/notify")
                                 .contentType("application/x-www-form-urlencoded")
-                                .param("text", "on")
                                 .param("user_id", "U123")
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.response_type").value("ephemeral"))
-                .andExpect(jsonPath("$.text").value("🔔 순위 변동 알림이 켜졌습니다."));
+                .andExpect(jsonPath("$.text").value("HELP MESSAGE"));
+    }
+
+    private void performAndExpect(String text, String expectedMessage) throws Exception {
+        mockMvc.perform(
+                        post("/slack/command/notify")
+                                .contentType("application/x-www-form-urlencoded")
+                                .param("text", text)
+                                .param("user_id", "U123")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.response_type").value("ephemeral"))
+                .andExpect(jsonPath("$.text").value(expectedMessage));
     }
 }

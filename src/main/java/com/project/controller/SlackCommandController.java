@@ -1,10 +1,6 @@
 package com.project.controller;
 
-import com.project.common.dto.ApiResponse;
 import com.project.common.dto.SlackCommandResponse;
-import com.project.common.exception.BusinessException;
-import com.project.common.exception.ErrorCode;
-import com.project.entity.UserEntity;
 import com.project.service.SlackCommandService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
