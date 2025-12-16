@@ -40,7 +40,7 @@ public class DailyRankMessageService {
 
         String message;
         if (ranked.isEmpty()) {
-            message = "오늘은 새로운 문제 풀이가 없습니다.😊";
+            message = "오늘은 새로운 문제 풀이가 없습니다.😢";
         } else {
             message = messageFormatUtil.formatDailyRank(ranked);
         }

@@ -81,7 +81,7 @@ class DailyRankMessageServiceTest {
         dailyRankMessageService.sendDailyRankMessage();
 
         verify(slackChannelResolver, times(1)).dailyRank();
-        verify(slackMessageSender, times(1)).sendMessage("TEST_CHANNEL", "오늘은 새로운 문제 풀이가 없습니다.😊");
+        verify(slackMessageSender, times(1)).sendMessage("TEST_CHANNEL", "오늘은 새로운 문제 풀이가 없습니다.😢");
     }
 
     @Test
