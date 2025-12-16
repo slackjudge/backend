@@ -53,7 +53,7 @@ public class MyPageService {
 
         // 상세: 일간 문제 목록 조회 (푼 시간 정렬)
         List<ProblemResponse> problemList =
-                myPageRepository.findSolvedProblemList(userId, targetDate, ignoreStart,ignoreEnd);
+                myPageRepository.findSolvedProblemList(userId, targetDate, ignoreStart, ignoreEnd);
 
         // 5. 통계 계산
         MyPageMapper.DailyStatistics dailyStats = calculateDailyStatistics(problemList, targetDate);
