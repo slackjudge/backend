@@ -3,6 +3,7 @@ package com.project.service;
 import com.project.common.exception.BusinessException;
 import com.project.common.exception.ErrorCode;
 import com.project.common.util.MessageFormatUtil;
+import com.project.common.util.SlackChannelResolver;
 import com.project.common.util.SlackMessageSender;
 import com.project.dto.RankRawData;
 import com.project.repository.DailyRankMessageRepository;
@@ -39,6 +40,9 @@ class DailyRankMessageServiceTest {
     @Mock
     DailyRankMessageRepository dailyRankMessageRepository;
 
+    @Mock
+    SlackChannelResolver slackChannelResolver;
+
     @InjectMocks
     DailyRankMessageService dailyRankMessageService;
 
@@ -49,6 +53,7 @@ class DailyRankMessageServiceTest {
 
         when(usersProblemRepository.findDailyRank(any(), any())).thenReturn(raw);
         when(messageFormatUtil.formatDailyRank(any())).thenReturn("TEST_FORMATTED_MESSAGE");
+        when(slackChannelResolver.dailyRank()).thenReturn("TEST_CHANNEL");
 
         ChatPostMessageResponse mockResponse = new ChatPostMessageResponse();
         mockResponse.setOk(true);
@@ -57,7 +62,8 @@ class DailyRankMessageServiceTest {
 
         dailyRankMessageService.sendDailyRankMessage();
 
-        verify(slackMessageSender, times(1)).sendMessage("C0A0M8HUQDT", "TEST_FORMATTED_MESSAGE");
+        verify(slackChannelResolver, times(1)).dailyRank();
+        verify(slackMessageSender, times(1)).sendMessage("TEST_CHANNEL", "TEST_FORMATTED_MESSAGE");
         verify(dailyRankMessageRepository).save(any());
     }
 
@@ -65,6 +71,7 @@ class DailyRankMessageServiceTest {
     @DisplayName("일일 랭킹 데이터가 없을 경우 기본 메시지 전송")
     void sendDailyRankMessage_empty() throws Exception {
         when(usersProblemRepository.findDailyRank(any(), any())).thenReturn(List.of());
+        when(slackChannelResolver.dailyRank()).thenReturn("TEST_CHANNEL");
 
         ChatPostMessageResponse response = new ChatPostMessageResponse();
         response.setOk(true);
@@ -73,7 +80,8 @@ class DailyRankMessageServiceTest {
 
         dailyRankMessageService.sendDailyRankMessage();
 
-        verify(slackMessageSender, times(1)).sendMessage("C0A0M8HUQDT", "오늘은 새로운 문제 풀이가 없습니다.😊");
+        verify(slackChannelResolver, times(1)).dailyRank();
+        verify(slackMessageSender, times(1)).sendMessage("TEST_CHANNEL", "오늘은 새로운 문제 풀이가 없습니다.😢");
     }
 
     @Test
@@ -85,8 +93,8 @@ class DailyRankMessageServiceTest {
                         new RankRawData(1L, "유재석", 7L, 48L)
                 ));
 
-        when(messageFormatUtil.formatDailyRank(any()))
-                .thenReturn("TEXT");
+        when(messageFormatUtil.formatDailyRank(any())).thenReturn("TEXT");
+        when(slackChannelResolver.dailyRank()).thenReturn("TEST_CHANNEL");
 
         when(slackMessageSender.sendMessage(anyString(), anyString()))
                 .thenThrow(new BusinessException(ErrorCode.SLACK_MESSAGE_FAILED));
@@ -107,8 +115,8 @@ class DailyRankMessageServiceTest {
                         new RankRawData(1L, "유재석", 7L, 48L)
                 ));
 
-        when(messageFormatUtil.formatDailyRank(any()))
-                .thenReturn("TEXT");
+        when(messageFormatUtil.formatDailyRank(any())).thenReturn("TEXT");
+        when(slackChannelResolver.dailyRank()).thenReturn("TEST_CHANNEL");
 
         when(slackMessageSender.sendMessage(anyString(), anyString()))
                 .thenThrow(new RuntimeException("unknown error"));

@@ -3,15 +3,16 @@ package com.project.controller;
 import com.project.common.dto.ApiResponse;
 import com.project.service.DailyRankMessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
+@Profile("local")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/slack")
+@RequestMapping("/test/slack")
 public class DailyRankMessageController {
 
     private final DailyRankMessageService dailyRankMessageService;

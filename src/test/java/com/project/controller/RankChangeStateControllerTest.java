@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.mock;
@@ -16,6 +17,7 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ActiveProfiles("local")
 @WebMvcTest(RankChangeStateController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @Import(RankChangeStateControllerTest.TestConfig.class)
@@ -37,7 +39,7 @@ public class RankChangeStateControllerTest {
     @DisplayName("개인 순위 변동 알림 API 호출 성공")
     void rankChangeApiTest() throws Exception {
 
-        mvc.perform(post("/slack/rank-change"))
+        mvc.perform(post("/test/slack/rank-change"))
                 .andExpect(status().isOk());
 
         verify(rankChangeStateService, times(1)).sendRankChangeMessage();
