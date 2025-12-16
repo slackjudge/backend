@@ -6,9 +6,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class SlackChannelResolver {
 
-    @Value("${slack.channel.daily-rank}")
-    private String dailyRankChannel;
-
+    private final String dailyRankChannel;
+    public SlackChannelResolver(@Value("${slack.channel.daily-rank}") String dailyRankChannel) {
+        this.dailyRankChannel = dailyRankChannel;
+    }
     public String dailyRank() {
         return dailyRankChannel;
     }
