@@ -28,6 +28,9 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
+/**
+ * author : 박준희
+ */
 @ExtendWith(MockitoExtension.class)
 class RankingServiceTest {
     @Mock
@@ -54,10 +57,6 @@ class RankingServiceTest {
         // given
         LocalDateTime baseTime = LocalDateTime.of(2025, 12, 11, 14, 30);
 
-        /** 조회용 데이터
-         *  userID, name, tier, totalScore, solvedCount, baekjoonId, team
-         *  userA : 100 -> 120점 / userB : 80 -> 80 동일
-         */
         List<RankingRowResponse> currentRows = List.of(
                 new RankingRowResponse(1L, "userA", 2, 100, 2, "gr2146", "BACKEND_FACE"),
                 new RankingRowResponse(2L, "userB", 9, 80, 2, "q1w2e3r4", "BACKEND_NON_FACE")
@@ -91,23 +90,16 @@ class RankingServiceTest {
         // given
         LocalDateTime baseTime = LocalDateTime.of(2025, 12, 11, 14, 30);
 
-        /** 조회용 데이터
-         *  userID, name, tier, totalScore, solvedCount, baekjoonId, team
-         */
-
-        // 현재: userA  1등, userB 2등
         List<RankingRowResponse> currentRows = List.of(
                 new RankingRowResponse(1L, "userA", 2, 140, 3, "gr2146", "BACKEND_FACE"),
                 new RankingRowResponse(2L, "userB", 9, 120, 3, "q1w2e3r4", "BACKEND_NON_FACE")
         );
 
-        // 직전 : userB 1등, userA 2등
         List<RankingRowResponse> prevRows = List.of(
                 new RankingRowResponse(2L, "userB", 9, 100, 2, "q1w2e3r4", "BACKEND_NON_FACE"),
                 new RankingRowResponse(1L, "userA", 2, 80, 2, "gr2146", "BACKEND_FACE")
         );
 
-        // 조회 -> 랭킹 -> diff 계산
         when(rankingQueryRepository.getRankingRows(
                 any(LocalDateTime.class),
                 any(LocalDateTime.class),
@@ -128,7 +120,6 @@ class RankingServiceTest {
                 .findFirst()
                 .orElseThrow();
 
-        // A는 2등 → 1등 (diff = +1), B는 1등 → 2등 (diff = -1) 라는 식으로 나올 것
         assertThat(userA.getDiff()).isEqualTo(1);
         assertThat(userB.getDiff()).isEqualTo(-1);
     }
@@ -145,9 +136,6 @@ class RankingServiceTest {
         int page = 1;
         int size = 2;
 
-        /** 조회용 데이터
-         *  userID, name, tier, totalScore, solvedCount, baekjoonId, team
-         */
         RankingRowResponse currentUser1 =
                 new RankingRowResponse(1L, 0, 5, "user1", 100, 10L, "boj1", "BACKEND", 0);
         RankingRowResponse currentUser2 =
@@ -155,7 +143,6 @@ class RankingServiceTest {
 
         List<RankingRowResponse> currentRows = List.of(currentUser1, currentUser2);
 
-        // 이전 랭킹엔 user1만 있고, user2는 새로 진입한 케이스
         RankingRowResponse prevUser1 =
                 new RankingRowResponse(1L, 0, 5, "user1", 90,  9L, "boj1", "BACKEND", 0);
         List<RankingRowResponse> prevRows = List.of(prevUser1);
@@ -173,10 +160,7 @@ class RankingServiceTest {
         RankingRowResponse r1 = result.getRows().get(0);
         RankingRowResponse r2 = result.getRows().get(1);
 
-        // user1 : 이전 rank 1, 현재 rank 1 → diff = 0
         assertThat(r1.getDiff()).isEqualTo(0);
-
-        // user2 : 이전 랭킹에 없음 → diff = 0 처리
         assertThat(r2.getDiff()).isEqualTo(0);
     }
     @Test
@@ -231,7 +215,7 @@ class RankingServiceTest {
     @DisplayName("getRanking - 현재 구간 랭킹 조회 결과가 비면 정상처리 후 빈 결과 반환")
     void getRanking_noCurrentData() {
         when(rankingQueryRepository.getRankingRows(any(), any(), isNull()))
-                .thenReturn(List.of()); // currentAll empty
+                .thenReturn(List.of());
 
         RankingPageResponse res = rankingService.getRanking(
                 "day", LocalDateTime.of(2025, 12, 11, 14, 30), "ALL", 1, 20
@@ -240,14 +224,13 @@ class RankingServiceTest {
         assertThat(res.isHasNext()).isFalse();
         assertThat(res.getRows()).isEmpty();
 
-        // currentAll 조회 1번에서 바로 터지므로, 호출은 1회까지만 기대 가능
         verify(rankingQueryRepository, times(1)).getRankingRows(any(), any(), isNull());
     }
 
     @Test
     @DisplayName("getRanking - 요청 page가 범위를 벗어나면 빈 결과 반환으로 변경")
     void getRanking_pageOutOfRange() {
-        // currentAll은 1개만 존재
+        //given
         List<RankingRowResponse> currentRows = List.of(
                 new RankingRowResponse(1L, "userA", 2, 100, 2, "bojA", "BACKEND_FACE")
         );
@@ -255,17 +238,16 @@ class RankingServiceTest {
                 new RankingRowResponse(1L, "userA", 2, 90, 1, "bojA", "BACKEND_FACE")
         );
 
+        //when
         when(rankingQueryRepository.getRankingRows(any(), any(), isNull()))
                 .thenReturn(currentRows, prevRows);
 
-        // page=2, size=20 -> fromIndex=20 >= currentAll.size(1) -> 빈 결과 반환
-
+        //then
         RankingPageResponse res = rankingService.getRanking("day", LocalDateTime.of(2025, 12, 11, 14, 30), "ALL", 2, 20);
 
         assertThat(res.isHasNext()).isFalse();
         assertThat(res.getRows()).isEmpty();
 
-        // current/prev 조회는 둘 다 수행된 다음 슬라이싱에서 터짐
         verify(rankingQueryRepository, times(2)).getRankingRows(any(), any(), isNull());
     }
 

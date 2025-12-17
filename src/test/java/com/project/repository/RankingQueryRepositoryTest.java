@@ -17,7 +17,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
+/**
+ * author : 박준희
+ */
 @DataJpaTest
 @Import({QueryDslConfig.class, JpaAuditingConfig.class, RankingQueryRepository.class})
 @ActiveProfiles("test")
@@ -33,7 +35,7 @@ class RankingQueryRepositoryTest {
     @Test
     @DisplayName("group = ALL, 2025-12 전체 기간 → 점수 desc + 이름 asc로 정렬")
     void getRankingRows_allGroup_basicOrderAndAggregation() {
-        // given: 2025-12-01 ~ 2026-01-01 (한 달 전체)
+        // given
         LocalDateTime start = LocalDate.of(2025, 12, 1).atStartOfDay();
         LocalDateTime endExclusive = LocalDate.of(2026, 1, 1).atStartOfDay();
 
@@ -44,30 +46,25 @@ class RankingQueryRepositoryTest {
         // then
         assertThat(rows).hasSize(3);
 
-        // 전체 점수:
-        //  - 프론트유저(userId=2): 5 + 10 + 20 = 35 (3문제)
-        //  - 백엔드유저(userId=1): 10 + 15 = 25 (2문제)
-        //  - 비대면유저(userId=3): 15 (1문제)
-        // 점수 desc → 2번, 1번, 3번 순이어야 함
         RankingRowResponse first = rows.get(0);
         RankingRowResponse second = rows.get(1);
         RankingRowResponse third = rows.get(2);
 
-        // 1위: 프론트유저
+        // 1위
         assertThat(first.getUserId()).isEqualTo(2L);
         assertThat(first.getName()).isEqualTo("프론트유저");
         assertThat(first.getTotalScore()).isEqualTo(35);
         assertThat(first.getSolvedCount()).isEqualTo(3L);
         assertThat(first.getTeam()).isEqualTo("FRONTEND_FACE");
 
-        // 2위: 백엔드유저
+        // 2위
         assertThat(second.getUserId()).isEqualTo(1L);
         assertThat(second.getName()).isEqualTo("백엔드유저");
         assertThat(second.getTotalScore()).isEqualTo(25);
         assertThat(second.getSolvedCount()).isEqualTo(2L);
         assertThat(second.getTeam()).isEqualTo("BACKEND_FACE");
 
-        // 3위: 비대면유저
+        // 3위
         assertThat(third.getUserId()).isEqualTo(3L);
         assertThat(third.getName()).isEqualTo("비대면유저");
         assertThat(third.getTotalScore()).isEqualTo(15);
@@ -88,7 +85,6 @@ class RankingQueryRepositoryTest {
                 rankingQueryRepository.getRankingRows(start, endExclusive, EurekaTeamName.BACKEND_FACE);
 
         // then
-        // SQL 기준: BACKEND_FACE 팀은 '백엔드유저' 한 명만 존재
         assertThat(rows).hasSize(1);
 
         RankingRowResponse backendRow = rows.get(0);
@@ -102,7 +98,7 @@ class RankingQueryRepositoryTest {
     @Test
     @DisplayName("[start, endExclusive) 기간 필터가 올바르게 적용되어 endExclusive 시각 이후 데이터는 제외")
     void getRankingRows_periodFilter_exclusiveEnd() {
-        // given: 2025-12-11 13:00 <= solvedTime < 2025-12-11 14:00
+        // given
         LocalDateTime start = LocalDateTime.of(2025, 12, 11, 13, 0);
         LocalDateTime endExclusive = LocalDateTime.of(2025, 12, 11, 14, 0);
 
@@ -111,26 +107,18 @@ class RankingQueryRepositoryTest {
                 rankingQueryRepository.getRankingRows(start, endExclusive, null);
 
         // then
-        // 14:10 에 푼 1004(20점)는 endExclusive=14:00 때문에 집계에서 제외되어야 함.
-        // 따라서 이 기간 동안 각 유저 점수는:
-        //  - 백엔드유저(1): 1002(10) + 1003(15) = 25점, 2문제
-        //  - 프론트유저(2): 1001(5) + 1002(10) = 15점, 2문제 (1004는 제외)
-        //  - 비대면유저(3): 1003(15) = 15점, 1문제
         assertThat(rows).hasSize(3);
 
         RankingRowResponse backendRow = findByName(rows, "백엔드유저");
         RankingRowResponse frontendRow = findByName(rows, "프론트유저");
         RankingRowResponse nonFaceRow = findByName(rows, "비대면유저");
 
-        // 백엔드유저 검증
         assertThat(backendRow.getTotalScore()).isEqualTo(25);
         assertThat(backendRow.getSolvedCount()).isEqualTo(2L);
 
-        // 프론트유저: 14:10(20점) 제외 → 5 + 10 = 15점, 2문제
         assertThat(frontendRow.getTotalScore()).isEqualTo(15);
         assertThat(frontendRow.getSolvedCount()).isEqualTo(2L);
 
-        // 비대면유저
         assertThat(nonFaceRow.getTotalScore()).isEqualTo(15);
         assertThat(nonFaceRow.getSolvedCount()).isEqualTo(1L);
     }
