@@ -24,6 +24,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/*
+author : 최하영
+*/
 @DataJpaTest
 @Import({TestContainerConfig.class, TestQueryDslConfig.class, MyPageRepository.class})
 class MyPageRepositoryTest {
@@ -38,8 +41,6 @@ class MyPageRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        // 1. 유저 생성 (가입일: 12월 1일 13:58)
-        // -> 배치 제외 시간: 14:00:00 ~ 14:59:59 /15:00 부터 유효함
         user = UserEntity.builder()
                 .slackId("U12345")
                 .baekjoonId("testUser")
@@ -55,12 +56,12 @@ class MyPageRepositoryTest {
                 .build();
         em.persist(user);
 
-        // 2. 문제 생성
+        // 문제 생성
         ProblemEntity p1 = createProblem(1001, "문제1", 5);
         ProblemEntity p2 = createProblem(1002, "문제2", 10);
         ProblemEntity p3 = createProblem(1003, "문제3", 15);
 
-        //풀이기록 생성: 모두 12월 1일에 생성
+        // 풀이기록 생성: 모두 12월 1일에 생성
         LocalDate solvedDate = LocalDate.of(2025, 12, 1);
 
         createSolvedHistory(user, p1, solvedDate.atTime(14, 0, 0));
@@ -80,7 +81,6 @@ class MyPageRepositoryTest {
         // given
         LocalDate targetDate = LocalDate.of(2025, 12, 1);
 
-        // Service 로직과 시뮬: 가입(13:58) -> 13시 기준 + 2시간 -> 15:00 부터 조회 가능
         LocalDateTime validAfter = LocalDateTime.of(2025, 12, 1, 15, 0, 0);
 
         // when
@@ -109,13 +109,11 @@ class MyPageRepositoryTest {
         );
 
         // then
-        // 12월 1일 데이터 확인
         GrassResponse day1 = result.stream()
                 .filter(g -> g.date().equals("2025-12-01"))
                 .findFirst()
                 .orElseThrow();
 
-        // 총 3문제 중 1문제(14:00) 제외 -> 1개여야 함
         assertThat(day1.solvedCount()).isEqualTo(1);
     }
 

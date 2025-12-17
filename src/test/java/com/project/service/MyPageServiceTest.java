@@ -38,7 +38,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
+/*
+author : 최하영
+*/
 @ExtendWith(MockitoExtension.class)
 class MyPageServiceTest {
 
@@ -83,14 +85,13 @@ class MyPageServiceTest {
         // then
         assertThat(result).isNotNull();
 
-        // 5 + 10 = 15점, 1등, 2문제, 최대난이도 10
         MyPageMapper.DailyStatistics expectedStats = new MyPageMapper.DailyStatistics(15, 1, 2, 10);
 
-        verify(myPageMapper).toResponse(eq(mockUser), eq(100),                // totalSolvedCount
-                anyList(),              // grassList
-                eq(targetDate),         // date
-                eq(expectedStats),      // 통계 객체 검증
-                eq(mockProblems)        // problemList
+        verify(myPageMapper).toResponse(eq(mockUser), eq(100),                
+                anyList(),              
+                eq(targetDate),         
+                eq(expectedStats),   
+                eq(mockProblems)    
         );
 
         verify(rankingQueryRepository, times(1)).getRankingRows(any(LocalDateTime.class), any(LocalDateTime.class), any());
@@ -184,10 +185,8 @@ class MyPageServiceTest {
         myPageService.getMyPage(userId, 2025, 12, "2025-12-01");
 
         // then
-        // 예상: 13:30 가입 -> 14:00:00.000 ~ 14:59:59.999... 제외
         LocalDateTime expectedStart = LocalDateTime.of(2025, 12, 1, 15, 0, 0);
 
-        // Repository에 15:00가 넘어갔는지 확인
         verify(myPageRepository).findGrassList(
                 eq(userId),
                 eq(2025),
@@ -202,8 +201,6 @@ class MyPageServiceTest {
         given(myPageRepository.findGrassList(anyLong(), anyInt(), anyInt(), any())).willReturn(Collections.emptyList());
         given(myPageRepository.findSolvedProblemList(eq(userId), eq(targetDate), any())).willReturn(mockProblems);
 
-        // RankingQueryRepository mock 설정
-        // 내 userId가 포함된 랭킹 리스트 반환 (1등으로 설정)
         RankingRowResponse myRankingRow = new RankingRowResponse(userId, "testUser", 10, 15, 2, "testId", "BACKEND");
         myRankingRow.setRank(1);
         given(rankingQueryRepository.getRankingRows(any(LocalDateTime.class), any(LocalDateTime.class), any()))

@@ -16,6 +16,9 @@ import java.util.List;
 import static com.project.entity.QProblemEntity.problemEntity;
 import static com.project.entity.QUsersProblemEntity.usersProblemEntity;
 
+/*
+author : 최하영
+*/
 @Repository
 @RequiredArgsConstructor
 public class MyPageRepository {
@@ -24,6 +27,11 @@ public class MyPageRepository {
 
     /**
      * 월간 잔디 데이터 조회
+     * @param userId
+     * @param year
+     * @param month
+     * @param validAfter
+     * @return
      */
     public List<GrassResponse> findGrassList(Long userId, int year, int month, LocalDateTime validAfter) {
         LocalDateTime startOfMonth = LocalDate.of(year, month, 1).atStartOfDay();
@@ -52,6 +60,10 @@ public class MyPageRepository {
 
     /**
      * 특정 날짜에 푼 문제 상세 목록 조회
+     * @param userId
+     * @param date
+     * @param validAfter
+     * @return
      */
     public List<ProblemResponse> findSolvedProblemList(Long userId, LocalDate date, LocalDateTime validAfter) {
         LocalDateTime startOfDay = date.atStartOfDay();

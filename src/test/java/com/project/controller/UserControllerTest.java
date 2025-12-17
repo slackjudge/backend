@@ -140,42 +140,36 @@ class UserControllerTest {
         String dateStr = "2025-12-05";
         Long userId = 1L;
 
-        // 1. Mock 데이터 생성 (Record 생성자 순서 및 타입 주의)
-        MyPageProfileResponse profileMock = new MyPageProfileResponse("이규동", "dlrbehd120", 14,   // tierLevel (bojTier 아님)
-                100L  // totalScore
+        // 1. Mock 데이터 생성 
+        MyPageProfileResponse profileMock = new MyPageProfileResponse("이규동", "dlrbehd120", 14,   
+                100L  
         );
 
         // GrassResponse (로그상 키값: date, solvedCount)
         List<GrassResponse> grassMock = List.of(new GrassResponse("2025-12-05", 2));
 
         // MyPageDetailResponse (로그상 키값: date, dailyScore, dailyRank, solvedCount, maxDifficulty, problems)
-        MyPageDetailResponse detailMock = new MyPageDetailResponse(dateStr, 15, // dailyScore
-                1,  // dailyRank
-                2,  // solvedCount
-                10, // maxDifficulty
+        MyPageDetailResponse detailMock = new MyPageDetailResponse(dateStr, 15, 
+                1,  
+                2,  
+                10, 
                 List.of(new ProblemResponse("A+B", 1, "url")));
 
         // MyPageResponse 조립
         MyPageResponse mockResponse = new MyPageResponse(profileMock, grassMock, detailMock);
 
         // Service Mocking
-        // (파라미터 매칭을 위해 any() 사용하거나 정확한 값 입력)
         when(myPageService.getMyPage(any(), anyInt(), anyInt(), any())).thenReturn(mockResponse);
 
         // When & Then
-        mockMvc.perform(get("/user/me").param("year", String.valueOf(year)).param("month", String.valueOf(month)).param("date", dateStr)).andExpect(status().isOk()).andDo(print()) // 성공 시 로그 출력
+        mockMvc.perform(get("/user/me").param("year", String.valueOf(year)).param("month", String.valueOf(month)).param("date", dateStr)).andExpect(status().isOk()).andDo(print()) 
 
-                // 1. 공통 응답 확인
                 .andExpect(jsonPath("$.message").value("마이페이지 조회 성공"))
 
-                // 2. Profile 검증 (Record 필드명: tierLevel)
                 .andExpect(jsonPath("$.data.profile.username").value("이규동")).andExpect(jsonPath("$.data.profile.baekjoonId").value("dlrbehd120")).andExpect(jsonPath("$.data.profile.tierLevel").value(14))
 
-                // 3. Grass 검증 (로그상 키값: solvedCount)
-                .andExpect(jsonPath("$.data.grass[0].date").value("2025-12-05")).andExpect(jsonPath("$.data.grass[0].solvedCount").value(2)) // count -> solvedCount 수정
-
-                // 4. Detail 검증 (★중요: detail -> selectedDateDetail)
-                // Record 내부 변수명이 selectedDateDetail이라서 JSON 키도 그렇게 나옵니다.
+                .andExpect(jsonPath("$.data.grass[0].date").value("2025-12-05")).andExpect(jsonPath("$.data.grass[0].solvedCount").value(2))
+               
                 .andExpect(jsonPath("$.data.selectedDateDetail.date").value("2025-12-05")).andExpect(jsonPath("$.data.selectedDateDetail.dailyScore").value(15)).andExpect(jsonPath("$.data.selectedDateDetail.solvedCount").value(2));
     }
 }
