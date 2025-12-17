@@ -19,6 +19,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * @author 김경민
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -32,6 +36,17 @@ public class DailyRankMessageService {
 
     private static final int RANKING_LIMIT = 3;
 
+    /**==========================
+     *
+     * 일일 랭킹 메시지를 생성하고 Slack 채널로 전송한다.
+     *
+     * @parm -
+     * @return void
+     * @author 김경민
+     * @version 1.0.0
+     * @date 2025-12-12
+     *
+    ==========================**/
     public void sendDailyRankMessage() {
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
         LocalDateTime now = LocalDateTime.now();
@@ -67,6 +82,17 @@ public class DailyRankMessageService {
     }
 
 
+    /**==========================
+    *
+    * 상위 랭킹 사용자 정보를 계산한다.
+    *
+    * @parm rows 랭킹 원본 데이터
+    * @return List<DailyRankInfo> 상위 랭킹 정보
+    * @author 김경민
+    * @version 1.0.0
+    * @date 2025-12-16
+    *
+    ==========================**/
     private List<DailyRankInfo> calculateTopRank(List<RankingRowResponse> rows) {
         List<DailyRankInfo> result = new ArrayList<>();
 

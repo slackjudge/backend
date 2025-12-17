@@ -7,6 +7,17 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+/**==========================
+*
+* 일일 랭킹 메시지 전송 스케줄러를 실행한다.
+*
+* @parm -
+* @return void
+* @author 김경민
+* @version 1.0.0
+* @date 2025-12-12
+*
+==========================**/
 @Slf4j
 @Component
 @RequiredArgsConstructor

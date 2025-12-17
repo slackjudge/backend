@@ -3,6 +3,9 @@ package com.project.common.util;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+/**
+ * @author 김경민
+ */
 @Component
 public class SlackChannelResolver {
 

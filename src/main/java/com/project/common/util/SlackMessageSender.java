@@ -13,6 +13,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+/**
+ * @author 김경민
+ */
 @Component
 @Slf4j
 public class SlackMessageSender {

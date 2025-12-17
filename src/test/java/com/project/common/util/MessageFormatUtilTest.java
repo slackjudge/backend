@@ -8,6 +8,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * @author 김경민
+ */
 class MessageFormatUtilTest {
 
     MessageFormatUtil util = new MessageFormatUtil();

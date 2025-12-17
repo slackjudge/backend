@@ -4,6 +4,9 @@ import com.project.dto.DailyRankInfo;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
+/**
+ * @author 김경민
+ */
 @Component
 public class MessageFormatUtil {
   public String formatDailyRank(List<DailyRankInfo> ranks) {

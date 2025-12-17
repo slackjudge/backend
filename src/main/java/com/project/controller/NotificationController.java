@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * @author 김경민
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/notification")
@@ -19,6 +22,18 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
+    /**==========================
+    *
+    * 알림 목록을 조회한다.
+    *
+    * @parm lastId 마지막 메시지 ID
+    * @parm size 조회 건수
+    * @return ResponseEntity<ApiResponse<List<DailyRankMessageResponse>>>
+    * @author 김경민
+    * @version 1.0.0
+    * @date 2025-12-15
+    *
+    ==========================**/
     @GetMapping
     public ResponseEntity<ApiResponse<List<DailyRankMessageResponse>>> getNotifications(
             @RequestParam(required = false) Long lastId,
