@@ -17,8 +17,7 @@ import lombok.NoArgsConstructor;
 
 
 /**
- * {문제 유형 번호, 문제 번호}를 유니크 제약 조건으로 설정
- * 문제 유형 번호를 기준으로 인덱스를 생성 -> 조회 성능
+ * author : 박준희
  */
 @Table(
         name = "problem_problem_type",
@@ -40,25 +39,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProblemProblemTypeEntity {
 
-    /**
-     * PK
-     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "problem_problem_type_id")
     private Long problemProblemTypeId;
 
-    /**
-     * 문제 유형 번호 - FK
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "problem_type_id", nullable = false)
     private ProblemTypeEntity problemType;
 
 
-    /**
-     * 문제 번호 - FK
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "problem_id", nullable = false)
     private ProblemEntity problem;

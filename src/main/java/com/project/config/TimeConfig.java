@@ -5,7 +5,9 @@ import org.springframework.context.annotation.Configuration;
 
 import java.time.Clock;
 import java.time.ZoneId;
-
+/**
+ * author : 박준희
+ */
 @Configuration
 public class TimeConfig {
 

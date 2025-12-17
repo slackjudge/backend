@@ -29,6 +29,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * author : 박준희
+ */
 @WebMvcTest(RankingController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class RankingControllerTest {
@@ -55,17 +58,11 @@ class RankingControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        // controller → service 전달값 검증
         verify(rankingService).getRanking(
-                // period 기본값
                 eq("day"),
-                // dateTime 파라미터 없으므로 null 그대로
                 isNull(),
-                // group 기본값
                 eq("ALL"),
-                // page 기본값
                 eq(1),
-                // size 기본값
                 eq(20)
         );
     }
@@ -84,15 +81,15 @@ class RankingControllerTest {
         RankingPageResponse dummyResponse =
                 new RankingPageResponse(true, Collections.singletonList(
                         new RankingRowResponse(
-                                1L,  // userId
-                                1,   // rank
-                                15,  // tier
+                                1L,
+                                1,
+                                15,
                                 "홍길동",
-                                100, // totalScore
-                                10L, // solvedCount
+                                100,
+                                10L,
                                 "baekjoon123",
                                 "BACKEND_NON_FACE",
-                                0    // diff
+                                0
                         )
                 ));
 
@@ -110,7 +107,6 @@ class RankingControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        // controller → service 전달값 검증
         verify(rankingService).getRanking(
                 eq(period),
                 eq(expectedDateTime),

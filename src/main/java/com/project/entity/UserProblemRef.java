@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * 복합 속성 클래스 (user_id, problem_id)
+ * author : 박준희
  */
 @Getter
 @Embeddable
