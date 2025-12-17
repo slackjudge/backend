@@ -72,7 +72,6 @@ public class RefreshTokenProvider implements JwtProvider {
             Claims claims = getClaimsFromToken(token);
             return claims.getExpiration().before(new Date());
         } catch (Exception e) {
-            log.error("Token is Expired: {}", e.getMessage());
             throw new JwtException(ErrorCode.EXPIRED_REFRESH_TOKEN);
         }
     }
@@ -86,7 +85,6 @@ public class RefreshTokenProvider implements JwtProvider {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (Exception e) {
-            log.error("Token parsing error: {}", e.getMessage());
             throw new JwtException(ErrorCode.INVALID_TOKEN);
         }
     }

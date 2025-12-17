@@ -12,7 +12,7 @@ class UserEntityTest {
     @DisplayName("localSignUp으로 UserEntity 객체를 생성할 수 있다")
     void localSignUp_updateFields() {
 
-        // given (기본 유저 생성)
+        // given
         UserEntity user = UserEntity.createUser("initial-slackId");
 
         LocalSignRequest request = new LocalSignRequest(
