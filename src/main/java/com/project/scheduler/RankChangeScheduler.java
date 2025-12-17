@@ -15,7 +15,7 @@ public class RankChangeScheduler {
 
     private final RankChangeStateService rankChangeStateService;
 
-    @Scheduled(cron = "0 10,50 * * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 10 * * * *", zone = "Asia/Seoul")
     public void runRankChange() {
         log.info("[RankChangeScheduler] run");
         rankChangeStateService.sendRankChangeMessage();

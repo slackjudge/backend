@@ -34,9 +34,9 @@ public class RankChangeStateService {
 
         LocalDateTime baseTime = RankUtil.resolveBaseTime(now);
         LocalDateTime periodStart =
-                RankUtil.getPeriodStart("month", baseTime);
+                RankUtil.getPeriodStart("day", baseTime);
         LocalDateTime currentEnd =
-                RankUtil.getPeriodEndInclusive("month", baseTime, now);
+                RankUtil.getPeriodEndInclusive("day", baseTime, now);
         LocalDateTime prevEnd =
                 currentEnd.minusHours(1);
 
