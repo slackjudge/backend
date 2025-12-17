@@ -4,36 +4,128 @@ import com.project.config.QueryDslConfig;
 import com.project.config.security.JpaAuditingConfig;
 import com.project.dto.response.RankingRowResponse;
 import com.project.entity.EurekaTeamName;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * author : 박준희
  */
 @DataJpaTest
 @Import({QueryDslConfig.class, JpaAuditingConfig.class, RankingQueryRepository.class})
 @ActiveProfiles("test")
-@Sql(
-        value = "/sql/insert-ranking-test-data.sql",
-        executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
-)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class RankingQueryRepositoryTest {
+
+    private static final PostgreSQLContainer<?> POSTGRES =
+            new PostgreSQLContainer<>("postgres:17")
+                    .withDatabaseName("testdb")
+                    .withUsername("postgres")
+                    .withPassword("postgres");
+
+    static {
+        POSTGRES.start();
+    }
+
+    @DynamicPropertySource
+    static void overrideDatasourceProps(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
+        registry.add("spring.datasource.username", POSTGRES::getUsername);
+        registry.add("spring.datasource.password", POSTGRES::getPassword);
+        registry.add("spring.datasource.driver-class-name", POSTGRES::getDriverClassName);
+
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
+        registry.add("spring.jpa.properties.hibernate.dialect",
+                () -> "org.hibernate.dialect.PostgreSQLDialect");
+    }
+
+    @AfterAll
+    static void stopContainer() {
+        POSTGRES.stop();
+    }
 
     @Autowired
     RankingQueryRepository rankingQueryRepository;
 
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+
+       @BeforeEach
+    void seedData() throws IOException {
+        truncateAllTablesRestartIdentity();
+        executeSqlScriptWithoutTruncate("/sql/insert-ranking-test-data.sql");
+    }
+
+    private void truncateAllTablesRestartIdentity() {
+        List<String> tables = jdbcTemplate.queryForList(
+                "SELECT tablename FROM pg_tables WHERE schemaname = 'public'",
+                String.class
+        );
+
+        if (tables.isEmpty()) {
+            return;
+        }
+
+        String joined = tables.stream()
+                .map(t -> "\"" + t + "\"")
+                .collect(Collectors.joining(", "));
+
+        jdbcTemplate.execute("TRUNCATE TABLE " + joined + " RESTART IDENTITY CASCADE");
+    }
+
+    private void executeSqlScriptWithoutTruncate(String classpath) throws IOException {
+        ClassPathResource resource = new ClassPathResource(classpath);
+        String raw = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        String noBlockComments = raw.replaceAll("(?s)/\\*.*?\\*/", " ");
+
+        StringBuilder sb = new StringBuilder();
+        for (String line : noBlockComments.split("\\R")) {
+            String trimmed = line.trim();
+            if (trimmed.startsWith("--")) continue;
+            sb.append(line).append('\n');
+        }
+
+        String cleaned = sb.toString();
+
+        for (String stmt : cleaned.split(";")) {
+            String s = stmt.trim();
+            if (s.isEmpty()) continue;
+
+            String upper = s.toUpperCase(Locale.ROOT);
+
+            if (upper.startsWith("TRUNCATE")) continue;
+            if (upper.contains("REFERENTIAL_INTEGRITY")) continue;
+            if (upper.startsWith("SET FOREIGN_KEY_CHECKS")) continue;
+
+            jdbcTemplate.execute(s);
+        }
+    }
+
     @Test
-    @DisplayName("group = ALL, 2025-12 전체 기간 → 점수 desc + 이름 asc로 정렬")
+    @DisplayName("group = ALL(null), 2025-12 전체 기간 → 점수 desc + 이름 asc로 정렬")
     void getRankingRows_allGroup_basicOrderAndAggregation() {
         // given
         LocalDateTime start = LocalDate.of(2025, 12, 1).atStartOfDay();
@@ -54,22 +146,22 @@ class RankingQueryRepositoryTest {
         assertThat(first.getUserId()).isEqualTo(2L);
         assertThat(first.getName()).isEqualTo("프론트유저");
         assertThat(first.getTotalScore()).isEqualTo(35);
-        assertThat(first.getSolvedCount()).isEqualTo(3L);
-        assertThat(first.getTeam()).isEqualTo("FRONTEND_FACE");
+        assertThat((long) first.getSolvedCount()).isEqualTo(3L);
+        assertThat(teamString(first)).isEqualTo("FRONTEND_FACE");
 
         // 2위
         assertThat(second.getUserId()).isEqualTo(1L);
         assertThat(second.getName()).isEqualTo("백엔드유저");
         assertThat(second.getTotalScore()).isEqualTo(25);
-        assertThat(second.getSolvedCount()).isEqualTo(2L);
-        assertThat(second.getTeam()).isEqualTo("BACKEND_FACE");
+        assertThat((long) second.getSolvedCount()).isEqualTo(2L);
+        assertThat(teamString(second)).isEqualTo("BACKEND_FACE");
 
         // 3위
         assertThat(third.getUserId()).isEqualTo(3L);
         assertThat(third.getName()).isEqualTo("비대면유저");
         assertThat(third.getTotalScore()).isEqualTo(15);
-        assertThat(third.getSolvedCount()).isEqualTo(1L);
-        assertThat(third.getTeam()).isEqualTo("FRONTEND_NON_FACE");
+        assertThat((long) third.getSolvedCount()).isEqualTo(1L);
+        assertThat(teamString(third)).isEqualTo("FRONTEND_NON_FACE");
     }
 
     @Test
@@ -78,7 +170,6 @@ class RankingQueryRepositoryTest {
         // given
         LocalDateTime start = LocalDate.of(2025, 12, 1).atStartOfDay();
         LocalDateTime endExclusive = LocalDate.of(2026, 1, 1).atStartOfDay();
-        String group = "BACKEND_FACE";
 
         // when
         List<RankingRowResponse> rows =
@@ -90,9 +181,9 @@ class RankingQueryRepositoryTest {
         RankingRowResponse backendRow = rows.get(0);
         assertThat(backendRow.getUserId()).isEqualTo(1L);
         assertThat(backendRow.getName()).isEqualTo("백엔드유저");
-        assertThat(backendRow.getTeam()).isEqualTo("BACKEND_FACE");
+        assertThat(teamString(backendRow)).isEqualTo("BACKEND_FACE");
         assertThat(backendRow.getTotalScore()).isEqualTo(25);
-        assertThat(backendRow.getSolvedCount()).isEqualTo(2L);
+        assertThat((long) backendRow.getSolvedCount()).isEqualTo(2L);
     }
 
     @Test
@@ -114,19 +205,23 @@ class RankingQueryRepositoryTest {
         RankingRowResponse nonFaceRow = findByName(rows, "비대면유저");
 
         assertThat(backendRow.getTotalScore()).isEqualTo(25);
-        assertThat(backendRow.getSolvedCount()).isEqualTo(2L);
+        assertThat((long) backendRow.getSolvedCount()).isEqualTo(2L);
 
         assertThat(frontendRow.getTotalScore()).isEqualTo(15);
-        assertThat(frontendRow.getSolvedCount()).isEqualTo(2L);
+        assertThat((long) frontendRow.getSolvedCount()).isEqualTo(2L);
 
         assertThat(nonFaceRow.getTotalScore()).isEqualTo(15);
-        assertThat(nonFaceRow.getSolvedCount()).isEqualTo(1L);
+        assertThat((long) nonFaceRow.getSolvedCount()).isEqualTo(1L);
     }
 
     private RankingRowResponse findByName(List<RankingRowResponse> rows, String name) {
         return rows.stream()
-                .filter(r -> r.getName().equals(name))
+                .filter(r -> Objects.equals(r.getName(), name))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("랭킹 결과에서 유저를 찾을 수 없음: " + name));
+    }
+
+    private String teamString(RankingRowResponse row) {
+        return String.valueOf(row.getTeam());
     }
 }
