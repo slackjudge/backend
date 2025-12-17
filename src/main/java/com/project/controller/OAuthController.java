@@ -2,7 +2,6 @@ package com.project.controller;
 
 import com.project.common.dto.ApiResponse;
 import com.project.common.security.SecurityUserDetails;
-import com.project.dto.request.LocalSignRequest;
 import com.project.dto.response.LoginResponse;
 import com.project.service.OAuthService;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
