@@ -16,6 +16,9 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * author : 박준희
+ */
 @Repository
 @RequiredArgsConstructor
 public class RankingQueryRepository {
@@ -23,14 +26,17 @@ public class RankingQueryRepository {
   private final JPAQueryFactory queryFactory;
 
     /**
-     * 기간, 그룹, 페이징 조건으로 랭킹 조회
+     * 시작 구간 ~ 마감 기간과 그룹에 따른 데이터 집계
+     * @param start
+     * @param endExclusive
+     * @param team
+     * @return 총 점수를 인덱스로 하는 랭킹 리스트 반환
      */
   public List<RankingRowResponse> getRankingRows(LocalDateTime start, LocalDateTime endExclusive, EurekaTeamName team) {
     QUsersProblemEntity usersProblemEntity = QUsersProblemEntity.usersProblemEntity;
     QUserEntity userEntity = QUserEntity.userEntity;
     QProblemEntity problemEntity = QProblemEntity.problemEntity;
 
-    //valid 시점 결정
       DateTimeExpression<LocalDateTime> validAfterExpr =
               Expressions.dateTimeTemplate(
                       LocalDateTime.class,
@@ -52,8 +58,8 @@ public class RankingQueryRepository {
             .join(usersProblemEntity.ref.user, userEntity)
             .join(usersProblemEntity.ref.problem, problemEntity)
             .where(
-                    usersProblemEntity.solvedTime.gt(start), // 집계 시간 제외
-                    usersProblemEntity.solvedTime.loe(endExclusive), // end = 배치 돌린 시각 포함
+                    usersProblemEntity.solvedTime.gt(start),
+                    usersProblemEntity.solvedTime.loe(endExclusive),
                     usersProblemEntity.solvedTime.goe(validAfterExpr),
                     teamFilter(team, userEntity)
             )

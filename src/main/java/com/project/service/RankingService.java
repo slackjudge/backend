@@ -32,7 +32,7 @@ public class RankingService {
 
   /**
    * 해당 시간대의 랭킹과 직전 시간대 랭킹을 비교하여 반환
-   * @Param  dateTime -> 사용자가 요청한 시간대 (예: 2025.10.12T14:21:29)
+   * @Param  사용자가 요청한 시간대 (예: 2025.10.12T14:21:29)
    */
   public RankingPageResponse getRanking(String period, LocalDateTime dateTime, String group, int page, int size) {
 
@@ -41,31 +41,20 @@ public class RankingService {
     validatePagination(page, size);
 
     LocalDateTime effective = (dateTime != null) ? dateTime : LocalDateTime.now(clock);
-
     LocalDateTime baseTime = RankUtil.resolveBaseTime(effective);
     LocalDateTime now = LocalDateTime.now(clock);
 
-    // 집계 시작 시각 (주의 월요일, 달의 첫째 날..) 2025-12-01T00:00:00
     LocalDateTime periodStart = RankUtil.getPeriodStart(normalizedPeriod, baseTime);
 
+    LocalDateTime currentEndInclusive = RankUtil.getPeriodEndInclusive(normalizedPeriod, baseTime, now);
+    LocalDateTime prevEndInclusive = currentEndInclusive.minusHours(1);
+    List<RankingRowResponse> currentAll = rankingQueryRepository.getRankingRows(periodStart, currentEndInclusive, team);
 
-    // 종료 시점은 period + now에 따라서 변경 -> 현재인지 과거인지 구별할 필요성
-    LocalDateTime currentEndInclusive = RankUtil.getPeriodEndInclusive(normalizedPeriod, baseTime, now);              // ex) 15:00
-    LocalDateTime prevEndInclusive = currentEndInclusive.minusHours(1); // ex) 14:00
-
-
-    // 현재 구간 랭킹 조회
-    List<RankingRowResponse> currentAll =
-            rankingQueryRepository.getRankingRows(periodStart, currentEndInclusive, team);
-
-    // 해당 기간/그룹에 문제를 푼 사람이 없을 경우 -> 정상처리 후 -> 빈 배열 반환
     if (currentAll.isEmpty()) {
        return new RankingPageResponse(false, List.of());
     }
 
-    // 이전 구간 랭킹 조회 (직전 한 시간 전까지)
-    List<RankingRowResponse> prevAll =
-            rankingQueryRepository.getRankingRows(periodStart, prevEndInclusive, team);
+    List<RankingRowResponse> prevAll = rankingQueryRepository.getRankingRows(periodStart, prevEndInclusive, team);
 
     calculateRanks(currentAll);
     calculateRanks(prevAll);
@@ -103,7 +92,6 @@ public class RankingService {
     }
   }
 
-
   private void validatePagination(int page, int size) {
     if (page < 1 || size < 1) {
       throw new BusinessException(ErrorCode.INVALID_RANKING_PAGINATION);
@@ -112,13 +100,11 @@ public class RankingService {
 
 
   /**
-   * 현재 랭킹 / 1시간 전 랭킹 비교하여 diff 결정
    *  diff = 1시간 전 rank - 현재 rank (+순위 상승, -순위 하락, 0 변동x)
    */
   private void calculateDiff(List<RankingRowResponse> current,
                              List<RankingRowResponse> previous) {
 
-    // 이전 랭킹을 userId를 기준으로 맵핑
     Map<Long, RankingRowResponse> prevByUserId = previous.stream()
             .collect(Collectors.toMap(
                     RankingRowResponse::getUserId,
@@ -129,7 +115,6 @@ public class RankingService {
       RankingRowResponse prevRow = prevByUserId.get(curRow.getUserId());
 
       if (prevRow == null || prevRow.getRank() == 0) {
-        // 이전 랭킹에 없던 유저이거나 rank 정보 없으면 변동 없음(0)으로 처리
         curRow.setDiff(0);
       } else {
           int diff = prevRow.getRank() - curRow.getRank();

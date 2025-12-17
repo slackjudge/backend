@@ -3,14 +3,17 @@ package com.project.common.util;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 
+
+/**
+ * author : 박준희
+ */
 public class RankUtil {
 
 
     /**
-     * 기준 시각 정규화
-     * - null이면 now
-     * - 분/초/나노초를 0으로 맞춰서 정각으로 남김(ex: 14:30 -> 14:00)
-     * 2025-12-11T14:37:00 => 2025-12-11T14:00:00
+     * 정각으로 절삭 하는 유틸 함수, 배치 시간 텀에 따라 유동적 변경
+     * @param baseTime
+     * @return baseTime의 정각 시간
      */
     public static LocalDateTime resolveBaseTime(LocalDateTime baseTime) {
         if (baseTime == null) {
@@ -21,45 +24,35 @@ public class RankUtil {
 
 
     /**
-     * period에 따른 집계 시작 일자 계산
+     * period에 따른 집계 시작 시각 계산
      *  return 값
      *  - day   : 해당 날짜의 00:00
      *  - week  : 해당 주 월요일 00:00
      *  - month : 해당 달 1일 00:00
      */
     public static LocalDateTime getPeriodStart(String period, LocalDateTime baseTime) {
-        // 정각으로 설정
+
         LocalDateTime t = resolveBaseTime(baseTime);
 
         return switch (period) {
             case "week" -> t
                     .with(DayOfWeek.MONDAY)
                     .toLocalDate()
-                    .atStartOfDay(); // 해당 주의 월요일 00:00
+                    .atStartOfDay();
             case "month" -> t
                     .withDayOfMonth(1)
                     .toLocalDate()
-                    .atStartOfDay(); // 해당 달 1일의 00:00
-            default -> t.toLocalDate().atStartOfDay(); // 해당 날짜 00:00
+                    .atStartOfDay();
+            default -> t.toLocalDate().atStartOfDay();
         };
     }
 
-
     /**
-     * period에 따른 "현재 구간 endInclusive" 계산
-     *
-     * 규칙:
-     * 1) 요청한 period가 "현재 진행 중인 기간"이면:
-     *    - DB에 존재 가능한 최신 스냅샷은 floor(now) 이므로 endInclusive = floor(now)
-     *
-     * 2) 요청한 period가 "과거 기간"이면:
-     *    - 그 기간의 마지막 스냅샷을 포함하려면 endInclusive는 "기간 끝(다음 기간의 시작 00:00)" 이어야 함
-     *      day   -> 다음날 00:00
-     *      week  -> 다음주 월요일 00:00
-     *      month -> 다음달 1일 00:00
-     *
-     * 3) 요청이 미래면(방어): -> 프론트에서 클릭 안되게 해놨음
-     *    - 데이터가 없으므로 endInclusive를 floor(now)로 캡(clamp)
+     * 요청한 기간에 따른 과거, 현재 비교해 해당 기간에 맞는 집계 마감 시각 계산
+     * @param period
+     * @param requested
+     * @param now
+     * @return 집계 마감 시각(정각)
      */
     public static LocalDateTime getPeriodEndInclusive(String period, LocalDateTime requested, LocalDateTime now) {
         LocalDateTime req = resolveBaseTime(requested);
@@ -70,12 +63,10 @@ public class RankUtil {
 
         boolean isCurrentPeriod = reqStart.equals(curStart);
 
-        // 현재 진행 -> 최신 스냅샷은 floor(now)
         if (isCurrentPeriod) {
             return cur;
         }
 
-        // 과거 기간: 기간 끝(다음 기간 시작 00:00) 스냅샷까지 포함
         return switch (period) {
             case "week" -> reqStart.plusWeeks(1);
             case "month" -> reqStart.plusMonths(1);

@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 
+/**
+ * author : 박준희
+ */
 @RestController
 @RequestMapping("/rank")
 @Slf4j
@@ -28,7 +31,7 @@ public class RankingController {
    * @param dateTime 기준 시각 (없으면 요청 시각 기준)
    * @param group 그룹 (default: ALL)
    * @param page 페이지 번호 (1부터 시작)
-   * @param size 페이지 크기
+   * @param size 페이지 크기 (default: 20)
    */
   @GetMapping
   public ResponseEntity<ApiResponse<RankingPageResponse>> getRanking(

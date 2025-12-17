@@ -5,6 +5,9 @@ import lombok.Getter;
 
 import java.util.List;
 
+/**
+ * author : 박준희
+ */
 @Getter
 @AllArgsConstructor
 public class RankingPageResponse {
