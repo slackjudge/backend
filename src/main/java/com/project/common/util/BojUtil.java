@@ -27,7 +27,7 @@ public class BojUtil {
         this.httpClient =
                 HttpClient.newBuilder()
                         .version(HttpClient.Version.HTTP_2)
-                        .connectTimeout(Duration.ofSeconds(3)) // 연결 지연 대비
+                        .connectTimeout(Duration.ofSeconds(3))
                         .build();
     }
 
@@ -57,7 +57,6 @@ public class BojUtil {
             HttpResponse<String> response =
                     httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-            // 존재하지 않는 ID
             if (response.statusCode() == 404) {
                 return null;
             }

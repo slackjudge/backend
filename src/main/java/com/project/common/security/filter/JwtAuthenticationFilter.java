@@ -55,8 +55,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NotNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        log.info("[JWT FILTER ENTER] method={}, uri={}",
-        request.getMethod(), request.getRequestURI());
         try {
             String accessToken = resolveAccessToken(request);
 
@@ -84,12 +82,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String accessToken = accessTokenProvider.resolveToken(authHeader);
 
         if (!StringUtils.hasText(accessToken)) {
-            log.error("EMPTY_ACCESS_TOKEN - URI: {}", request.getRequestURI());  // 추가
             throw new JwtException(ErrorCode.EMPTY_ACCESS_TOKEN);
         }
 
         if (accessTokenProvider.isTokenExpired(accessToken)) {
-            log.error("TOKEN_EXPIRED");
             throw new JwtException(ErrorCode.EXPIRED_ACCESS_TOKEN);
         }
 

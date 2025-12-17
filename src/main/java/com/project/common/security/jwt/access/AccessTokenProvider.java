@@ -73,7 +73,6 @@ public class AccessTokenProvider implements JwtProvider {
             Claims claims = getClaimsFromToken(token);
             return claims.getExpiration().before(new Date());
         } catch (Exception e) {
-            log.error("Token is expired: {}", e.getMessage());
             throw new JwtException(ErrorCode.EXPIRED_ACCESS_TOKEN);
         }
     }
@@ -87,7 +86,6 @@ public class AccessTokenProvider implements JwtProvider {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (Exception e) {
-            log.error("Token is invalid: {}", e.getMessage());
             throw new JwtException(ErrorCode.INVALID_TOKEN);
         }
     }

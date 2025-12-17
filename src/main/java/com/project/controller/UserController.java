@@ -49,7 +49,6 @@ public class UserController {
             @RequestParam int month,
             @RequestParam(required = false) String date
     ) {
-        //userDetails.getId()를 통해 현재 로그인한 유저 Pk를 가져와 넘긴다.
         MyPageResponse response = myPageService.getMyPage(userDetails.getId(), year, month, date);
         return ResponseEntity.ok(ApiResponse.success("마이페이지 조회 성공", response));
     }
