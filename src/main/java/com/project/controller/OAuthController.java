@@ -24,17 +24,6 @@ public class OAuthController {
 
     private final OAuthService oAuthService;
 
-    @PostMapping("/local/sign")
-    public ResponseEntity<ApiResponse<Void>> sign(@RequestBody LocalSignRequest localSignRequest) {
-        oAuthService.localSign(localSignRequest);
-        return ResponseEntity.ok(ApiResponse.success("로컬 회원가입 완료", null));
-    }
-
-    @PostMapping("/local/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> localLogin(@RequestParam String username) {
-        return ResponseEntity.ok(ApiResponse.success("로컬 로그인 완료", oAuthService.localLogin(username)));
-    }
-
     @GetMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestParam String code) {
         return ResponseEntity.ok(ApiResponse.success("Slack 소셜 로그인 성공", oAuthService.slackLogin(code)));
