@@ -9,6 +9,18 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**==========================
+*
+* 알림 메시지를 페이징 방식으로 조회한다.
+*
+* @parm lastId 마지막 메시지 ID
+* @parm size 조회 건수
+* @return List<DailyRankMessageResponse> 알림 목록
+* @author 김경민
+* @version 1.0.0
+* @date 2025-12-15
+*
+==========================**/
 @Service
 @RequiredArgsConstructor
 public class NotificationService {

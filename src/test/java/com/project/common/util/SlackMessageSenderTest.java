@@ -17,6 +17,9 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+/**
+ * @author 김경민
+ */
 class SlackMessageSenderTest {
     @Test
     @DisplayName("Slack 메시지 전송 성공 테스트")

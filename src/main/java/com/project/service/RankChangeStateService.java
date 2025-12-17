@@ -17,6 +17,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @author 김경민
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -28,6 +31,17 @@ public class RankChangeStateService {
     private final RankingQueryRepository rankingQueryRepository;
     private final Clock clock;
 
+    /**==========================
+    *
+    * 사용자 순위 변동을 계산하여 Slack DM 알림을 전송한다.
+    *
+    * @parm -
+    * @return void
+    * @author 김경민
+    * @version 1.0.0
+    * @date 2025-12-14
+    *
+    ==========================**/
     @Transactional
     public void sendRankChangeMessage() {
         LocalDateTime now = LocalDateTime.now(clock);

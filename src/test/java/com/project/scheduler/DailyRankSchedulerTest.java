@@ -9,6 +9,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.Mockito.verify;
 
+/**
+ * @author 김경민
+ */
 @ExtendWith(MockitoExtension.class)
 class DailyRankSchedulerTest {
 

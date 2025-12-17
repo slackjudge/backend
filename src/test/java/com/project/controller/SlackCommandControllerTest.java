@@ -16,6 +16,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * @author 김경민
+ */
 @WebMvcTest(SlackCommandController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @Import(SlackCommandControllerTest.TestConfig.class)

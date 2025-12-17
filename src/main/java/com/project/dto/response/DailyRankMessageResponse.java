@@ -6,6 +6,9 @@ import lombok.Getter;
 
 import java.time.format.DateTimeFormatter;
 
+/**
+ * @author 김경민
+ */
 @Getter
 @AllArgsConstructor
 public class DailyRankMessageResponse {

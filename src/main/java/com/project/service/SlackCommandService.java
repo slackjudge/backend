@@ -8,12 +8,27 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * @author 김경민
+ */
 @Service
 @RequiredArgsConstructor
 public class SlackCommandService {
 
     private final UserRepository userRepository;
 
+    /**==========================
+    *
+    * Slack 알림 관련 명령을 처리한다.
+    *
+    * @parm text 명령어 텍스트
+    * @parm slackId Slack 사용자 ID
+    * @return String 처리 결과 메시지
+    * @author 김경민
+    * @version 1.0.0
+    * @date 2025-12-16
+    *
+    ==========================**/
     @Transactional
     public String handleNotify(String text, String slackId) {
         UserEntity user = userRepository.findBySlackId(slackId)

@@ -24,6 +24,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.mock;
 
+/**
+ * @author 김경민
+ */
 @ExtendWith(MockitoExtension.class)
 class NotificationServiceTest {
 

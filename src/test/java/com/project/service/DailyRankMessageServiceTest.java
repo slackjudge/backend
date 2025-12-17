@@ -25,6 +25,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
 
+/**
+ * @author 김경민
+ */
 @ExtendWith(MockitoExtension.class)
 class DailyRankMessageServiceTest {
 

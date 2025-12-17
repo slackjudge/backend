@@ -17,6 +17,9 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * @author 김경민
+ */
 @ActiveProfiles("local")
 @WebMvcTest(RankChangeStateController.class)
 @AutoConfigureMockMvc(addFilters = false)

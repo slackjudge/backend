@@ -11,6 +11,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * @author 김경민
+ */
 @Entity
 @Table(name = "daily_rank_message")
 @Getter
