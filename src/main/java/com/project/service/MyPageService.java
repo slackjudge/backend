@@ -22,6 +22,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/*
+author : 최하영
+*/
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -36,17 +39,14 @@ public class MyPageService {
 
     public MyPageResponse getMyPage(Long userId, int year, int month, String dateStr) {
 
-        // 1. 유저 조회
         UserEntity user = userRepository.findById(userId)
                         .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        // 제외할 시간대 계산 (가입 직후 첫 배치 시간)
         LocalDateTime createdAt = user.getCreatedAt();
-        //배치 도는 유효한 시간
         LocalDateTime validAfter = createdAt.withMinute(0).withSecond(0).withNano(0).plusHours(2);
 
 
-        // 2. 잔디 데이터 조회 (validAfter 이상인 데이터만 조회)
+        // 잔디 데이터 조회 validAfter 이상인 데이터만 조회 
         List<GrassResponse> grassList = myPageRepository.findGrassList(
                 userId, year, month, validAfter
         );
@@ -54,14 +54,13 @@ public class MyPageService {
         // 상세 조회 할 날짜 결정
         LocalDate targetDate = determineTargetDate(year, month, dateStr);
 
-        // 상세: 일간 문제 목록 조회 (푼 시간 정렬)
+        // 상세: 일간 문제 목록 조회 
         List<ProblemResponse> problemList =
                 myPageRepository.findSolvedProblemList(userId, targetDate, validAfter);
 
-        // 5. 통계 계산
+        // 통계 계산
         MyPageMapper.DailyStatistics dailyStats = calculateDailyStatistics(problemList, targetDate, userId);
 
-        // 7. 전체 랭킹 및 점수
         int totalSolvedCount = user.getTotalSolvedCount() != null ? user.getTotalSolvedCount() : 0;
 
         return myPageMapper.toResponse(
@@ -89,46 +88,47 @@ public class MyPageService {
 
         int dailyRank = 0;
         if (solvedCount > 0) {
-            // 1. 시간 범위 계산
-            LocalDateTime startOfDay = targetDate.atStartOfDay(); // 00:00:00
+            LocalDateTime startOfDay = targetDate.atStartOfDay(); 
             LocalDateTime endExclusive;
             
             LocalDate today = LocalDate.now(clock);
             if (targetDate.equals(today)) {
-                // 오늘 날짜: 현재 시간의 정각까지 (1시간 단위 배치 기준)
                 LocalDateTime now = LocalDateTime.now(clock);
-                endExclusive = RankUtil.resolveBaseTime(now); // 예: 15:00:00
+                endExclusive = RankUtil.resolveBaseTime(now);   
             } else {
                 // 과거 날짜: 다음날 00:00:00까지
                 endExclusive = targetDate.plusDays(1).atStartOfDay(); // 다음날 00:00:00
             }
             
-            // 2. RankingQueryRepository로 랭킹 조회
-            // start: 00:00:00 (gt 조건이므로 00:00:00은 제외됨)
-            // endExclusive: 오늘은 현재 정각, 과거는 다음날 00:00:00
             List<RankingRowResponse> rankingRows = rankingQueryRepository.getRankingRows(
-                    startOfDay,      // gt 조건: 00:00:00 제외
-                    endExclusive,    // loe 조건: endExclusive 이하 포함
-                    null             // 전체 그룹
+                    startOfDay,
+                    endExclusive,
+                    null
             );
             
-            // 3. 순위 계산 (RankingService의 calculateRanks 로직)
+            // 순위 계산 
             calculateRanks(rankingRows);
             
-            // 4. 내 userId로 순위 찾기
+            // 내 userId로 순위 찾기
             dailyRank = rankingRows.stream()
                     .filter(row -> row.getUserId().equals(userId))
                     .findFirst()
                     .map(RankingRowResponse::getRank)
-                    .orElse(0); // 랭킹에 없으면 0 (문제를 안 풀었거나 점수가 0)
+                    .orElse(0); 
         }
 
         return new MyPageMapper.DailyStatistics(dailyScore, dailyRank, solvedCount, maxDifficulty);
     }
 
     /**
-     * 순위 계산 - 동점자는 같은순위, 이름순 정렬
-     * RankingService의 calculateRanks 로직과 동일
+     * 순위 계산 
+     * @param rows
+     * @return
+     * @throws
+     * @throws BusinessException
+     * @throws ErrorCode
+     * @throws IllegalArgumentException
+     * @throws IllegalAccessException   
      */
     private void calculateRanks(List<RankingRowResponse> rows) {
         if (rows.isEmpty()) {

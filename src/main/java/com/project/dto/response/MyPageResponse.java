@@ -2,7 +2,9 @@ package com.project.dto.response;
 
 import java.util.List;
 
-//MyPageResponse.record
+/*
+author : 최하영
+*/
 public record MyPageResponse(
         MyPageProfileResponse profile,
         List<GrassResponse> grass,
