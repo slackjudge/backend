@@ -11,8 +11,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Optional<UserEntity> findBySlackId(String slackId);
 
-    Optional<UserEntity> findByUsername(String username);
-
     @Query("""
         SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END
         FROM UserEntity u
