@@ -49,11 +49,13 @@ public class UserService {
         userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        boolean isUsed = userRepository.existsByBaekjoonId(baekjoonId);
         boolean isBaekjoonId = bojUtil.checkBojId(baekjoonId);
 
         return new BojCheckResponse(
                 baekjoonId,
-                isBaekjoonId
+                isBaekjoonId,
+                isUsed
         );
     }
 }
