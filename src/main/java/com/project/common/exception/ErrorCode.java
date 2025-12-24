@@ -39,7 +39,8 @@ public enum ErrorCode {
     // Ranking
     INVALID_RANKING_PERIOD(HttpStatus.BAD_REQUEST, "RANK_002", "Invalid ranking period"),
     INVALID_RANKING_GROUP(HttpStatus.BAD_REQUEST, "RANK_003", "Invalid ranking group"),
-    INVALID_RANKING_PAGINATION(HttpStatus.BAD_REQUEST, "RANK_004", "Invalid ranking pagination");
+    INVALID_RANKING_PAGINATION(HttpStatus.BAD_REQUEST, "RANK_004", "Invalid ranking pagination"),
+    RANKING_SNAPSHOT_NOT_READY(HttpStatus.TOO_EARLY, "RANK_005", "Ranking snapshot not ready");
 
     private final HttpStatus status;
     private final String code;
