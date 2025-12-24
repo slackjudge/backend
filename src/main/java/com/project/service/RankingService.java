@@ -6,6 +6,7 @@ import com.project.common.util.RankUtil;
 import com.project.dto.response.RankingPageResponse;
 import com.project.dto.response.RankingRowResponse;
 import com.project.entity.EurekaTeamName;
+import com.project.repository.BatchMetaRepository;
 import com.project.repository.RankingQueryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,68 @@ public class RankingService {
 
   private final RankingQueryRepository rankingQueryRepository;
   private final Clock clock;
+  private final BatchMetaRepository batchMetaRepository;
+
+
+  /**
+   * 배치 테이블 사용에 따른 end_Time 변경
+   * version : 1.0.1
+   */
+  public RankingPageResponse getRankingForBatch(String period, LocalDateTime dateTime, String group, int page, int size) {
+
+    String normalizedPeriod = normalizeAndValidatePeriod(period);
+    EurekaTeamName team = parseAndValidateGroup(group);
+    validatePagination(page, size);
+
+    // 배치 완료 최신 스냅샷(UTC -> KST 변화 후 절삭)
+    LocalDateTime availableEnd = batchMetaRepository.findLastCompletedEndTime()
+            .map(RankUtil::utcToKst)
+            .orElseThrow(() -> new BusinessException(ErrorCode.RANKING_SNAPSHOT_NOT_READY));
+
+
+    LocalDateTime effective = (dateTime != null) ? dateTime : LocalDateTime.now(clock);
+    LocalDateTime reqBaseTime = RankUtil.resolveBaseTime(effective);
+
+
+    // 집계 시작 지점
+    LocalDateTime periodStart = RankUtil.getPeriodStart(normalizedPeriod, reqBaseTime);
+
+    // 마감 경계 설정
+    LocalDateTime periodEndBoundary = RankUtil.getPeriodEndBoundary(normalizedPeriod, periodStart);
+
+    // 현재의 경우 집계 마감 구간은 배치의 최신 스냅샷 범위로 설정
+    LocalDateTime currentEndInclusive = availableEnd.isBefore(periodEndBoundary)
+            ? availableEnd
+            : periodEndBoundary;
+    LocalDateTime prevEndInclusive = currentEndInclusive.minusHours(1);
+
+
+    // 집계 시작
+    List<RankingRowResponse> currentAll = rankingQueryRepository.getRankingRows(periodStart, currentEndInclusive, team);
+
+    if (currentAll.isEmpty()) {
+      return new RankingPageResponse(false, List.of());
+    }
+
+    List<RankingRowResponse> prevAll = rankingQueryRepository.getRankingRows(periodStart, prevEndInclusive, team);
+
+    calculateRanks(currentAll);
+    calculateRanks(prevAll);
+    calculateDiff(currentAll, prevAll);
+
+    int fromIndex = Math.max(0, (page - 1) * size);
+    if (fromIndex >= currentAll.size()) {
+      return new RankingPageResponse(false, List.of());
+    }
+
+    int toIndex = Math.min(fromIndex + size, currentAll.size());
+    List<RankingRowResponse> pageRows = currentAll.subList(fromIndex, toIndex);
+    boolean hasNext = toIndex < currentAll.size();
+
+    return new RankingPageResponse(hasNext, pageRows);
+  }
+
+
 
   /**
    * 해당 시간대의 랭킹과 직전 시간대 랭킹을 비교하여 반환
@@ -73,6 +136,7 @@ public class RankingService {
   }
 
 
+  // 기간 유효성 검증
   private String normalizeAndValidatePeriod(String period) {
     String p = (period == null) ? "day" : period.toLowerCase();
     if (!ALLOWED_PERIOD.contains(p)) {
@@ -81,6 +145,7 @@ public class RankingService {
     return p;
   }
 
+  // 그룹 유효성 검증
   private EurekaTeamName parseAndValidateGroup(String group) {
     String g = (group == null) ? "ALL" : group.toUpperCase();
     if ("ALL".equals(g)) return null;
@@ -92,6 +157,7 @@ public class RankingService {
     }
   }
 
+  // 페이징 유효성 검증
   private void validatePagination(int page, int size) {
     if (page < 1 || size < 1) {
       throw new BusinessException(ErrorCode.INVALID_RANKING_PAGINATION);
@@ -99,9 +165,7 @@ public class RankingService {
   }
 
 
-  /**
-   *  diff = 1시간 전 rank - 현재 rank (+순위 상승, -순위 하락, 0 변동x)
-   */
+  // 순위 변동 비교(상승 +, 하락 -, 변동없음 -)
   private void calculateDiff(List<RankingRowResponse> current,
                              List<RankingRowResponse> previous) {
 
@@ -124,9 +188,7 @@ public class RankingService {
   }
 
 
-  /**
-   * 순위 계산 - 동점자는 같은순위, 이름순 정렬
-   */
+//순위 계산, 동점자는 같은순위, 이름순 정렬
   private void calculateRanks(List<RankingRowResponse> rows) {
 
     if (rows.isEmpty()) {

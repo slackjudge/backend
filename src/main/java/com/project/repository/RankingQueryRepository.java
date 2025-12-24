@@ -28,11 +28,11 @@ public class RankingQueryRepository {
     /**
      * 시작 구간 ~ 마감 기간과 그룹에 따른 데이터 집계
      * @param start
-     * @param endExclusive
+     * @param endInclusive
      * @param team
      * @return 총 점수를 인덱스로 하는 랭킹 리스트 반환
      */
-  public List<RankingRowResponse> getRankingRows(LocalDateTime start, LocalDateTime endExclusive, EurekaTeamName team) {
+  public List<RankingRowResponse> getRankingRows(LocalDateTime start, LocalDateTime endInclusive, EurekaTeamName team) {
     QUsersProblemEntity usersProblemEntity = QUsersProblemEntity.usersProblemEntity;
     QUserEntity userEntity = QUserEntity.userEntity;
     QProblemEntity problemEntity = QProblemEntity.problemEntity;
@@ -59,7 +59,7 @@ public class RankingQueryRepository {
             .join(usersProblemEntity.ref.problem, problemEntity)
             .where(
                     usersProblemEntity.solvedTime.gt(start),
-                    usersProblemEntity.solvedTime.loe(endExclusive),
+                    usersProblemEntity.solvedTime.loe(endInclusive),
                     usersProblemEntity.solvedTime.goe(validAfterExpr),
                     teamFilter(team, userEntity)
             )

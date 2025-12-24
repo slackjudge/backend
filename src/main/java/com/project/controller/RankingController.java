@@ -42,7 +42,7 @@ public class RankingController {
           @RequestParam(defaultValue = "ALL") String group,
           @RequestParam(defaultValue = "1") int page,
           @RequestParam(defaultValue = "20") int size) {
-    RankingPageResponse response = rankingService.getRanking(period, dateTime, group, page, size);
+    RankingPageResponse response = rankingService.getRankingForBatch(period, dateTime, group, page, size);
     return ResponseEntity.ok(ApiResponse.success(response));
   }
 }
