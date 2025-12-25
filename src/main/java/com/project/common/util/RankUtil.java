@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
  */
 public class RankUtil {
 
-
     /**
      * 정각으로 절삭 하는 유틸 함수, 배치 시간 텀에 따라 유동적 변경
      * @param baseTime
@@ -25,6 +24,7 @@ public class RankUtil {
 
     /**
      * period에 따른 집계 시작 시각 계산
+     * 현재, 과거 상관 없이 사용자의 요청 시각에 따라 반환
      *  return 값
      *  - day   : 해당 날짜의 00:00
      *  - week  : 해당 주 월요일 00:00
@@ -32,7 +32,7 @@ public class RankUtil {
      */
     public static LocalDateTime getPeriodStart(String period, LocalDateTime baseTime) {
 
-        LocalDateTime t = resolveBaseTime(baseTime);
+        LocalDateTime t = resolveBaseTime(baseTime); // 중복 코드
 
         return switch (period) {
             case "week" -> t
@@ -48,11 +48,12 @@ public class RankUtil {
     }
 
     /**
-     * 요청한 기간에 따른 과거, 현재 비교해 해당 기간에 맞는 집계 마감 시각 계산
+     * period에 따른 집계 마감 지점 선정
      * @param period
      * @param requested
      * @param now
      * @return 집계 마감 시각(정각)
+     * version : 1.0.0
      */
     public static LocalDateTime getPeriodEndInclusive(String period, LocalDateTime requested, LocalDateTime now) {
         LocalDateTime req = resolveBaseTime(requested);
@@ -63,15 +64,44 @@ public class RankUtil {
 
         boolean isCurrentPeriod = reqStart.equals(curStart);
 
+        // 현재 구간
         if (isCurrentPeriod) {
             return cur;
         }
 
+        // 과거 구간
         return switch (period) {
             case "week" -> reqStart.plusWeeks(1);
             case "month" -> reqStart.plusMonths(1);
             case "day" -> reqStart.plusDays(1);
             default -> throw new IllegalArgumentException("invalid period: " + period);
         };
+    }
+
+
+    /**
+     * period에 따른 집계 마감 지점 선정
+     * version : 1.0.1
+     */
+    public static LocalDateTime getPeriodEndBoundary(String period, LocalDateTime periodStart) {
+        LocalDateTime start = resolveBaseTime(periodStart);
+
+        return switch (period) {
+            case "week" -> start.plusWeeks(1);
+            case "month" -> start.plusMonths(1);
+            case "day" -> start.plusDays(1);
+            default -> throw new IllegalArgumentException("invalid period: " + period);
+        };
+    }
+
+
+    /**
+     * DB에 utc로 저장되어 있기 때문에 kst 시간대로 변환 후 절삭
+     */
+    public static LocalDateTime utcToKst(LocalDateTime utc) {
+        if (utc == null) {
+            return null;
+        }
+        return resolveBaseTime(utc).plusHours(9);
     }
 }
