@@ -3,11 +3,14 @@ package com.project.service;
 import com.project.common.exception.BusinessException;
 import com.project.common.exception.ErrorCode;
 import com.project.common.util.RankUtil;
+import com.project.dto.response.RankingPageExtendedResponse;
 import com.project.dto.response.RankingPageResponse;
+import com.project.dto.response.RankingRowExtendedResponse;
 import com.project.dto.response.RankingRowResponse;
 import com.project.entity.EurekaTeamName;
 import com.project.repository.BatchMetaRepository;
 import com.project.repository.RankingQueryRepository;
+import com.project.repository.UserMetaQueryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,13 +34,15 @@ public class RankingService {
   private final RankingQueryRepository rankingQueryRepository;
   private final Clock clock;
   private final BatchMetaRepository batchMetaRepository;
+  private final UserMetaQueryRepository userMetaQueryRepository;
+
 
 
   /**
-   * 배치 테이블 사용에 따른 end_Time 변경
+   * 배치 테이블 사용에 따른 end_Time 변경, 신규 유저, 업데이트 시간대 표시
    * version : 1.0.1
    */
-  public RankingPageResponse getRankingForBatch(String period, LocalDateTime dateTime, String group, int page, int size) {
+  public RankingPageExtendedResponse getRankingForBatch(String period, LocalDateTime dateTime, String group, int page, int size) {
 
     String normalizedPeriod = normalizeAndValidatePeriod(period);
     EurekaTeamName team = parseAndValidateGroup(group);
@@ -48,39 +53,34 @@ public class RankingService {
             .map(RankUtil::utcToKst)
             .orElseThrow(() -> new BusinessException(ErrorCode.RANKING_SNAPSHOT_NOT_READY));
 
-   // 사용자가 요청한 시각(절삭)
+   // 사용자가 요청한 시각
     LocalDateTime effective = (dateTime != null) ? dateTime : LocalDateTime.now(clock);
     LocalDateTime reqBaseTime = RankUtil.resolveBaseTime(effective);
-
-    log.info("[INFO] 사용자의 요청 시각 = {}", reqBaseTime);
-    log.info("[INFO] 최신 스냅샷 시각 = {}", availableEnd);
-
 
     // 요청 기간의 시작과 끝 경계 계산
     LocalDateTime periodStart = RankUtil.getPeriodStart(normalizedPeriod, reqBaseTime);
     LocalDateTime periodEndBoundary = RankUtil.getPeriodEndBoundary(normalizedPeriod, periodStart);
 
-
-    // 실제 조회 가능한 end는 최근 스냅샷 or 요청 경계 값 중 좀 더 이른 값
+    // 실제 조회 가능한 endTime는 최근 스냅샷 or 요청 경계 값 중 좀 더 이른 값
     LocalDateTime endInclusive = availableEnd.isBefore(periodEndBoundary)
             ? availableEnd
             : periodEndBoundary;
 
-    // 현재/과거 판단
     boolean isCurrentPeriod = RankUtil.getPeriodStart(normalizedPeriod, availableEnd).equals(periodStart);
+
 
     // === 과거 구간 : 1번 쿼리, 순위 변동 계산 x ===
     if(!isCurrentPeriod) {
       List<RankingRowResponse> rows = rankingQueryRepository.getRankingRows(periodStart, endInclusive, team);
 
       if(rows.isEmpty()) {
-        return new RankingPageResponse(false, List.of());
+        return new RankingPageExtendedResponse(false, endInclusive, List.of());
       }
 
       calculateRanks(rows);
       rows.forEach(r -> r.setDiff(0));
 
-      return paginate(rows, page, size);
+      return paginateAndExtend(rows, page, size, endInclusive, availableEnd);
     }
 
 
@@ -88,29 +88,28 @@ public class RankingService {
     LocalDateTime currentEndInclusive = endInclusive;
     LocalDateTime prevEndInclusive = currentEndInclusive.minusHours(1);
 
-
-    // 현재 구간 집계 1번 쿼리
     List<RankingRowResponse> currentAll = rankingQueryRepository.getRankingRows(periodStart, currentEndInclusive, team);
 
     if (currentAll.isEmpty()) {
-      return new RankingPageResponse(false, List.of());
+      return new RankingPageExtendedResponse(false, endInclusive, List.of());
     }
 
-    // 1시간 전 구간 집계 2번 쿼리
     List<RankingRowResponse> prevAll = rankingQueryRepository.getRankingRows(periodStart, prevEndInclusive, team);
 
     calculateRanks(currentAll);
     calculateRanks(prevAll);
     calculateDiff(currentAll, prevAll);
 
-    return paginate(currentAll, page, size);
+    return paginateAndExtend(currentAll, page, size, endInclusive, availableEnd);
   }
+
 
 
   /**
    * 해당 시간대의 랭킹과 직전 시간대 랭킹을 비교하여 반환
    * @Param  사용자가 요청한 시간대 (예: 2025.10.12T14:21:29)
    * 버그 시 해당 함수로 롤백
+   * version : 1.0.0
    */
   public RankingPageResponse getRanking(String period, LocalDateTime dateTime, String group, int page, int size) {
 
@@ -151,19 +150,62 @@ public class RankingService {
   }
 
 
-  // ===== 계산&유효성 검사 =====
 
-  // 페이징 처리
-  private RankingPageResponse paginate(List<RankingRowResponse> rows, int page, int size) {
+
+
+  // ===== 계산&유효성 검사 =====
+ // DTO 변환
+  private RankingPageExtendedResponse paginateAndExtend(
+          List<RankingRowResponse> rows,
+          int page,
+          int size,
+          LocalDateTime endInclusive,
+          LocalDateTime availableEnd
+          ) {
+
     int fromIndex = Math.max(0, (page - 1) * size);
     if (fromIndex >= rows.size()) {
-      return new RankingPageResponse(false, List.of());
+      return new RankingPageExtendedResponse(false, endInclusive, List.of());
     }
 
     int toIndex = Math.min(fromIndex + size, rows.size());
-    List<RankingRowResponse> pageRows = rows.subList(fromIndex, toIndex);
     boolean hasNext = toIndex < rows.size();
-    return new RankingPageResponse(hasNext, rows.subList(fromIndex, toIndex));
+
+    List<RankingRowResponse> pageRows = rows.subList(fromIndex, toIndex);
+
+    List<Long> userIds = pageRows.stream()
+            .map(RankingRowResponse::getUserId)
+            .distinct()
+            .toList();
+
+    Map<Long, LocalDateTime> createdAtMap =
+            userMetaQueryRepository.findCreatedAtMapByUserIds(userIds);
+
+    // 신규 유저 판정 기준 : "현재 시각" 기준 3일 = 72시간
+    LocalDateTime cutoff = availableEnd.minusDays(3);
+
+    List<RankingRowExtendedResponse> extended = pageRows.stream()
+            .map(r -> {
+              LocalDateTime createdAt = createdAtMap.get(r.getUserId());
+
+              boolean newUser = createdAt != null && !createdAt.isBefore(cutoff);
+
+              return new RankingRowExtendedResponse(
+                      r.getUserId(),
+                      r.getRank(),
+                      r.getTier(),
+                      r.getName(),
+                      r.getTotalScore(),
+                      r.getSolvedCount(),
+                      r.getBaekjoonId(),
+                      r.getTeam(),
+                      r.getDiff(),
+                      newUser
+              );
+            })
+            .toList();
+
+    return new RankingPageExtendedResponse(hasNext, endInclusive, extended);
   }
 
 

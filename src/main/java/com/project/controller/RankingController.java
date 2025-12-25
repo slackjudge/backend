@@ -1,7 +1,7 @@
 package com.project.controller;
 
 import com.project.common.dto.ApiResponse;
-import com.project.dto.response.RankingPageResponse;
+import com.project.dto.response.RankingPageExtendedResponse;
 import com.project.service.RankingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,7 @@ public class RankingController {
    * @param size 페이지 크기 (default: 20)
    */
   @GetMapping
-  public ResponseEntity<ApiResponse<RankingPageResponse>> getRanking(
+  public ResponseEntity<ApiResponse<RankingPageExtendedResponse>> getRanking(
           @RequestParam(defaultValue = "day") String period,
           @RequestParam(required = false)
           @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
@@ -42,7 +42,7 @@ public class RankingController {
           @RequestParam(defaultValue = "ALL") String group,
           @RequestParam(defaultValue = "1") int page,
           @RequestParam(defaultValue = "20") int size) {
-    RankingPageResponse response = rankingService.getRankingForBatch(period, dateTime, group, page, size);
+    RankingPageExtendedResponse response = rankingService.getRankingForBatch(period, dateTime, group, page, size);
     return ResponseEntity.ok(ApiResponse.success(response));
   }
 }
