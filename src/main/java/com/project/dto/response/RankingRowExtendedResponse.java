@@ -1,14 +1,14 @@
 package com.project.dto.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.Objects;
 
 /**
  * author : 박준희
  */
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
 public class RankingRowExtendedResponse {
     private Long userId;
@@ -22,16 +22,22 @@ public class RankingRowExtendedResponse {
     private int diff;
     private boolean newUser;
 
-    public RankingRowExtendedResponse(Long userId, String name, int tier, int totalScore, long solvedCount, String baekjoonId, String team, boolean newUser) {
-        this.userId = userId;
-        this.name = name;
-        this.tier = tier;
-        this.totalScore = totalScore;
-        this.solvedCount = solvedCount;
-        this.baekjoonId = baekjoonId;
-        this.team = team;
-        this.rank = 0;
-        this.diff = 0;
+    private RankingRowExtendedResponse(RankingRowResponse base, boolean newUser) {
+        Objects.requireNonNull(base, "base must not be null");
+
+        this.userId = base.getUserId();
+        this.rank = base.getRank();
+        this.tier = base.getTier();
+        this.name = base.getName();
+        this.totalScore = base.getTotalScore();
+        this.solvedCount = base.getSolvedCount();
+        this.baekjoonId = base.getBaekjoonId();
+        this.team = base.getTeam();
+        this.diff = base.getDiff();
         this.newUser = newUser;
+    }
+
+    public static RankingRowExtendedResponse from(RankingRowResponse base, boolean newUser) {
+        return new RankingRowExtendedResponse(base, newUser);
     }
 }

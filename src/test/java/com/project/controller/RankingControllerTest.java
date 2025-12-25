@@ -3,6 +3,7 @@ package com.project.controller;
 
 import com.project.dto.response.RankingPageExtendedResponse;
 import com.project.dto.response.RankingRowExtendedResponse;
+import com.project.dto.response.RankingRowResponse;
 import com.project.service.RankingService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -75,19 +76,23 @@ class RankingControllerTest {
         String dateTimeStr = "2025-12-11T14:30:00";
         LocalDateTime expectedDateTime = LocalDateTime.parse(dateTimeStr);
 
-        RankingRowExtendedResponse row = new RankingRowExtendedResponse(
+        RankingRowResponse base = new RankingRowResponse(
                 1L,
+                1,              // rank
+                15,             // tier
                 "박준희",
-                15,
-                245,
-                12,
+                245,            // totalScore
+                12L,            // solvedCount
                 "gr2147",
                 "BACKEND_NON_FACE",
-                true
+                0               // diff
         );
 
 
-        RankingPageExtendedResponse dummyResponse = new RankingPageExtendedResponse(true, expectedDateTime, List.of(row));
+        RankingRowExtendedResponse row = RankingRowExtendedResponse.from(base, true);
+
+        RankingPageExtendedResponse dummyResponse =
+                new RankingPageExtendedResponse(true, expectedDateTime, List.of(row));
 
         given(rankingService.getRankingForBatch(anyString(), any(LocalDateTime.class), anyString(), anyInt(), anyInt()))
                 .willReturn(dummyResponse);

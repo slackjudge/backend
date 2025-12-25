@@ -48,54 +48,44 @@ public class RankingService {
     EurekaTeamName team = parseAndValidateGroup(group);
     validatePagination(page, size);
 
-    LocalDateTime availableEnd = batchMetaRepository.findLastCompletedEndTime()
-            .map(RankUtil::utcToKst)
-            .orElseThrow(() -> new BusinessException(ErrorCode.RANKING_SNAPSHOT_NOT_READY));
+    LocalDateTime availableEnd = fetchAvailableEndKst();
 
     LocalDateTime effective = (dateTime != null) ? dateTime : LocalDateTime.now(clock);
     LocalDateTime reqBaseTime = RankUtil.resolveBaseTime(effective);
 
     LocalDateTime periodStart = RankUtil.getPeriodStart(normalizedPeriod, reqBaseTime);
-    LocalDateTime periodEndBoundary = RankUtil.getPeriodEndBoundary(normalizedPeriod, periodStart);
+    LocalDateTime endInclusive = resolveEndInclusive(normalizedPeriod, periodStart, availableEnd);
 
-    LocalDateTime endInclusive = availableEnd.isBefore(periodEndBoundary)
-            ? availableEnd
-            : periodEndBoundary;
+    boolean isCurrentPeriod =
+            RankUtil.getPeriodStart(normalizedPeriod, availableEnd).equals(periodStart);
 
-    boolean isCurrentPeriod = RankUtil.getPeriodStart(normalizedPeriod, availableEnd).equals(periodStart);
-
-    if (!isCurrentPeriod) {
-      List<RankingRowResponse> rows = rankingQueryRepository.getRankingRows(periodStart, endInclusive, team);
-
-      if (rows.isEmpty()) {
-        return new RankingPageExtendedResponse(false, endInclusive, List.of());
-      }
-
-      calculateRanks(rows);
-      rows.forEach(r -> r.setDiff(0));
-
-      return paginateAndExtend(rows, page, size, endInclusive, availableEnd);
+    if (isCurrentPeriod) {
+      return getCurrentPeriodRanking(periodStart, endInclusive, availableEnd, team, page, size);
     }
-
-    LocalDateTime currentEndInclusive = endInclusive;
-    LocalDateTime prevEndInclusive = currentEndInclusive.minusHours(1);
-    List<RankingRowResponse> currentAll = rankingQueryRepository.getRankingRows(periodStart, currentEndInclusive, team);
-
-    if (currentAll.isEmpty()) {
-      return new RankingPageExtendedResponse(false, endInclusive, List.of());
-    }
-
-    List<RankingRowResponse> prevAll = rankingQueryRepository.getRankingRows(periodStart, prevEndInclusive, team);
-    calculateRanks(currentAll);
-    calculateRanks(prevAll);
-    calculateDiff(currentAll, prevAll);
-
-    return paginateAndExtend(currentAll, page, size, endInclusive, availableEnd);
+    return getPastPeriodRanking(periodStart, endInclusive, availableEnd, team, page, size);
   }
 
 
 
-  /**
+  /** private RankingRowExtendedResponse(RankingRowResponse base, boolean newUser) {
+   Objects.requireNonNull(base, "base must not be null");
+
+   this.userId = base.getUserId();
+   this.rank = base.getRank();
+   this.tier = base.getTier();
+   this.name = base.getName();
+   this.totalScore = base.getTotalScore();
+   this.solvedCount = base.getSolvedCount();
+   this.baekjoonId = base.getBaekjoonId();
+   this.team = base.getTeam();
+   this.diff = base.getDiff();
+   this.newUser = newUser;
+   }
+
+   // ✅ 정적 팩토리 메서드
+   public static RankingRowExtendedResponse from(RankingRowResponse base, boolean newUser) {
+   return new RankingRowExtendedResponse(base, newUser);
+   }
    * 해당 시간대의 랭킹과 직전 시간대 랭킹을 비교하여 반환
    * @Param  사용자가 요청한 시간대 (예: 2025.10.12T14:21:29)
    * 버그 시 해당 함수로 롤백
@@ -144,6 +134,72 @@ public class RankingService {
 
 
   // ===== 계산&유효성 검사 =====
+  private LocalDateTime fetchAvailableEndKst() {
+    return batchMetaRepository.findLastCompletedEndTime()
+            .map(RankUtil::utcToKst)
+            .orElseThrow(() -> new BusinessException(ErrorCode.RANKING_SNAPSHOT_NOT_READY));
+  }
+
+  private LocalDateTime resolveEndInclusive(String period, LocalDateTime periodStart, LocalDateTime availableEnd) {
+    LocalDateTime periodEndBoundary = RankUtil.getPeriodEndBoundary(period, periodStart);
+    return availableEnd.isBefore(periodEndBoundary) ? availableEnd : periodEndBoundary;
+  }
+
+
+  // 과거 구간 집계
+  private RankingPageExtendedResponse getPastPeriodRanking(
+          LocalDateTime periodStart,
+          LocalDateTime endInclusive,
+          LocalDateTime availableEnd,
+          EurekaTeamName team,
+          int page,
+          int size
+  ) {
+    List<RankingRowResponse> rows = rankingQueryRepository.getRankingRows(periodStart, endInclusive, team);
+
+    if (rows.isEmpty()) {
+      return new RankingPageExtendedResponse(false, endInclusive, List.of());
+    }
+
+    calculateRanks(rows);
+    rows.forEach(r -> r.setDiff(0));
+
+    return paginateAndExtend(rows, page, size, endInclusive, availableEnd);
+  }
+
+
+  // 현재 구간 집계
+  private RankingPageExtendedResponse getCurrentPeriodRanking(
+          LocalDateTime periodStart,
+          LocalDateTime endInclusive,
+          LocalDateTime availableEnd,
+          EurekaTeamName team,
+          int page,
+          int size
+  ) {
+    LocalDateTime currentEndInclusive = endInclusive;
+    LocalDateTime prevEndInclusive = currentEndInclusive.minusHours(1);
+
+    List<RankingRowResponse> currentAll =
+            rankingQueryRepository.getRankingRows(periodStart, currentEndInclusive, team);
+
+    if (currentAll.isEmpty()) {
+      return new RankingPageExtendedResponse(false, endInclusive, List.of());
+    }
+
+    List<RankingRowResponse> prevAll =
+            rankingQueryRepository.getRankingRows(periodStart, prevEndInclusive, team);
+
+    calculateRanks(currentAll);
+    calculateRanks(prevAll);
+    calculateDiff(currentAll, prevAll);
+
+    return paginateAndExtend(currentAll, page, size, endInclusive, availableEnd);
+  }
+
+
+
+
  // DTO 변환
   private RankingPageExtendedResponse paginateAndExtend(
           List<RankingRowResponse> rows,
@@ -177,21 +233,8 @@ public class RankingService {
     List<RankingRowExtendedResponse> extended = pageRows.stream()
             .map(r -> {
               LocalDateTime createdAt = createdAtMap.get(r.getUserId());
-
               boolean newUser = createdAt != null && !createdAt.isBefore(cutoff);
-
-              return new RankingRowExtendedResponse(
-                      r.getUserId(),
-                      r.getRank(),
-                      r.getTier(),
-                      r.getName(),
-                      r.getTotalScore(),
-                      r.getSolvedCount(),
-                      r.getBaekjoonId(),
-                      r.getTeam(),
-                      r.getDiff(),
-                      newUser
-              );
+              return RankingRowExtendedResponse.from(r, newUser);
             })
             .toList();
 
