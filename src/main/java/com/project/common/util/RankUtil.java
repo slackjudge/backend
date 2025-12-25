@@ -99,7 +99,7 @@ public class RankUtil {
      * DB에 utc로 저장되어 있기 때문에 kst 시간대로 변환 후 절삭
      */
     public static LocalDateTime utcToKst(LocalDateTime utc) {
-        if(utc == null) {
+        if (utc == null) {
             return null;
         }
         return resolveBaseTime(utc).plusHours(9);

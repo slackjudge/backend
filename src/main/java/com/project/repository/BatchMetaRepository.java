@@ -29,7 +29,7 @@ public class BatchMetaRepository {
             """;
 
         return jdbcTemplate.query(sql, rs -> {
-            if(!rs.next()) {
+            if (!rs.next()) {
                 return Optional.empty();
             }
           LocalDateTime endTime =  rs.getObject(1, LocalDateTime.class);

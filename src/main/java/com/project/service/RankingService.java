@@ -48,32 +48,26 @@ public class RankingService {
     EurekaTeamName team = parseAndValidateGroup(group);
     validatePagination(page, size);
 
-    // 배치 최신 스냅샷(UTC -> KST 변화 후 절삭)
     LocalDateTime availableEnd = batchMetaRepository.findLastCompletedEndTime()
             .map(RankUtil::utcToKst)
             .orElseThrow(() -> new BusinessException(ErrorCode.RANKING_SNAPSHOT_NOT_READY));
 
-   // 사용자가 요청한 시각
     LocalDateTime effective = (dateTime != null) ? dateTime : LocalDateTime.now(clock);
     LocalDateTime reqBaseTime = RankUtil.resolveBaseTime(effective);
 
-    // 요청 기간의 시작과 끝 경계 계산
     LocalDateTime periodStart = RankUtil.getPeriodStart(normalizedPeriod, reqBaseTime);
     LocalDateTime periodEndBoundary = RankUtil.getPeriodEndBoundary(normalizedPeriod, periodStart);
 
-    // 실제 조회 가능한 endTime는 최근 스냅샷 or 요청 경계 값 중 좀 더 이른 값
     LocalDateTime endInclusive = availableEnd.isBefore(periodEndBoundary)
             ? availableEnd
             : periodEndBoundary;
 
     boolean isCurrentPeriod = RankUtil.getPeriodStart(normalizedPeriod, availableEnd).equals(periodStart);
 
-
-    // === 과거 구간 : 1번 쿼리, 순위 변동 계산 x ===
-    if(!isCurrentPeriod) {
+    if (!isCurrentPeriod) {
       List<RankingRowResponse> rows = rankingQueryRepository.getRankingRows(periodStart, endInclusive, team);
 
-      if(rows.isEmpty()) {
+      if (rows.isEmpty()) {
         return new RankingPageExtendedResponse(false, endInclusive, List.of());
       }
 
@@ -83,11 +77,8 @@ public class RankingService {
       return paginateAndExtend(rows, page, size, endInclusive, availableEnd);
     }
 
-
-    // === 현재 구간 : 2번 쿼리, 순위 변동 계산 o ===
     LocalDateTime currentEndInclusive = endInclusive;
     LocalDateTime prevEndInclusive = currentEndInclusive.minusHours(1);
-
     List<RankingRowResponse> currentAll = rankingQueryRepository.getRankingRows(periodStart, currentEndInclusive, team);
 
     if (currentAll.isEmpty()) {
@@ -95,7 +86,6 @@ public class RankingService {
     }
 
     List<RankingRowResponse> prevAll = rankingQueryRepository.getRankingRows(periodStart, prevEndInclusive, team);
-
     calculateRanks(currentAll);
     calculateRanks(prevAll);
     calculateDiff(currentAll, prevAll);

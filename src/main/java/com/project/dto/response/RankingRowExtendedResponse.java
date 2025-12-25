@@ -20,8 +20,6 @@ public class RankingRowExtendedResponse {
     private String baekjoonId;
     private String team;
     private int diff;
-
-    // 신규유저
     private boolean newUser;
 
     public RankingRowExtendedResponse(Long userId, String name, int tier, int totalScore, long solvedCount, String baekjoonId, String team, boolean newUser) {
