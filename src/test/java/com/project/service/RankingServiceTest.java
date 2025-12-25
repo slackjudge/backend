@@ -4,7 +4,9 @@ import com.project.common.exception.BusinessException;
 import com.project.common.exception.ErrorCode;
 import com.project.dto.response.RankingPageResponse;
 import com.project.dto.response.RankingRowResponse;
+import com.project.repository.BatchMetaRepository;
 import com.project.repository.RankingQueryRepository;
+import com.project.repository.UserMetaQueryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,6 +38,12 @@ class RankingServiceTest {
     @Mock
     private RankingQueryRepository rankingQueryRepository;
 
+    @Mock
+    BatchMetaRepository batchMetaRepository;
+
+    @Mock
+    UserMetaQueryRepository userMetaQueryRepository;
+
     @InjectMocks
     private RankingService rankingService;
 
@@ -47,7 +55,11 @@ class RankingServiceTest {
                 Instant.parse("2025-12-12T15:48:00Z"),
                 ZoneId.of("Asia/Seoul")
         );
-        rankingService = new RankingService(rankingQueryRepository, fixedClock);
+        rankingService = new RankingService(
+                rankingQueryRepository,
+                fixedClock,
+                batchMetaRepository,
+                userMetaQueryRepository);
     }
 
     @Test
@@ -250,5 +262,7 @@ class RankingServiceTest {
 
         verify(rankingQueryRepository, times(2)).getRankingRows(any(), any(), isNull());
     }
+
+
 
 }

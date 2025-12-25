@@ -143,4 +143,56 @@ class RankUtilTest {
 
         assertThat(endExclusive).isEqualTo(LocalDateTime.of(2025, 12, 1, 0, 0));
     }
+
+    @Test
+    @DisplayName("getPeriodEndBoundary(day) - periodStart 기준 다음날 00:00 반환")
+    void getPeriodEndBoundary_day() {
+        // given
+        LocalDateTime periodStart = LocalDateTime.of(2025, 12, 11, 0, 0);
+
+        // when
+        LocalDateTime end = RankUtil.getPeriodEndBoundary("day", periodStart);
+
+        // then
+        assertThat(end).isEqualTo(LocalDateTime.of(2025, 12, 12, 0, 0));
+    }
+
+    @Test
+    @DisplayName("getPeriodEndBoundary(week) - periodStart 기준 +1주(다음주 월요일 00:00) 반환")
+    void getPeriodEndBoundary_week() {
+        // given (월요일 00:00로 잡는 게 가장 명확)
+        LocalDateTime periodStart = LocalDateTime.of(2025, 12, 8, 0, 0); // Monday
+
+        // when
+        LocalDateTime end = RankUtil.getPeriodEndBoundary("week", periodStart);
+
+        // then
+        assertThat(end).isEqualTo(LocalDateTime.of(2025, 12, 15, 0, 0));
+    }
+
+    @Test
+    @DisplayName("getPeriodEndBoundary(month) - periodStart 기준 다음달 1일 00:00 반환")
+    void getPeriodEndBoundary_month() {
+        // given
+        LocalDateTime periodStart = LocalDateTime.of(2025, 12, 1, 0, 0);
+
+        // when
+        LocalDateTime end = RankUtil.getPeriodEndBoundary("month", periodStart);
+
+        // then
+        assertThat(end).isEqualTo(LocalDateTime.of(2026, 1, 1, 0, 0));
+    }
+
+    @Test
+    @DisplayName("utcToKst - UTC를 KST로 +9시간 하고 정각으로 절삭한다")
+    void utcToKst_convertsAndFloorsToHour() {
+        // given: UTC 2025-12-11 14:37:45 -> KST 2025-12-11 23:00:00
+        LocalDateTime utc = LocalDateTime.of(2025, 12, 11, 14, 37, 45);
+
+        // when
+        LocalDateTime kst = RankUtil.utcToKst(utc);
+
+        // then
+        assertThat(kst).isEqualTo(LocalDateTime.of(2025, 12, 11, 23, 0, 0));
+    }
 }

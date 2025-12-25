@@ -1,8 +1,8 @@
 package com.project.controller;
 
 
-import com.project.dto.response.RankingPageResponse;
-import com.project.dto.response.RankingRowResponse;
+import com.project.dto.response.RankingPageExtendedResponse;
+import com.project.dto.response.RankingRowExtendedResponse;
 import com.project.service.RankingService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -43,14 +43,11 @@ class RankingControllerTest {
     RankingService rankingService;
 
     @Test
-    @DisplayName("쿼리 파라미터 없으면 기본값(period=day, group=ALL, page=1, size=20)과 null dateTime이 서비스에 전달된다")
+    @DisplayName("쿼리 파라미터 없으면 기본값이 전달")
     void getRanking_usesDefaultParams_whenNoQueryParams() throws Exception {
         // given
-        RankingPageResponse dummyResponse =
-                new RankingPageResponse(false, Collections.emptyList());
-
-        given(rankingService.getRanking(anyString(), any(), anyString(), anyInt(), anyInt()))
-                .willReturn(dummyResponse);
+        given(rankingService.getRankingForBatch(anyString(), any(), anyString(), anyInt(), anyInt()))
+                .willReturn(null);
 
         // when & then
         mockMvc.perform(get("/rank")
@@ -58,7 +55,7 @@ class RankingControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        verify(rankingService).getRanking(
+        verify(rankingService).getRankingForBatch(
                 eq("day"),
                 isNull(),
                 eq("ALL"),
@@ -78,22 +75,21 @@ class RankingControllerTest {
         String dateTimeStr = "2025-12-11T14:30:00";
         LocalDateTime expectedDateTime = LocalDateTime.parse(dateTimeStr);
 
-        RankingPageResponse dummyResponse =
-                new RankingPageResponse(true, Collections.singletonList(
-                        new RankingRowResponse(
-                                1L,
-                                1,
-                                15,
-                                "홍길동",
-                                100,
-                                10L,
-                                "baekjoon123",
-                                "BACKEND_NON_FACE",
-                                0
-                        )
-                ));
+        RankingRowExtendedResponse row = new RankingRowExtendedResponse(
+                1L,
+                "박준희",
+                15,
+                245,
+                12,
+                "gr2147",
+                "BACKEND_NON_FACE",
+                true
+        );
 
-        given(rankingService.getRanking(anyString(), any(), anyString(), anyInt(), anyInt()))
+
+        RankingPageExtendedResponse dummyResponse = new RankingPageExtendedResponse(true, expectedDateTime, List.of(row));
+
+        given(rankingService.getRankingForBatch(anyString(), any(LocalDateTime.class), anyString(), anyInt(), anyInt()))
                 .willReturn(dummyResponse);
 
         // when & then
@@ -107,7 +103,7 @@ class RankingControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        verify(rankingService).getRanking(
+        verify(rankingService).getRankingForBatch(
                 eq(period),
                 eq(expectedDateTime),
                 eq(group),
