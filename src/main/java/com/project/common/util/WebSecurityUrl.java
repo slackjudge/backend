@@ -11,12 +11,17 @@ public class WebSecurityUrl {
     public static final String LOCAL_LOGIN_ENDPOINT = "/oauth/local/login";
     public static final String LOCAL_SIGN_ENDPOINT = "/oauth/local/sign";
     private static final String[] HEALTH_CHECK_ENDPOINTS = {"/health", "/actuator/health"};
+    private static final String[] ACTUATOR_ENDPOINTS = {"/actuator/prometheus", "/actuator/metrics", "/actuator/info"};
     private static final String[] READ_ONLY_PUBLIC_ENDPOINTS = {"/favicon.ico"};
     private static final String[] ANONYMOUS_ENDPOINTS = {
             LOGIN_ENDPOINT, REISSUE_ENDPOINT, LOCAL_LOGIN_ENDPOINT, LOCAL_SIGN_ENDPOINT};
 
     public static String[] getHealthCheckEndpoints() {
         return HEALTH_CHECK_ENDPOINTS.clone();
+    }
+
+    public static String[] getActuatorEndpoints() {
+        return ACTUATOR_ENDPOINTS.clone();
     }
 
     public static String[] getReadOnlyPublicEndpoints() {

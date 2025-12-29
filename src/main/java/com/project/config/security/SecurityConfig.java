@@ -18,6 +18,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 import static com.project.common.util.WebSecurityUrl.getReadOnlyPublicEndpoints;
 import static com.project.common.util.WebSecurityUrl.getHealthCheckEndpoints;
+import static com.project.common.util.WebSecurityUrl.getActuatorEndpoints;
 import static com.project.common.util.WebSecurityUrl.LOGIN_ENDPOINT;
 import static com.project.common.util.WebSecurityUrl.REISSUE_ENDPOINT;
 import static com.project.common.util.WebSecurityUrl.LOCAL_LOGIN_ENDPOINT;
@@ -55,6 +56,7 @@ public class SecurityConfig {
                         .requestMatchers("/slack/**").permitAll()
                         .requestMatchers(HttpMethod.GET, getReadOnlyPublicEndpoints()).permitAll()
                         .requestMatchers(getHealthCheckEndpoints()).permitAll()
+                        .requestMatchers(getActuatorEndpoints()).permitAll()
                         .requestMatchers(LOCAL_LOGIN_ENDPOINT).permitAll()
                         .requestMatchers(LOCAL_SIGN_ENDPOINT).permitAll()
                         .requestMatchers(LOGIN_ENDPOINT).permitAll()
