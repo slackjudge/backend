@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 
 import static com.project.common.util.WebSecurityUrl.getHealthCheckEndpoints;
 import static com.project.common.util.WebSecurityUrl.getReadOnlyPublicEndpoints;
+import static com.project.common.util.WebSecurityUrl.getActuatorEndpoints;
 import static com.project.common.util.WebSecurityUrl.getAnonymousEndpoints;
 
 @Slf4j
@@ -44,6 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     protected static final String[] PUBLIC_ENDPOINTS = Stream.of(
             getHealthCheckEndpoints(),
+            getActuatorEndpoints(),
             getReadOnlyPublicEndpoints()
     ).flatMap(Arrays::stream).toArray(String[]::new);
 
