@@ -38,6 +38,9 @@ management:
     tags:
       application: ${spring.application.name}
 
+loki:
+  url: http://${LOKI_URI:localhost}:3100/loki/api/v1/push
+
 ---
 spring.config.activate.on-profile: local
 logging:
@@ -63,6 +66,3 @@ scheduler:
 slack:
   channel:
     daily-rank: C0A0M8HUQDT
-
-loki:
-  url: http://${LOKI_URI:localhost}:3100/loki/api/v1/push
