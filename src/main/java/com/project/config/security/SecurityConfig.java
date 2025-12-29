@@ -34,6 +34,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AccessDeniedHandler accessDeniedHandler;
     private final AuthenticationEntryPoint authenticationEntryPoint;
+    private final ActuatorAuthorizationManager actuatorAuthorizationManager;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -56,7 +57,7 @@ public class SecurityConfig {
                         .requestMatchers("/slack/**").permitAll()
                         .requestMatchers(HttpMethod.GET, getReadOnlyPublicEndpoints()).permitAll()
                         .requestMatchers(getHealthCheckEndpoints()).permitAll()
-                        .requestMatchers(getActuatorEndpoints()).permitAll()
+                        .requestMatchers(getActuatorEndpoints()).access(actuatorAuthorizationManager)
                         .requestMatchers(LOCAL_LOGIN_ENDPOINT).permitAll()
                         .requestMatchers(LOCAL_SIGN_ENDPOINT).permitAll()
                         .requestMatchers(LOGIN_ENDPOINT).permitAll()
