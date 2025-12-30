@@ -38,7 +38,7 @@ public class AspectConfig {
         aspectUtil.putCommon(joinPoint);
         aspectUtil.putError(ex);
 
-        log.error("Request Failed", ex);
+        log.error("Request Failed");
 
         aspectUtil.clear();
     }
