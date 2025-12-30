@@ -5,6 +5,7 @@ import com.project.common.exception.JwtException;
 import com.project.common.security.jwt.JwtProvider;
 import com.project.common.security.jwt.JwtClaims;
 import com.project.common.security.jwt.access.AccessTokenClaimKeys;
+import com.project.common.util.AspectUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,6 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsService securityUserDetailsService;
     private final JwtProvider accessTokenProvider;
     private final AccessDeniedHandler accessDeniedHandler;
+    private final AspectUtil aspectUtil;
 
     protected static final AntPathMatcher MATCHER = new AntPathMatcher();
 
@@ -52,9 +54,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
-            @NotNull HttpServletRequest request,
-            @NotNull HttpServletResponse response,
-            @NotNull FilterChain filterChain
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
     ) throws ServletException, IOException {
 
         try {
@@ -62,9 +64,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             UserDetails userDetails = getUserDetails(accessToken);
             authenticateUser(userDetails, request);
+
             filterChain.doFilter(request, response);
-        } catch (AccessDeniedException e) {
-            accessDeniedHandler.handle(request, response, e);
+
+        } catch (JwtException ex) {
+            aspectUtil.putCommonFromRequest(request);
+            aspectUtil.putError(ex);
+
+            log.error("Authentication Error");
+
+            aspectUtil.clear();
+            throw ex;
+
+        } catch (AccessDeniedException ex) {
+            aspectUtil.putCommonFromRequest(request);
+            aspectUtil.putError(ex);
+
+            log.error("Access Denied Error");
+
+            aspectUtil.clear();
+            accessDeniedHandler.handle(request, response, ex);
         }
     }
 
