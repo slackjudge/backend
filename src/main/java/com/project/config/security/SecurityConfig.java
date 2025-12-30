@@ -57,7 +57,7 @@ public class SecurityConfig {
                         .requestMatchers("/slack/**").permitAll()
                         .requestMatchers(HttpMethod.GET, getReadOnlyPublicEndpoints()).permitAll()
                         .requestMatchers(getHealthCheckEndpoints()).permitAll()
-                        .requestMatchers(getActuatorEndpoints()).access(actuatorAuthorizationManager)
+                        .requestMatchers(getActuatorEndpoints()).permitAll()
                         .requestMatchers(LOCAL_LOGIN_ENDPOINT).permitAll()
                         .requestMatchers(LOCAL_SIGN_ENDPOINT).permitAll()
                         .requestMatchers(LOGIN_ENDPOINT).permitAll()
