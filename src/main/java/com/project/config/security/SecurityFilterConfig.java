@@ -3,6 +3,7 @@ package com.project.config.security;
 import com.project.common.security.filter.JwtAuthenticationFilter;
 import com.project.common.security.filter.JwtExceptionFilter;
 import com.project.common.security.jwt.JwtProvider;
+import com.project.common.util.AspectUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +17,7 @@ public class SecurityFilterConfig {
     private final UserDetailsService userDetailsService;
     private final AccessDeniedHandler accessDeniedHandler;
     private final JwtProvider accessTokenProvider;
+    private final AspectUtil aspectUtil;
 
     @Bean
     public JwtExceptionFilter jwtExceptionFilter() {
@@ -24,6 +26,6 @@ public class SecurityFilterConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(userDetailsService, accessTokenProvider, accessDeniedHandler);
+        return new JwtAuthenticationFilter(userDetailsService, accessTokenProvider, accessDeniedHandler, aspectUtil);
     }
 }

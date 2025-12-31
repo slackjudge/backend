@@ -1,44 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="backend"/>
-    <springProperty scope="context" name="lokiUrl" source="loki.url" defaultValue=""/>
 
+    <!-- 콘솔 출력 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%-5level] %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <springProfile name="dev">
-        <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
-            <http>
-                <url>${lokiUrl}</url>
-            </http>
-            <format>
-                <label>
-                    <pattern>application=${appName},host=${HOSTNAME},level=%level</pattern>
-                </label>
-                <message>
-                    <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-                </message>
-            </format>
-        </appender>
+    <!-- Aspect JSON 로그 -->
+    <appender name="ASPECT_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/aspect-%d{yyyy-MM-dd}.json</fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
 
-        <root level="INFO">
-            <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="LOKI"/>
-        </root>
-    </springProfile>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
 
-    <springProfile name="local">
-        <root level="INFO">
-            <appender-ref ref="CONSOLE"/>
-        </root>
-    </springProfile>
+    <!-- AOP 로그 -->
+    <logger name="com.project.config.log" level="INFO" additivity="false">
+        <appender-ref ref="ASPECT_JSON"/>
+    </logger>
 
-    <springProfile name="!dev &amp; !local">
-        <root level="INFO">
-            <appender-ref ref="CONSOLE"/>
-        </root>
-    </springProfile>
+    <logger name="com.project.common.security" level="INFO" additivity="false">
+        <appender-ref ref="ASPECT_JSON"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
 </configuration>
