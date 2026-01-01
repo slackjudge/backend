@@ -66,23 +66,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
 
-        } catch (JwtException ex) {
-            aspectUtil.putCommonFromRequest(request);
-            aspectUtil.putError(ex);
-
-            log.error("Authentication Error");
-
-            aspectUtil.clear();
-            throw ex;
-
-        } catch (AccessDeniedException ex) {
-            aspectUtil.putCommonFromRequest(request);
-            aspectUtil.putError(ex);
-
-            log.error("Access Denied Error");
-
-            aspectUtil.clear();
-            accessDeniedHandler.handle(request, response, ex);
+        } catch (AccessDeniedException e) {
+            accessDeniedHandler.handle(request, response, e);
         }
     }
 
